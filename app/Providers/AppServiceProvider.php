@@ -27,22 +27,22 @@ class AppServiceProvider extends ServiceProvider
                     }
             }else{
                 $result = [
-                    "name"=>"  ",
+                    "name"=>"Ghana Electoral System",
                     "url"=> " ",
                     "from_email"=>"",
                     "from_email_title"=>" ",
-                    "logo1" => " ",
-                    "logo2" => " "
+                    "logo" => " ",
+                    //"logo2" => " "
                 ];
             }
         }catch(\Exception $e){
             $result = [
-                "name"=>"  ",
+                "name"=>"Ghana Electoral System",
                 "url"=> " ",
                 "from_email"=>"",
                 "from_email_title"=>" ",
-                "logo1" => " ",
-                "logo2" => " "
+                "logo" => " ",
+                //"logo2" => " "
             ];
         }
         view()->composer('*', function ($view) use($result) {
