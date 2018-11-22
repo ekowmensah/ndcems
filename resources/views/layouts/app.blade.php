@@ -36,7 +36,7 @@
         <nav class="navbar navbar-expand-md navbar-light navbar-laravel" style="margin: 0px !important;">
             <div class="container">
                 <a  href="{{ url('/') }}">
-                 <img src="{{$config['logo']}}" alt="{{$config['name']}} " style="height: 63px;">
+                 <img src="{{ asset($config['logo']) }}" alt="{{$config['name']}} " style="height: 63px;">
                 </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
@@ -56,9 +56,9 @@
                                 <a class="btn btn-info" href="{{ route('login') }}">{{ __('Login') }}</a>
                             </li>
                             <li class="nav-item">
-                                @if (Route::has('register'))
+                                {{-- @if (Route::has('register'))
                                     <a class="btn btn-primary" href="{{ route('register') }}">{{ __('Register') }}</a>
-                                @endif
+                                @endif --}}
                             </li>
                         @else
                             <li class="nav-item dropdown">

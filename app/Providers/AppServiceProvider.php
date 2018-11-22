@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
                 $result = [
                     "name"=>"Ghana Electoral System",
                     "url"=> " ",
-                    "from_email"=>"",
+                    "from_email"=>"support@ghanaelectro.com",
                     "from_email_title"=>" ",
                     "logo" => "img/logo.png",
                     //"logo2" => " "
@@ -39,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
             $result = [
                 "name"=>"Ghana Electoral System",
                 "url"=> " ",
-                "from_email"=>"",
+                "from_email"=>"support@ghanaelectro.com",
                 "from_email_title"=>" ",
                 "logo" => "img/logo.png",
                 //"logo2" => " "
