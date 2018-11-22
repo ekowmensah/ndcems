@@ -33,10 +33,10 @@
 </head>
 <body>
     <div id="app">
-        <nav class="navbar navbar-expand-md navbar-light navbar-laravel">
+        <nav class="navbar navbar-expand-md navbar-light navbar-laravel" style="margin: 0px !important;">
             <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
+                <a  href="{{ url('/') }}">
+                 <img src="{{$config['logo']}}" alt="{{$config['name']}} " style="height: 63px;">
                 </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
@@ -53,11 +53,11 @@
                         <!-- Authentication Links -->
                         @guest
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
+                                <a class="btn btn-info" href="{{ route('login') }}">{{ __('Login') }}</a>
                             </li>
                             <li class="nav-item">
                                 @if (Route::has('register'))
-                                    <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
+                                    <a class="btn btn-primary" href="{{ route('register') }}">{{ __('Register') }}</a>
                                 @endif
                             </li>
                         @else
@@ -89,17 +89,17 @@
         </main>
     </div>
     <!--   Core JS Files   -->
-    <script src="../assets/js/core/jquery.min.js" type="text/javascript"></script>
-    <script src="../assets/js/core/popper.min.js" type="text/javascript"></script>
-    <script src="../assets/js/core/bootstrap-material-design.min.js" type="text/javascript"></script>
-    <script src="../assets/js/plugins/moment.min.js"></script>
+    <script src="{{ asset('material_kit_assets/js/core/jquery.min.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('material_kit_assets/js/core/popper.min.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('material_kit_assets/js/core/bootstrap-material-design.min.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('material_kit_assets/js/plugins/moment.min.js') }}"></script>
     <!--	Plugin for the Datepicker, full documentation here: https://github.com/Eonasdan/bootstrap-datetimepicker -->
-    <script src="../assets/js/plugins/bootstrap-datetimepicker.js" type="text/javascript"></script>
+    <script src="{{ asset('material_kit_assets/js/plugins/bootstrap-datetimepicker.js') }}" type="text/javascript"></script>
     <!--  Plugin for the Sliders, full documentation here: http://refreshless.com/nouislider/ -->
-    <script src="../assets/js/plugins/nouislider.min.js" type="text/javascript"></script>
+    <script src="{{ asset('material_kit_assets/js/plugins/nouislider.min.js') }}" type="text/javascript"></script>
     <!--	Plugin for Sharrre btn -->
-    <script src="../assets/js/plugins/jquery.sharrre.js" type="text/javascript"></script>
+    <script src="{{ asset('material_kit_assets/js/plugins/jquery.sharrre.js') }}" type="text/javascript"></script>
     <!-- Control Center for Material Kit: parallax effects, scripts for the example pages etc -->
-    <script src="../assets/js/material-kit.js?v=2.0.4" type="text/javascript"></script>
+    <script src="{{ asset('material_kit_assets/js/material-kit.js') }}?v=2.0.4" type="text/javascript"></script>
 </body>
 </html>

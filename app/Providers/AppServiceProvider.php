@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
                     "url"=> " ",
                     "from_email"=>"",
                     "from_email_title"=>" ",
-                    "logo" => " ",
+                    "logo" => "img/logo.png",
                     //"logo2" => " "
                 ];
             }
@@ -41,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
                 "url"=> " ",
                 "from_email"=>"",
                 "from_email_title"=>" ",
-                "logo" => " ",
+                "logo" => "img/logo.png",
                 //"logo2" => " "
             ];
         }
