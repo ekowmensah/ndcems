@@ -51,9 +51,12 @@ class UserController extends Controller
     public function Users()
     {
         $Users = User::select('users.created_at','users.name as user_name','users.id as user_id','user_type.id as user_type_id','user_type.name as user_type_name')
-        ->join('user_type','user_type.id','=','users.user_type_id')
-        ->get();
+            ->join('user_type','user_type.id','=','users.user_type_id')
+            ->get();
         return view('admin.user.Users',compact('Users'));
     }
-
+    public function newUser(){
+        $UserTypes = UserType::all();
+        return view('admin.user.User',compact('UserTypes'));
+    }
 }

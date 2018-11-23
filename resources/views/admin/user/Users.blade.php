@@ -9,7 +9,7 @@
         </div>
         <div class="col-md-6">
             <br>
-                <a href="{{route('SuperAdmin.New.UserTypes')}}"  style=" float:  right;" class="btn btn-success">Create New User Type</a>
+                <a href="{{route('SuperAdmin.New.User')}}"  style=" float:  right;" class="btn btn-success">Create New User</a>
             </div>
     </div>
 
@@ -17,7 +17,7 @@
 </div>
 <div class="clearfix"></div>
 <div class="row">
-    <div class="col-md-8 col-sm-8 col-xs-8 col-md-offset-2">
+    <div class="col-md-12 col-sm-12 col-xs-12">
         <div class="x_panel">
           <div class="x_title">
             <h2>Users Types </h2>
@@ -33,6 +33,7 @@
                   <th>Name</th>
                   <th>Type</th>
                   <th>Added At</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -42,6 +43,10 @@
                             <td>{{$UserType->user_name}}</td>
                             <td>{{$UserType->user_type_name}}</td>
                             <td>{{$UserType->created_at}}</td>
+                            <td>
+                                <a href="#"   class="btn btn-success btn-small">Edit</a>
+                                <a href="#"  class="btn btn-danger btn-small">Delete</a>
+                            </td>
                         </tr>
                   @endforeach
 

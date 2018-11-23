@@ -39,6 +39,7 @@ Route::group(['prefix' =>config('config.SuperAdminUrlPrefix'),'namespace'=>'Supe
         Route::get('/new-user-types','UserController@newUserTypes')->name('New.UserTypes');
         Route::post('/new-user-types','UserController@newUserTypesPost')->name('New.UserTypes');
         Route::get('/users','UserController@Users')->name('Users');
-
+        Route::get('/new-user','UserController@newUser')->name('New.User');
+        Route::post('/new-user','UserController@newUserPost')->name('New.User');
     });
 });
