@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Auth\AuthenticationException;
 
 class Handler extends ExceptionHandler
 {
@@ -47,5 +48,25 @@ class Handler extends ExceptionHandler
     public function render($request, Exception $exception)
     {
         return parent::render($request, $exception);
+    }
+    protected function unauthenticated($request, AuthenticationException $exception)
+    {
+
+        $guard = array_get($exception->guards(), 0);
+
+        switch ($guard) {
+            case 'superAdmin':
+                $url =config('config.SuperAdminUrlPrefix').'/login';
+                break;
+            /* case 'agent':
+                $url = '/agent/login';
+                break; */
+            default:
+                $url = '/login';
+                break;
+        }
+
+        return redirect()->guest($url);
+        //return redirect()->guest(route('login'));
     }
 }

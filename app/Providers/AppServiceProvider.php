@@ -32,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
                     "from_email"=>"support@ghanaelectro.com",
                     "from_email_title"=>" ",
                     "logo" => "img/logo.png",
+                    "SuperAdminUrlPrefix" => "super-admin",
                     //"logo2" => " "
                 ];
             }
@@ -42,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
                 "from_email"=>"support@ghanaelectro.com",
                 "from_email_title"=>" ",
                 "logo" => "img/logo.png",
+                "SuperAdminUrlPrefix" => "super-admin",
                 //"logo2" => " "
             ];
         }
