@@ -8,6 +8,9 @@ use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Support\Facades\Auth;
 use App\Model\UserType;
 use App\User;
+use Illuminate\Support\Facades\Validator;
+
+use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
     /**
@@ -32,7 +35,8 @@ class UserController extends Controller
     }
     public function newUserTypes()
     {
-        return view('admin.user.NewUserTypes');
+        $UserTypes = UserType::all();
+        return view('admin.user.NewUserTypes',compact('UserTypes'));
     }
     public function newUserTypesPost(Request $request)
     {
@@ -44,6 +48,8 @@ class UserController extends Controller
         }
         $ut = new UserType;
         $ut->name  = $data['name'];
+        $ut->parent  = $data['parent'];
+
         $ut->save();
         $request->session()->flash('message', ' User Type created successfully!');
         return redirect(route("SuperAdmin.UserTypes"));
@@ -53,10 +59,90 @@ class UserController extends Controller
         $Users = User::select('users.created_at','users.name as user_name','users.id as user_id','user_type.id as user_type_id','user_type.name as user_type_name')
             ->join('user_type','user_type.id','=','users.user_type_id')
             ->get();
-        return view('admin.user.Users',compact('Users'));
-    }
-    public function newUser(){
         $UserTypes = UserType::all();
-        return view('admin.user.User',compact('UserTypes'));
+        return view('admin.user.Users',compact('Users','UserTypes'));
+    }
+    public function newUser($type_id){
+        $Type = UserType::find($type_id);
+        //user type config
+
+        $UserTypes = UserType::all();
+       // $belongTo = UserType::where('id',$Type->parent)->get();
+        $belongTo = User::select('users.created_at','users.name as user_name','users.id as user_id','user_type.id as user_type_id','user_type.name as user_type_name')
+            ->join('user_type','user_type.id','=','users.user_type_id')
+            ->where('user_type.id',$Type->parent)
+            ->get();
+        //dd($belongTo->toArray());
+
+        return view('admin.user.User',compact('UserTypes','Type','belongTo'));
+    }
+    public function UserTypesEdit($id){
+        $UserTypes = UserType::where('id',$id)->first();
+        $AllUserTypes = UserType::all();
+        return view('admin.user.EditUserTypes',compact('UserTypes','AllUserTypes'));
+    }
+    public function UserTypesEditPost(Request $request){
+        $data = $request->all();
+        $UserTypes = UserType::where('name',$data['oldName'])->where('id',$data['id'])->first();
+        if(!$UserTypes){
+            $request->session()->flash('error', ' Somthing is wrong!');
+        }else{
+            $UserTypes->name = $data['name'];
+            $UserTypes->parent  = $data['parent'];
+            $UserTypes->save();
+            $request->session()->flash('message', ' Updated Successfully!');
+        }
+
+
+        return redirect()->back();
+    }
+
+    public function UserTypesDelete($id,Request $request){
+        try{
+            $UserTypes = UserType::findOrFail($id);
+            $UserTypes->delete();
+        }catch(\Exception $e){
+            $request->session()->flash('error', 'This type already in user.!');
+            return redirect()->back();
+
+        }
+
+            $request->session()->flash('message', ' Deleted Successfully!');
+            return redirect()->back();
+    }
+    public function VerifyUsername(Request $request){
+            $data = $request->all();
+       $username =  User::where('username',$data['username'])->first();
+       if($username)
+            return "faund";
+        else
+            return "not_found";
+    }
+    public function newUserPost(Request $request){
+        $validation =  Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'username' => ['required', 'string', 'min:10', 'max:10', 'unique:users'],
+            'password' => ['required', 'string', 'min:6'],
+
+            'user_type_id' => ['required'],
+            'phoneno' => ['required', 'string', 'min:7'],
+            'constituency' => ['required'],
+            'gender' => ['required', 'string'],
+        ]);
+
+        if ($validation->fails()) {
+            return redirect()->back()
+                        ->withErrors($validation)
+                        ->withInput();
+        }else{
+            $data = $request->all();
+            $data['password'] = Hash::make($data['password']);
+            User::create($data);
+            $request->session()->flash('message', ' User Created Successfully!');
+            return redirect(route('SuperAdmin.Users'));
+        }
+
+
     }
 }

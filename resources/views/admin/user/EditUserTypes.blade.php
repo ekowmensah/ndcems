@@ -22,13 +22,15 @@
             <div class="clearfix"></div>
           </div>
           <div class="x_content ">
-                <form id="demo-form2" method="POST" action="{{route('SuperAdmin.New.UserTypes')}}" data-parsley-validate="" class="form-horizontal form-label-left" >
+                <form id="demo-form2" method="POST" action="{{route('SuperAdmin.Edit.UserTypes')}}" data-parsley-validate="" class="form-horizontal form-label-left" >
                         @csrf
+                        <input type="hidden" name="id" value="{{$UserTypes->id}}">
+                        <input type="hidden" name="oldName" value="{{$UserTypes->name}}">
                         <div class="form-group">
                           <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Manager Type Name <span class="required">*</span>
                           </label>
                           <div class="col-md-6 col-sm-6 col-xs-12">
-                            <input name="name" type="text" id="first-name" required="required" class="form-control col-md-7 col-xs-12">
+                            <input name="name" value="{{$UserTypes->name}}" type="text" id="first-name" required="required" class="form-control col-md-7 col-xs-12">
                           </div>
                         </div>
                         <div class="form-group">
@@ -36,8 +38,11 @@
                             <div class="col-md-6">
                                <select class="form-control" name="parent" required>
                                 <option value="0">Select</option>
-                                @foreach ($UserTypes as $UserType)
-                                   <option value="{{$UserType->id}}">{{$UserType->name}}<option>
+                                @foreach ($AllUserTypes as $UserType)
+                                    @if($UserType->id == $UserTypes->id)
+                                        @continue
+                                    @endif
+                                   <option value="{{$UserType->id}}" @if($UserType->id == $UserTypes->parent) selected @endif>{{$UserType->name}}<option>
                                 @endforeach
                               </select>
                             </div>
@@ -64,14 +69,14 @@
 @section("script")
 <script src="{{ asset('js/bootstrap-validator/validator.min.js') }}"></script>
 <script>
-     $('document').ready(function(){
-            $('select option')
-            .filter(function() {
-                return !this.value || $.trim(this.value).length == 0 || $.trim(this.text).length == 0;
-            })
-            .remove();
+    $('document').ready(function(){
+           $('select option')
+           .filter(function() {
+               return !this.value || $.trim(this.value).length == 0 || $.trim(this.text).length == 0;
+           })
+           .remove();
 
 
-        });
+       });
 </script>
         @endsection

@@ -10,13 +10,15 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-Route::get('/', function () {
-    return view('welcome');
+Route::group(['middleware' => ['auth']], function () {
+        Route::get('/', function () {
+            return redirect(route('home'));
+    });
+    Route::get('/home', 'HomeController@index')->name('home');
 });
 Auth::routes();
 
-Route::get('/home', 'HomeController@index')->name('home');
+
 
 Route::group(['prefix' =>config('config.SuperAdminUrlPrefix'),'namespace'=>'SuperAdmin','as' => 'SuperAdmin.'], function () {
 
@@ -35,11 +37,17 @@ Route::group(['prefix' =>config('config.SuperAdminUrlPrefix'),'namespace'=>'Supe
 
     Route::group(['middleware' => ['auth:superAdmin']], function () {
         Route::get('/','HomeController@index')->name('home');
-        Route::get('/user-types','UserController@UserTypes')->name('UserTypes');
-        Route::get('/new-user-types','UserController@newUserTypes')->name('New.UserTypes');
-        Route::post('/new-user-types','UserController@newUserTypesPost')->name('New.UserTypes');
-        Route::get('/users','UserController@Users')->name('Users');
-        Route::get('/new-user','UserController@newUser')->name('New.User');
-        Route::post('/new-user','UserController@newUserPost')->name('New.User');
+        Route::get('/manager-types','UserController@UserTypes')->name('UserTypes');
+        Route::get('/new-manager-types','UserController@newUserTypes')->name('New.UserTypes');
+        Route::get('/manager-types-edit/{id}','UserController@UserTypesEdit')->name('UserTypesEdit');
+        Route::post('/manager-types-edit','UserController@UserTypesEditPost')->name('Edit.UserTypes');
+        Route::get('/manager-types-delete/{id}','UserController@UserTypesDelete')->name('UserTypesDelete');
+
+        Route::post('/new-manager-types','UserController@newUserTypesPost')->name('New.UserTypes');
+        Route::get('/managers','UserController@Users')->name('Users');
+        Route::get('/new-manager/{type_id}','UserController@newUser')->name('New.User');
+        Route::post('/new-manager','UserController@newUserPost')->name('New.UserPost');
+
+        Route::post('/verify-username','UserController@VerifyUsername')->name('VerifyUsername');
     });
 });

@@ -34,6 +34,11 @@
     <link href="{{ asset('gentelella/vendors/jqvmap/dist/jqvmap.min.css') }}" rel="stylesheet">
     <!-- bootstrap-daterangepicker -->
     <link href="{{ asset('gentelella/vendors/bootstrap-daterangepicker/daterangepicker.css') }}" rel="stylesheet">
+    <style>
+      .right_col{
+        min-height: 100vh !important;
+      }
+    </style>
     @yield("css")
 </head>
 <body class="nav-md">
@@ -71,10 +76,10 @@
                             @if (Auth::guard("superAdmin")->check())
                                 <li class="{{ (Request::is('super-admin') ? 'active' : '') }}"><a href="#"><i class="fa fa-home"></i> Dashboard </a></li>
                             {{-- <li class="{{ (Request::is('admin') ? 'active' : '') }}"><a href="{{route()}}"><i class="fa fa-user"></i> User </a></li> --}}
-                            <li><a><i class="fa fa-user"></i>Users <span class="fa fa-chevron-down"></span></a>
+                            <li><a><i class="fa fa-user"></i>Managers <span class="fa fa-chevron-down"></span></a>
                                 <ul class="nav child_menu" >
-                                    <li><a href="{{route('SuperAdmin.UserTypes')}}">User Types</a></li>
-                                    <li><a href="{{route('SuperAdmin.Users')}}">User</a></li>
+                                    <li><a href="{{route('SuperAdmin.UserTypes')}}">Manager Types</a></li>
+                                    <li><a href="{{route('SuperAdmin.Users')}}">Managers</a></li>
                                 </ul>
                             </li>
                             @endif

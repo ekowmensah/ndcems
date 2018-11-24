@@ -10,6 +10,7 @@ class UserType extends Model
     protected $table = "user_type";
     protected $fillable = [
         "name",
+        "parent"
     ];
 
 

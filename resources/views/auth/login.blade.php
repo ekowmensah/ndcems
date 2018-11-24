@@ -15,9 +15,9 @@
               <p class="description text-center">{{$config['name']}}</p>
               <div class="card-body">
                <div class="input-group">
-                        @if ($errors->has('email'))
+                        @if ($errors->has('username'))
                             <div class="alert alert-danger">
-                                    {{ $errors->first('email') }}
+                                    {{ $errors->first('username') }}
                             </div>
                         @endif
                   <div class="input-group-prepend">
@@ -28,7 +28,7 @@
                   </div>
 
 
-                  <input id="email" type="email" class="form-control {{ $errors->has('email') ? ' is-invalid' : '' }}" name="email" value="{{ old('email') }}" required autofocus placeholder="Email...">
+                  <input id="email" type="username" class="form-control {{ $errors->has('username') ? ' is-invalid' : '' }}" name="username" value="{{ old('username') }}" required autofocus placeholder="Card ID No...">
                 </div>
                 <div class="input-group">
                         @if ($errors->has('password'))
