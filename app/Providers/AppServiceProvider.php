@@ -50,6 +50,7 @@ class AppServiceProvider extends ServiceProvider
         view()->composer('*', function ($view) use($result) {
                 $view->with('config', $result);
         });
+
         config(['config' => $result]);
     }
 

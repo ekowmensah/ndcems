@@ -53,13 +53,15 @@ class Handler extends ExceptionHandler
     {
 
         $guard = array_get($exception->guards(), 0);
-
         switch ($guard) {
             case 'superAdmin':
                 $url =config('config.SuperAdminUrlPrefix').'/login';
                 break;
             /* case 'agent':
                 $url = '/agent/login';
+                break; */
+               /*  case 'web':
+                $url = '/login';
                 break; */
             default:
                 $url = '/login';

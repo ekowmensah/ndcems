@@ -32,8 +32,9 @@
                     </div>
                 @endif
 
-                <form id="demo-form2" method="POST" action="{{route('SuperAdmin.New.UserPost')}}" data-parsley-validate="" class="form-horizontal form-label-left" >
+                <form id="demo-form2" method="POST" action="{{route('SuperAdmin.EditUserPost')}}" data-parsley-validate="" class="form-horizontal form-label-left" >
                         @csrf
+                        <input type="hidden" value="{{$User->id}}"  name="id">
                         <div class="form-group">
                                 <label class="control-label col-md-3 col-sm-3">Manager Type</label>
                                 <div class="col-md-6">
@@ -54,21 +55,21 @@
                           <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Manager Name <span class="required">*</span>
                           </label>
                           <div class="col-md-6 col-sm-6 col-xs-12">
-                            <input name="name" type="text" id="first-name" required="required" class="form-control col-md-7 col-xs-12">
+                          <input name="name" value="{{$User->name}}" type="text" id="first-name" required="required" class="form-control col-md-7 col-xs-12">
                           </div>
                         </div>
                         <div class="form-group">
                                 <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Manager Email <span class="required">*</span>
                                 </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
-                                  <input name="email" type="text" id="first-name" required="required" class="form-control col-md-7 col-xs-12">
+                                  <input name="email" value="{{$User->email}}" type="text" id="first-name" required="required" class="form-control col-md-7 col-xs-12">
                                 </div>
                         </div>
                         <div class="form-group">
                                 <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">ID Card No #<span class="required">*</span>
                                 </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
-                                  <input name="username" type="text" id="username" required="required" class="form-control col-md-7 col-xs-12">
+                                  <input name="username" value="{{$User->username}}"  type="text" id="username" required="required" class="form-control col-md-7 col-xs-12">
 
                                 </div>
                                 <span id="username_panel">
@@ -80,16 +81,19 @@
                                 <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Mobile Number <span class="required">*</span>
                                 </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
-                                  <input name="phoneno" type="text" id="first-name" required="required" class="form-control col-md-7 col-xs-12">
+                                  <input name="phoneno" type="text" value="{{$User->phoneno}}" id="first-name" required="required" class="form-control col-md-7 col-xs-12">
                                 </div>
                         </div>
-                        {{-- <div class="form-group">
+                       {{--  <div class="form-group">
                             <label class="control-label col-md-3 col-sm-3">Under Constituency</label>
                             <div class="col-md-6">
                                <select class="form-control" name="constituency"  required>
                                    <option></option>
 
-                               @foreach ($belongTo as $To)
+                                @if(count($belongTo)==0 && $Type->id == 0)
+                                    <option value="0">Country</option>
+                                @endif
+                                @foreach ($belongTo as $To)
                                    <option value="{{$To->user_id}}"  >{{$To->user_type_name}} -- {{$To->user_name}}<option>
                                 @endforeach
                               </select>
@@ -100,7 +104,7 @@
                                 <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Password <span class="required">*</span>
                                 </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
-                                  <input name="password" type="text" id="first-name" required="required" class="form-control col-md-7 col-xs-12">
+                                  <input name="password" type="text" id="first-name"  class="form-control col-md-7 col-xs-12">
                                 </div>
                         </div>
                         <div class="form-group">
@@ -109,17 +113,16 @@
                                 <div class="col-md-6 col-sm-6 col-xs-12">
                                         <div class="radio">
                                                 <label>
-                                                  <input type="radio"  name="gender"  value="male" id="optionsRadios1" > Male
+                                                  <input type="radio" @if($User->gender == "male") checked="" @endif  name="gender"  value="male" id="optionsRadios1" > Male
                                                 </label>
                                               </div>
                                               <div class="radio">
                                                     <label>
-                                                      <input type="radio"  name="gender"  value="female" id="optionsRadios1"> Female
+                                                      <input type="radio" @if($User->gender == "female") checked="" @endif  name="gender"  value="female" id="optionsRadios1"> Female
                                                     </label>
                                                   </div>
                                 </div>
                         </div>
-
                         @if(isset($NewUserTypes[0]))
                         <div class="form-group">
                                 <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Country  <span class="required">*</span>
@@ -128,7 +131,7 @@
                                         <select class="form-control" name="country_id" id="country_id" required>
                                             <option value="sec" >Select Country<option>
                                         @foreach ($countries as $country)
-                                                <option value="{{$country->id}}"  >{{$country->name}}<option>
+                                                <option value="{{$country->id}}" @if($country->id == $User->country_id) selected @endif >{{$country->name}}<option>
                                             @endforeach
                                         </select>
                                 </div>
@@ -140,8 +143,12 @@
                             </label>
                             <div class="col-md-6 col-sm-6 col-xs-12">
                                     <select class="form-control" name="region_id" id="region_id"  required>
+                                            <option value="sec" >Select Region<option>
+                                                    @foreach ($regions as $regions)
+                                                            <option value="{{$regions->id}}" @if($regions->id == $User->region_id) selected @endif >{{$regions->name}}<option>
+                                                        @endforeach
+                                    </select>
 
-                                       </select>
                             </div>
                     </div>
                     @endif
@@ -151,8 +158,11 @@
                         </label>
                         <div class="col-md-6 col-sm-6 col-xs-12">
                                 <select class="form-control" name="constituency_id" id="constituency_id"  required>
-
-                                   </select>
+                                        <option value="sec" >Select Constituency<option>
+                                                @foreach ($constituency as $regions)
+                                                        <option value="{{$regions->id}}" @if($regions->id == $User->constituency_id) selected @endif >{{$regions->name}}<option>
+                                                    @endforeach
+                                </select>
                         </div>
                 </div>
                 @endif
@@ -162,7 +172,10 @@
                     </label>
                     <div class="col-md-6 col-sm-6 col-xs-12">
                             <select class="form-control" name="electoralarea_id" id="electoralarea_id"  required>
-
+                                    <option value="sec" >Electral Area<option>
+                                            @foreach ($electoralarea as $regions)
+                                                    <option value="{{$regions->id}}" @if($regions->id == $User->electoralarea_id) selected @endif >{{$regions->name}}<option>
+                                                @endforeach
                                </select>
                     </div>
                 </div>
@@ -173,11 +186,15 @@
                     </label>
                     <div class="col-md-6 col-sm-6 col-xs-12">
                             <select class="form-control" name="polling_station_id" id="polling_station_id"  required>
-
+                                    <option value="sec" >Polling Station<option>
+                                            @foreach ($pollingstation as $regions)
+                                                    <option value="{{$regions->id}}" @if($regions->id == $User->polling_station_id) selected @endif >{{$regions->name}}<option>
+                                                @endforeach
                                </select>
                     </div>
                 </div>
                 @endif
+
 
                         <div class="ln_solid"></div>
                         <div class="form-group">
@@ -201,14 +218,14 @@
     <script>
         $('document').ready(function(){
             $("#username_panel").empty();
-            $("#username_panel").append(`<span style="color:red">Lenght equall to 10th character<span>` )
+           //$("#username_panel").append(`<span style="color:red">Lenght equall to 10th character<span>` )
             $('select option')
             .filter(function() {
                 return !this.value && $.trim(this.value).length == 0 && $.trim(this.text).length == 0;
             })
             .remove();
 
-             $('button[type="submit"]').attr('disabled','disabled');
+             //$('button[type="submit"]').attr('disabled','disabled');
         });
         $("#username").keyup(function(){
             $.ajaxSetup({
@@ -217,8 +234,8 @@
                 }
             })
             $("#username_panel").empty();
-            $("#username_panel").append(`<span style="color:red">Lenght equall to 10th character<span>` )
-            $('button[type="submit"]').attr('disabled','disabled');
+            //$("#username_panel").append(`<span style="color:red">Lenght equall to 10th character<span>` )
+            //$('button[type="submit"]').attr('disabled','disabled');
             var value = $('#username').val();
             if(value.length == 10){
 
@@ -247,10 +264,8 @@
 
         })
     </script>
-
-    <script src="{{ asset('js/bootstrap-validator/validator.min.js') }}"></script>
-<script>
-     $('document').ready(function(){
+    <script>
+         $('document').ready(function(){
             $('select option')
             .filter(function() {
                 return !this.value || $.trim(this.value).length == 0 || $.trim(this.text).length == 0;
@@ -381,7 +396,7 @@
                             });
                         });
         });
-</script>
+    </script>
 @endsection
 
 {{-- $("#submit").attr("disabled", false)

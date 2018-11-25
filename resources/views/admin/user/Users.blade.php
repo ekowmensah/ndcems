@@ -7,10 +7,10 @@
         <div class="col-md-4" style=" float:  left;">
             <h3>Manager Type <small></small></h3>
         </div>
-        <div class="col-md-8">
+        <div class="col-md-12">
             <br>
                 @foreach ($UserTypes as $UserType)
-                    <a href="{{route('SuperAdmin.New.User',$UserType->id)}}"  style=" float:  right;" class="btn btn-primary">Create {{$UserType->name}}</a>
+                    <a href="{{route('SuperAdmin.New.User',$UserType->id)}}"  style=" float:  right;" class="btn btn-success">Add {{$UserType->name}}</a>
                 @endforeach
             </div>
     </div>
@@ -46,7 +46,7 @@
                             <td>{{$UserType->user_type_name}}</td>
                             <td>{{$UserType->created_at}}</td>
                             <td>
-                                <a href="#"   class="btn btn-success btn-small">Edit</a>
+                            <a href="{{route('SuperAdmin.UsersEdit',$UserType->user_id)}}"   class="btn btn-success btn-small">Edit</a>
                                 <a href="#"  class="btn btn-danger btn-small">Delete</a>
                             </td>
                         </tr>

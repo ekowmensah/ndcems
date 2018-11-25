@@ -80,6 +80,17 @@
                                 <ul class="nav child_menu" >
                                     <li><a href="{{route('SuperAdmin.UserTypes')}}">Manager Types</a></li>
                                     <li><a href="{{route('SuperAdmin.Users')}}">Managers</a></li>
+
+                                </ul>
+                            </li>
+                            <li><a><i class="fa fa-tree"></i>Content Management <span class="fa fa-chevron-down"></span></a>
+                                <ul class="nav child_menu" >
+                                    <li><a href="{{route('SuperAdmin.country')}}">National</a></li>
+                                    <li><a href="{{route('SuperAdmin.region')}}">Region</a></li>
+                                    <li><a href="{{route('SuperAdmin.constituency')}}">Constituency</a></li>
+                                    <li><a href="{{route('SuperAdmin.ElectoralArea')}}">Electoral Area</a></li>
+                                    <li><a href="{{route('SuperAdmin.PollingStation')}}">Polling Station</a></li>
+
                                 </ul>
                             </li>
                             @endif
