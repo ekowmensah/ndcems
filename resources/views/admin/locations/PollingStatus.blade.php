@@ -36,6 +36,8 @@
                     <th>Constituency Name</th>
                   <th>Region Name</th>
                   <th>Country Name</th>
+                  <th>Total Voter</th>
+                  <th>Total Candidates</th>
                   <th></th>
                 </tr>
               </thead>
@@ -49,6 +51,8 @@
                             <td>{{$country->constituency_name}}</td>
                             <td>{{$country->region_name}}</td>
                             <td>{{$country->country_name}}</td>
+                            <td>{{$country->total_voters}}</td>
+                            {{-- <td>{{$country->total_candidates}}</td> --}}
                             <td>
                                {{--  <a href="{{route('SuperAdmin.constituencyEdit',$country->id)}}"   class="btn btn-success btn-xs">Edit</a> --}}
                                 <a href="{{route('SuperAdmin.ElectoralAreaDelete',$country->id)}}"  class="btn btn-danger btn-xs">Delete</a>

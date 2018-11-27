@@ -80,19 +80,33 @@
                                 <ul class="nav child_menu" >
                                     <li><a href="{{route('SuperAdmin.UserTypes')}}">Manager Types</a></li>
                                     <li><a href="{{route('SuperAdmin.Users')}}">Managers</a></li>
-
+                                    @foreach ($UTypes as $UType)
+                                        <li><a href="{{route('SuperAdmin.New.User',$UType['id'])}}">{{$UType['name']}}</a></li>
+                                    @endforeach
                                 </ul>
                             </li>
-                            <li><a><i class="fa fa-tree"></i>Content Management <span class="fa fa-chevron-down"></span></a>
+                            <li><a><i class="fa fa-tree"></i>Admin Section <span class="fa fa-chevron-down"></span></a>
                                 <ul class="nav child_menu" >
-                                    <li><a href="{{route('SuperAdmin.country')}}">National</a></li>
+                                    <li><a href="{{route('SuperAdmin.country')}}">Country</a></li>
                                     <li><a href="{{route('SuperAdmin.region')}}">Region</a></li>
                                     <li><a href="{{route('SuperAdmin.constituency')}}">Constituency</a></li>
                                     <li><a href="{{route('SuperAdmin.ElectoralArea')}}">Electoral Area</a></li>
                                     <li><a href="{{route('SuperAdmin.PollingStation')}}">Polling Station</a></li>
-
                                 </ul>
                             </li>
+
+                            <li><a><i class="fa fa-book"></i>Election <span class="fa fa-chevron-down"></span></a>
+                                <ul class="nav child_menu" >
+                                    <li><a href="{{route('SuperAdmin.electionType')}}">Election Types</a></li>
+                                </ul>
+                            </li>
+                            <li><a><i class="fa fa-female"></i>Political Party <span class="fa fa-chevron-down"></span></a>
+                                <ul class="nav child_menu" >
+                                    <li><a href="{{route('SuperAdmin.politicalParty')}}">Political Party</a></li>
+                                </ul>
+                            </li>
+                            <li class=""><a href="{{route('SuperAdmin.candidate')}}"><i class="fa fa-user"></i> Candidate </a></li>
+
                             @endif
 
                         </div>

@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Model\SiteSetting;
 use Illuminate\Support\Facades\Schema;
+use App\Model\UserType;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -47,6 +48,13 @@ class AppServiceProvider extends ServiceProvider
                 //"logo2" => " "
             ];
         }
+        $Type = UserType::all();
+        $Type = $Type->toArray();
+
+        view()->composer('*', function ($view) use($Type) {
+            $view->with('UTypes', $Type);
+        });
+
         view()->composer('*', function ($view) use($result) {
                 $view->with('config', $result);
         });

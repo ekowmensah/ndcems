@@ -11,7 +11,8 @@ class Constituency extends Model
     protected $fillable = [
         "name",
         "country_id",
-        "region_id"
+        "region_id",
+        "total_candidates"
     ];
 
 

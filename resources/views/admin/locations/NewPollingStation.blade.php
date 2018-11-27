@@ -46,6 +46,22 @@
                               <input name="polling_station_id" type="text" id="polling_station_id" required="required" class="form-control col-md-7 col-xs-12">
                             </div>
                           </div>
+
+                          <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Total Voter <span class="required">*</span>
+                            </label>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                              <input name="total_voters" type="text" id="total_voters" required="required" class="form-control col-md-7 col-xs-12">
+                            </div>
+                          </div>
+
+                          <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Total Candidates <span class="required">*</span>
+                            </label>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                              <input name="total_candidates" type="text" id="total_candidates" required="required" class="form-control col-md-7 col-xs-12">
+                            </div>
+                          </div>
                         <div class="form-group">
                                 <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Country  <span class="required">*</span>
                                 </label>

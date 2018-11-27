@@ -79,8 +79,7 @@ class UserController extends Controller
                     "index"=>$i
             ];
             $NewUserTypes[] = array_merge($value,array_merge($value,$data));
-
-          }
+        }
        // $belongTo = UserType::where('id',$Type->parent)->get();
         $belongTo = User::select('users.created_at','users.name as user_name','users.id as user_id','user_type.id as user_type_id','user_type.name as user_type_name')
             ->join('user_type','user_type.id','=','users.user_type_id')
@@ -116,7 +115,7 @@ class UserController extends Controller
             $UserTypes = UserType::findOrFail($id);
             $UserTypes->delete();
         }catch(\Exception $e){
-            $request->session()->flash('error', 'Type already in user.!');
+            $request->session()->flash('error', 'Type already in use.!');
             return redirect()->back();
 
         }

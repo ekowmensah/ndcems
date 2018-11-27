@@ -12,7 +12,7 @@ class PollingStation extends Model
         "name",
         "country_id",
         "region_id",
-        "constituency_id","polling_station_id","electoralarea_id"
+        "constituency_id","polling_station_id","electoralarea_id","total_voters","total_candidates"
     ];
 
 

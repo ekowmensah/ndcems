@@ -99,5 +99,30 @@ Route::group(['prefix' =>config('config.SuperAdminUrlPrefix'),'namespace'=>'Supe
         Route::post('/get-polling-station','ContentController@getPollingStation')->name('getPollingStation');
 
 
+        Route::get('/election-type/','ElectionController@electionType')->name('electionType');
+        Route::get('/election-type/add','ElectionController@newElectionType')->name('New.electionType');
+        Route::post('/election-type/add','ElectionController@newElectionTypePost')->name('New.electionType');
+        Route::get('/election-type/edit/{id}','ElectionController@electionTypesEdit')->name('electionTypesEdit');
+        Route::post('/election-type/edit/{id}','ElectionController@electionTypesEditPost')->name('electionTypesEdit');
+        Route::get('/election-type/delete/{id}','ElectionController@electionTypesDelete')->name('electionTypesDelete');
+
+        Route::get('/political-party/','ElectionController@politicalParty')->name('politicalParty');
+        Route::get('/political-party-ajax/','ElectionController@politicalPartyAjax')->name('politicalPartyAjax');
+        Route::get('/political-party/add','ElectionController@newPoliticalParty')->name('New.politicalParty');
+        Route::post('/political-party/add','ElectionController@newPoliticalPartyPost')->name('New.politicalParty');
+        Route::get('/political-party/edit/{id?}','ElectionController@editPoliticalParty')->name('Edit.politicalParty');
+        Route::post('/political-party/edit/{id}','ElectionController@editPoliticalPartyPost')->name('Edit.editPoliticalPartyPost');
+        Route::get('/political-party/delete/{id?}','ElectionController@DeletePoliticalParty')->name('delete.politicalParty');
+
+        Route::get('/candidate/','CandidateController@candidate')->name('candidate');
+        Route::get('/candidate/register/{id}','CandidateController@candidateRegister')->name('candidateRegister');
+        Route::post('/candidate/register/candidate','CandidateController@candidateRegisterPost')->name('candidateRegisterPost');
+        Route::get('/candidate/edit/{id?}','CandidateController@candidateEdit')->name('candidateEdit');
+        Route::post('/candidate/edit/{id?}/post','CandidateController@candidateEditPost')->name('candidateEditPost');
+        Route::get('/candidate/delete/{id?}','CandidateController@candidateDelete')->name('candidateDelete');
+
+
+        Route::get('/election-ajax/','CandidateController@candidateAjax')->name('candidateAjax');
+
     });
 });
