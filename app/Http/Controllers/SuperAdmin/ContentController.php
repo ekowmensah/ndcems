@@ -15,6 +15,8 @@ use App\Model\Region;
 use App\Model\Constituency;
 use App\Model\ElectoralArea;
 use App\Model\PollingStation;
+use DataTables;
+
 
 class ContentController extends Controller
 {
@@ -118,7 +120,7 @@ class ContentController extends Controller
 
 
     public function  constituency(){
-        $regions = Constituency::select(
+        /* $regions = Constituency::select(
                 'countries.id as c_id',
                 'countries.name as country_name',
                 'region.name as region_name',
@@ -126,8 +128,25 @@ class ContentController extends Controller
             )
             ->join('countries','countries.id','=','constituency.country_id')
             ->join('region','region.id','=','constituency.region_id')
-            ->get();
+            ->get(); */
+            $regions = Region::orderBy('name','asc')->get();
         return view('admin.locations.constituency',compact('regions'));
+    }
+    public function constituencyAajax(Request $request ){
+        $regions = Constituency::select(
+            'countries.id as c_id',
+            'countries.name as country_name',
+
+            "constituency.id",
+            "constituency.name",
+            'region.name as region_name'
+        )
+        ->join('countries','countries.id','=','constituency.country_id')
+        ->join('region','region.id','=','constituency.region_id');
+        if($request->input('region_id') != 'all')
+            $regions = $regions ->where('constituency.region_id',$request->input('region_id'));
+        return DataTables::of($regions)->make(true);
+
     }
     public function  constituencyAdd(){
         $countries = Country::all();
@@ -177,7 +196,7 @@ class ContentController extends Controller
     }
 
     public function  ElectoralArea(){
-        $regions = ElectoralArea::select(
+        /* $regions = ElectoralArea::select(
                 'countries.id as c_id',
                 'countries.name as country_name',
                 'region.name as region_name',
@@ -187,8 +206,27 @@ class ContentController extends Controller
             ->join('countries','countries.id','=','ElectoralArea.country_id')
             ->join('region','region.id','=','ElectoralArea.region_id')
             ->join('constituency','constituency.id','=','ElectoralArea.constituency_id')
-            ->get();
+            ->get(); */
+            $regions = Region::orderBy('name','asc')->get();
         return view('admin.locations.ElectoralArea',compact('regions'));
+    }
+    public function electralAajax(Request $request){
+        $regions = ElectoralArea::select(
+            'countries.id as c_id',
+            'countries.name as country_name',
+            'region.name as region_name',
+            "constituency.name as constituency_name",
+            "ElectoralArea.*"
+        )
+        ->join('countries','countries.id','=','ElectoralArea.country_id')
+        ->join('region','region.id','=','ElectoralArea.region_id')
+        ->join('constituency','constituency.id','=','ElectoralArea.constituency_id');
+        if($request->input('region_id') != 'all')
+            $regions = $regions ->where('ElectoralArea.region_id',$request->input('region_id'));
+        if($request->input('constituency_id') != 'all')
+            $regions = $regions ->where('ElectoralArea.constituency_id',$request->input('constituency_id'));
+        return DataTables::of($regions)->make(true);
+
     }
     public function  ElectoralAreaAdd(){
         $countries = Country::all();
@@ -225,7 +263,7 @@ class ContentController extends Controller
         return redirect()->back();
     }
     public function  PollingStation(){
-        $regions = PollingStation::select(
+        /* $regions = PollingStation::select(
                 'countries.id as c_id',
                 'countries.name as country_name',
                 'region.name as region_name',
@@ -237,12 +275,40 @@ class ContentController extends Controller
             ->join('region','region.id','=','PollingStation.region_id')
             ->join('constituency','constituency.id','=','PollingStation.constituency_id')
             ->join('ElectoralArea','ElectoralArea.id','=','PollingStation.electoralarea_id')
-            ->get();
+            ->get(); */
+            $regions = Region::orderBy('name','asc')->get();
         return view('admin.locations.PollingStatus',compact('regions'));
+    }
+    public function pollingStationAajax(Request $request){
+        $regions = PollingStation::select(
+            'countries.id as c_id',
+            'countries.name as country_name',
+            'region.name as region_name',
+            "constituency.name as constituency_name",
+            "ElectoralArea.name as ElectoralArea_name",
+            "PollingStation.*"
+        )
+        ->join('countries','countries.id','=','PollingStation.country_id')
+        ->join('region','region.id','=','PollingStation.region_id')
+        ->join('constituency','constituency.id','=','PollingStation.constituency_id')
+        ->join('ElectoralArea','ElectoralArea.id','=','PollingStation.electoralarea_id');
+        if($request->input('region_id') != 'all')
+            $regions = $regions ->where('PollingStation.region_id',$request->input('region_id'));
+        if($request->input('constituency_id') != 'all')
+            $regions = $regions ->where('PollingStation.constituency_id',$request->input('constituency_id'));
+
+            if($request->input('electoralarea_id') != 'all')
+            $regions = $regions ->where('PollingStation.electoralarea_id',$request->input('electoralarea_id'));
+        return DataTables::of($regions)->make(true);
     }
     public function  PollingStationAdd(){
         $countries = Country::all();
         return view('admin.locations.NewPollingStation',compact('countries'));
+    }
+    public function PollingStationDelete($id,Request $request){
+        $PollingStation =  PollingStation::find($id);
+        $request->session()->flash('message', '  Polling Station deleted successfully!');
+        return redirect()->back();
     }
     public function  getElectral(Request $request){
         $data = $request->all();

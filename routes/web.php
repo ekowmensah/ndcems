@@ -69,6 +69,8 @@ Route::group(['prefix' =>config('config.SuperAdminUrlPrefix'),'namespace'=>'Supe
         Route::get('/region/delete/{id}','ContentController@regionDelete')->name('regionDelete');
 
         Route::get('/constituency/','ContentController@constituency')->name('constituency');
+        Route::get('/constituency-ajax/','ContentController@constituencyAajax')->name('constituencyAajax');
+
         Route::get('/constituency/add/','ContentController@constituencyAdd')->name('New.constituency');
         Route::post('/constituency/add/','ContentController@constituencyAddPost')->name('New.constituency');
         Route::get('/constituency/edit/{id}','ContentController@constituencyEdit')->name('constituencyEdit');
@@ -79,6 +81,8 @@ Route::group(['prefix' =>config('config.SuperAdminUrlPrefix'),'namespace'=>'Supe
         Route::post('/get-regions','ContentController@getRegion')->name('getRegion');
 
         Route::get('/electoral-area/','ContentController@ElectoralArea')->name('ElectoralArea');
+        Route::get('/electoral-area-ajax/','ContentController@electralAajax')->name('electralAajax');
+
         Route::get('/electoral-area/add/','ContentController@ElectoralAreaAdd')->name('New.ElectoralArea');
         Route::post('/electoral-area/add/','ContentController@ElectoralAreaAddPost')->name('New.ElectoralArea');
         /* Route::get('/electoral-area/edit/{id}','ContentController@ElectoralAreaEdit')->name('ElectoralAreaEdit');
@@ -89,11 +93,13 @@ Route::group(['prefix' =>config('config.SuperAdminUrlPrefix'),'namespace'=>'Supe
 
 
         Route::get('/polling-station/','ContentController@PollingStation')->name('PollingStation');
+        Route::get('/polling-station-ajax/','ContentController@pollingStationAajax')->name('pollingStationAajax');
+
         Route::get('/polling-station/add/','ContentController@PollingStationAdd')->name('New.PollingStation');
         Route::post('/polling-station/add/','ContentController@PollingStationAddPost')->name('New.PollingStation');
         /* Route::get('/electoral-area/edit/{id}','ContentController@ElectoralAreaEdit')->name('ElectoralAreaEdit');
         Route::post('/electoral-area/edit/{id}','ContentController@ElectoralAreaEditPost')->name('ElectoralAreaEdit'); */
-        Route::get('/polling-station/delete/{id}','ContentController@PollingStationDelete')->name('PollingStationDelete');
+        Route::get('/polling-station/delete/{id?}','ContentController@PollingStationDelete')->name('PollingStationDelete');
 
         Route::post('/get-electral','ContentController@getElectral')->name('getElectral');
         Route::post('/get-polling-station','ContentController@getPollingStation')->name('getPollingStation');
