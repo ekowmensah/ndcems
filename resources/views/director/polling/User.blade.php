@@ -165,11 +165,11 @@
                 @endif
                 @if(isset($NewUserTypes[3]))
                 <div class="form-group">
-                    <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Electral Area  <span class="required">*</span>
+                    <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Electoral Area  <span class="required">*</span>
                     </label>
                     <div class="col-md-6 col-sm-6 col-xs-12">
                             <select class="form-control" name="electoralarea_id" id="electoralarea_id"  required>
-                                    <option value="sec" >Electral Area<option>
+                                    <option value="sec" >Electoral Area<option>
                                             @foreach ($electoralarea as $regions)
                                                     <option value="{{$regions->id}}" @if($regions->id == $User->electoralarea_id) selected @endif >{{$regions->name}}<option>
                                                 @endforeach

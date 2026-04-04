@@ -224,7 +224,7 @@ $('document').ready(function(){
                                 $('#electoralarea_id')
                                         .append($("<option></option>")
                                                     .attr("value","all")
-                                                    .text("Select Electral Area"));
+                                                    .text("Select Electoral Area"));
                                 $.each(result, function(key, value) {
                                     $('#electoralarea_id')
                                         .append($("<option></option>")

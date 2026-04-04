@@ -152,7 +152,7 @@
         mData:null,
         name:"photo",
           "mRender": function (data) {
-            var matches = "/candidate_logo/"+data.photo;
+            var matches = "{{ asset('candidate_logo') }}/"+data.photo;
                 match = matches.replace('&quot;', '');
                 match = match.replace('&quot;', '');
            return `
@@ -265,7 +265,7 @@
                                     $('#electoralarea_id')
                                             .append($("<option></option>")
                                                         .attr("value","all")
-                                                        .text("Select Electral Area"));
+                                                        .text("Select Electoral Area"));
                                     $.each(result, function(key, value) {
                                         $('#electoralarea_id')
                                             .append($("<option></option>")

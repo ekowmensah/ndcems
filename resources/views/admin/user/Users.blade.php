@@ -148,7 +148,7 @@
         mData:null,
         name:"photo",
         "mRender": function (data) {
-            var matches = "/user_logo/"+data.photo;
+            var matches = "{{ asset('user_logo') }}/"+data.photo;
                 match = matches.replace('&quot;', '');
                 match = match.replace('&quot;', '');
         return `
@@ -213,7 +213,7 @@
                 });
             }  , 500 ); */
         }
-        @elseif(isset($NewUserTypes) && end($NewUserTypes)['index'] == 1 )
+        @elseif(isset($NewUserTypes) && !empty($NewUserTypes) && end($NewUserTypes)['index'] == 1 )
         {
              //region director
              /* setTimeout( function(){
@@ -228,7 +228,7 @@
                 });
             }  , 500 ); */
         }
-        @elseif(isset($NewUserTypes) && ( end($NewUserTypes)['index'] == 2 ))
+        @elseif(isset($NewUserTypes) && !empty($NewUserTypes) && ( end($NewUserTypes)['index'] == 2 ))
         {
             //constituency director
             /* setTimeout( function(){
@@ -304,7 +304,7 @@
                                 $('#electoralarea_id')
                                         .append($("<option></option>")
                                                     .attr("value","all")
-                                                    .text("Select Electral Area"));
+                                                    .text("Select Electoral Area"));
                                 $.each(result, function(key, value) {
                                     $('#electoralarea_id')
                                         .append($("<option></option>")

@@ -153,7 +153,7 @@
                                     </div>
 
                             <div class="form-group">
-                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Electral Area  <span class="required">*</span>
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Electoral Area  <span class="required">*</span>
                                 </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
                                          <select class="form-control" name="electoral_area_id" id="electoralarea_id"  required>
@@ -412,7 +412,7 @@ $("#region_id").on('change', '', function (e) {
                                     $('#electoralarea_id')
                                             .append($("<option></option>")
                                                         .attr("value","Select")
-                                                        .text("Select Electral Area"));
+                                                        .text("Select Electoral Area"));
                                     $.each(result, function(key, value) {
                                         $('#electoralarea_id')
                                             .append($("<option></option>")

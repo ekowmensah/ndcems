@@ -27,7 +27,7 @@
 
                         <th class=" btn-primary">Country Name</th>
                         <th class=" btn-primary">Total Involved Constituency</th>
-                        <th class=" btn-primary">Total Involved Elactral Area's</th>
+                        <th class=" btn-primary">Total Involved Electoral Areas</th>
                         <th class=" btn-primary">Total Involved Polling Station</th>
                         <th class=" btn-primary">Total Involved Voters</th>
                       </tr>

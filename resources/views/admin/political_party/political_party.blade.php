@@ -72,7 +72,7 @@
         mData:null,
         name:"logo",
           "mRender": function (data) {
-            var matches = "/party_logo/"+data.logo;
+            var matches = "{{ asset('party_logo') }}/"+data.logo;
                 match = matches.replace('&quot;', '');
                 match = match.replace('&quot;', '');
            return `

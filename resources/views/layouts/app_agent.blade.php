@@ -4,181 +4,127 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ Auth::user()->name }} : {{ $config['name'] }}</title>
 
-    <title>{{Auth::user()->name}} : {{$config['name']}} </title>
-
-
-
-    <!-- Bootstrap -->
-	<link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
-	<link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css">
-
-
-    <link rel="stylesheet" href="{{ asset('klorofil/assets/vendor/bootstrap/css/bootstrap.min.css') }}">
-	<link rel="stylesheet" href="{{ asset('klorofil/assets/vendor/font-awesome/css/font-awesome.min.css') }}">
-	<link rel="stylesheet" href="{{ asset('klorofil/assets/vendor/linearicons/style.css') }}">
-	<link rel="stylesheet" href="{{ asset('klorofil/assets/vendor/chartist/css/chartist-custom.css') }}">
-	<!-- MAIN CSS -->
-	<link rel="stylesheet" href="{{ asset('klorofil/assets/css/main.css') }}">
-	<!-- FOR DEMO PURPOSES ONLY. You should remove this in your project -->
-	<link rel="stylesheet" href="{{ asset('klorofil/assets/css/demo.css') }}">
-	<!-- GOOGLE FONTS -->
-	<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet">
-
-	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <link href="http://127.0.0.1:8000/gentelella/vendors/bootstrap-daterangepicker/daterangepicker.css" rel="stylesheet">
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="{{ asset('AdminLTE/plugins/fontawesome-free/css/all.min.css') }}">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{{ asset('AdminLTE/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('AdminLTE/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
+    <!-- Daterangepicker -->
+    <link rel="stylesheet" href="{{ asset('AdminLTE/plugins/daterangepicker/daterangepicker.css') }}">
+    <!-- jQuery UI -->
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <!-- overlayScrollbars -->
+    <link rel="stylesheet" href="{{ asset('AdminLTE/plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
+    <!-- AdminLTE -->
+    <link rel="stylesheet" href="{{ asset('AdminLTE/dist/css/adminlte.min.css') }}">
     @yield("css")
 </head>
-<body style="background-image: linear-gradient(black, red, white, green)">
-<div id="custom-bootstrap-menu" class="navbar navbar-default navbar-fixed-top" role="navigation" style="background-image: linear-gradient(black, red, white, green)">
-    <div class="container-fluid">
+<body class="hold-transition layout-top-nav">
+<div class="wrapper">
 
-        <div class="navbar-header"><a class="navbar-brand" href="{{url('/')}}" style="margin:5px;padding:5px;"><img style="width:70px;height:70px;border:15px;border-radius:50%;" border="5" src="/user_logo/{{Auth::user()->photo}}" class="img-responsive" /></a>
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
+        <div class="container">
+            <a href="{{ url('/') }}" class="navbar-brand">
+                <img src="{{ asset('user_logo/' . Auth::user()->photo) }}" alt="User" class="brand-image img-circle elevation-3" style="opacity: .8; max-height:33px;">
+                <span class="brand-text font-weight-light">{{ Auth::user()->name }}</span>
+            </a>
 
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-menubuilder"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            <button class="navbar-toggler order-1" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
             </button>
-        </div>
-        <div class="collapse navbar-collapse navbar-menubuilder">
-            <ul class="nav navbar-nav navbar-right">
 
-                <li><a href="{{route('Agent.election')}}" class="{{ (Request::is('Agent.election') ? 'active' : '') }}"><button btn-warning><i class="lnr lnr-home"></i> Capture Result</button></a></li>
-      <li><a href="{{route('Agent.results')}}" ><i class="fa fa-database"></i> Results</a></li>
-       <li>
-                                <a href="{{ route('logout') }}"
-                                            onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
-                                                     <i class="lnr lnr-exit"></i>  Logout
-                                        </a>
-
-                                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                            {{ csrf_field() }}
-                                        </form>
-        </li>
-            </ul>
-        </div>
-    </div>
-</div>
-<!--<div id="wrapper">
-		<!-- NAVBAR -->
-	<!--	<nav class="navbar navbar-default navbar-fixed-top">
-
-            <nav class="navbar navbar-default navbar-fixed-top">
-			<div class="brand" style="padding:0">
-                <a  href="">
-                    <img src="{{ asset($config['logo']) }}" alt="{{$config['name']}} " style="height:80px;width:190px" class="img-responsive logo">
-                   </a>
-			</div>
-			<div class="container-fluid">
-				<div class="navbar-btn">
-					<button type="button" class="btn-toggle-fullwidth"><i class="lnr lnr-arrow-left-circle"></i></button>
-				</div>
-
-
-				<div id="navbar-menu">
-					<ul class="nav navbar-nav navbar-right">
-
-
-						<li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                 {{-- <span class="img-circle">{{ Auth::user()->name }}</span> --}}
-                                 <p style="display: inline-block !important;margin: 0 0 0px !important; " class="img-circle">{{ Auth::user()->name }}</p>
-                                  <i class="icon-submenu lnr lnr-chevron-down">
-                                    </i>
+            <div class="collapse navbar-collapse order-3" id="navbarCollapse">
+                <!-- Left navbar links -->
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a href="{{ route('Agent.election') }}" class="nav-link {{ Request::is('agent/election*') ? 'active' : '' }}">
+                            <i class="fas fa-vote-yea mr-1"></i> Capture Result
                         </a>
-
-                            <ul class="dropdown-menu">
-                                <li>
-                                <a href="{{ route('logout') }}"
-                                            onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
-                                                     <i class="lnr lnr-exit"></i>  Logout
-                                        </a>
-
-                                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                            {{ csrf_field() }}
-                                        </form>
-                                    </li>
-                                    <li>
-
-                                    </li>
-							</ul>
-						</li>
-						<!-- <li>
-							<a class="update-pro" href="https://www.themeineed.com/downloads/klorofil-pro-bootstrap-admin-dashboard-template/?utm_source=klorofil&utm_medium=template&utm_campaign=KlorofilPro" title="Upgrade to Pro" target="_blank"><i class="fa fa-rocket"></i> <span>UPGRADE TO PRO</span></a>
-						</li> -->
-					</ul>
-				</div>
-			</div>
-        </nav>
-        </nav>
-        <br><br><br>
-    <!--    <div id="sidebar-nav" class="sidebar">
-			<div class="sidebar-scroll">
-				<nav>
-					<ul class="nav">
-						<li><a href="{{route('Agent.election')}}" class="{{ (Request::is('Agent.election') ? 'active' : '') }}"><i class="lnr lnr-home"></i> <span>Capture Result</span></a></li>
-						<li><a href="{{route('Agent.results')}}" ><i class="fa fa-database"></i> <span>Results</span></a></li>
-
-					</ul>
-				</nav>
-			</div>
-		</div> -->
-
-
-
-
-
-
-            <div class="main">
-                    @if(!Request::is('payment-2'))
-                        @if($msg = session("message"))
-                            <div class="alert alert-success alert-dismissible" role="alert">
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">x</span></button>
-                                <i class="fa fa-check-circle"></i> {{$msg}}
-                            </div>
-
-                        @endif
-                        @if($error = session("error"))
-                            <div class="alert alert-danger alert-dismissible" role="alert">
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">x/span></button>
-                                <i class="fa fa-check-circle"></i> {{$error}}
-                            </div>
-                        @endif
-
-                    @endif
-                @yield('content')
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('Agent.results') }}" class="nav-link {{ Request::is('agent/results*') ? 'active' : '' }}">
+                            <i class="fas fa-database mr-1"></i> Results
+                        </a>
+                    </li>
+                </ul>
             </div>
 
+            <!-- Right navbar links -->
+            <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link" data-toggle="dropdown" href="#">
+                        <i class="far fa-user"></i> {{ Auth::user()->name }}
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a href="{{ route('logout') }}" class="dropdown-item"
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                        </a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            {{ csrf_field() }}
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <!-- /.navbar -->
 
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <!-- Main content -->
+        <section class="content pt-3">
+            <div class="container">
+                @if($msg = session("message"))
+                    <div class="alert alert-success alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                        <i class="icon fas fa-check"></i> {{ $msg }}
+                    </div>
+                @endif
+                @if($error = session("error"))
+                    <div class="alert alert-danger alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                        <i class="icon fas fa-ban"></i> {{ $error }}
+                    </div>
+                @endif
 
-	<script src="{{ asset('klorofil/assets/vendor/jquery/jquery.min.js') }}"></script>
-	<script src="{{ asset('klorofil/assets/vendor/bootstrap/js/bootstrap.min.js') }}"></script>
-	<script src="{{ asset('klorofil/assets/vendor/jquery-slimscroll/jquery.slimscroll.min.js') }}"></script>
-	<script src="{{ asset('klorofil/assets/vendor/jquery.easy-pie-chart/jquery.easypiechart.min.js') }}"></script>
-	<script src="{{ asset('klorofil/assets/vendor/chartist/js/chartist.min.js') }}"></script>
-	<script src="{{ asset('klorofil/assets/scripts/klorofil-common.js') }}"></script>
-
-    <script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
-        <!-- Bootstrap JavaScript -->
-        <!-- <script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script> -->
-		<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  @yield("script");
-  <script>
-		$.fn.dataTable.ext.errMode = 'throw';
-	</script>
-    <div class="clearfix"></div>
-        <footer>
-			<div class="container-fluid">
-				<p class="copyright">� 2017  All Rights Reserved.</p>
-			</div>
-        </footer>
+                @yield('content')
+            </div>
+        </section>
     </div>
-    </div>
 
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container">
+            <strong>&copy; {{ date('Y') }} {{ $config['name'] }}.</strong> All rights reserved.
+        </div>
+    </footer>
+</div>
+
+<!-- jQuery -->
+<script src="{{ asset('AdminLTE/plugins/jquery/jquery.min.js') }}"></script>
+<!-- Bootstrap 4 -->
+<script src="{{ asset('AdminLTE/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<!-- DataTables -->
+<script src="{{ asset('AdminLTE/plugins/datatables/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('AdminLTE/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
+<script src="{{ asset('AdminLTE/plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
+<script src="{{ asset('AdminLTE/plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
+<!-- overlayScrollbars -->
+<script src="{{ asset('AdminLTE/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js') }}"></script>
+<!-- jQuery UI -->
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<!-- AdminLTE App -->
+<script src="{{ asset('AdminLTE/dist/js/adminlte.min.js') }}"></script>
+@yield("script")
+<script>
+    $.fn.dataTable.ext.errMode = 'throw';
+</script>
 </body>
 </html>

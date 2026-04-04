@@ -43,7 +43,7 @@
 
                                                     <th>Region Name</th>
                                                     <th>Constituency Name</th>
-                                                    {{-- <th>Elactral Area Name</th>
+                                                    {{-- <th>Electoral Area Name</th>
                                                     <th>Polling Station Name</th> --}}
 
                                                     <th>Added At</th>
@@ -221,7 +221,7 @@
                                 $('#electoralarea_id')
                                         .append($("<option></option>")
                                                     .attr("value","all")
-                                                    .text("Select Electral Area"));
+                                                    .text("Select Electoral Area"));
                                 $.each(result, function(key, value) {
                                     $('#electoralarea_id')
                                         .append($("<option></option>")

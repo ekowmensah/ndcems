@@ -75,7 +75,14 @@ class UserController extends Controller
         if($id!="all"){
             $UserTypes = UserType::where('id','=',$id)->get();
             $_UserTypes = UserType::where('id','<=',$id)->get();
-
+            $Users = User::select('users.created_at','users.name as user_name','users.id as user_id','user_type.id as user_type_id','user_type.name as user_type_name')
+                ->join('user_type','user_type.id','=','users.user_type_id')
+                ->where('user_type.id', $id)
+                ->get();
+        } else {
+            $Users = User::select('users.created_at','users.name as user_name','users.id as user_id','user_type.id as user_type_id','user_type.name as user_type_name')
+                ->join('user_type','user_type.id','=','users.user_type_id')
+                ->get();
         }
 
 

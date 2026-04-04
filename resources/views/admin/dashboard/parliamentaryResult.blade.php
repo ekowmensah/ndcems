@@ -35,7 +35,7 @@
                 <tr>
                   <th>Constituency Name</th>
                   <th>Region Name</th>
-                  <th>Total Elactral Area's</th>
+                  <th>Total Electoral Areas</th>
                   <th>Total Polling Station</th>
                   <th>Total Voters</th>
                   <th></th>

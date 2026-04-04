@@ -224,7 +224,7 @@ Route::group(['prefix' =>"director",'namespace'=>'Director','as' => 'Director.']
     Route::group(['middleware' => ['auth','director']], function () {
         Route::get('/election',  'AgentController@election')->name("election");
         Route::post('/election',  'AgentController@electionPost')->name("electionPost");
-        Route::get('/home/{election_start_up}/{election_result_id?}/{polling_station_id?}',  'AgentController@index')->name("Home");
+        Route::get('/home/{election_start_up}/{polling_station?}/{election_result_id?}',  'AgentController@index')->name("Home");
         Route::post('/result-capture/{election_start_up}',  'AgentController@captureResult')->name("CaptureResult");
 
 
@@ -285,7 +285,7 @@ Route::group(['prefix' =>"director",'namespace'=>'Director','as' => 'Director.']
         Route::get('/view-result/{election_start_up}/{election_result_id?}',  'PollingAgentController@viewResults')->name("viewResults");
         Route::get('/confirm-result/{id}','PollingAgentController@confirmResults')->name('confirmResults');
 
-        Route::get('/home/{election_start_up}/{election_result_id?}/{user_id?}',  'PollingAgentController@editResult')->name("editResult");
+        Route::get('/edit-result/{election_start_up}/{election_result_id?}/{user_id?}',  'PollingAgentController@editResult')->name("editResult");
         Route::post('/result-capture/{election_start_up}/{user_id?}',  'PollingAgentController@captureResult')->name("CaptureResult");
 
         //        Route::get('/region-result',  'ContentController@Presidential')->name("Regional");

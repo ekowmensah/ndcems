@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Ghana Electoral System'),
+    'name' => env('APP_NAME', 'NDC Elections Management System'),
 
     /*
     |--------------------------------------------------------------------------

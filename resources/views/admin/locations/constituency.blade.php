@@ -36,7 +36,7 @@
                   <th>Constituency</th>
                   <th>Region</th>
                {{--    <th>Country Name</th> --}}
-                  <th>Total Electoral Area's</th>
+                  <th>Total Electoral Areas</th>
                   <th>Total Polling Station</th>
                   <th>Registered Voters</th>
                   <th></th>

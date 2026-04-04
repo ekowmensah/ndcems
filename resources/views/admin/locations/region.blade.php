@@ -36,7 +36,7 @@
                 <tr>
                   <th>Region</th>
                   <th>Total Constituency</th>
-                  <th>Total Elactral Area's</th>
+                  <th>Total Electoral Areas</th>
                   <th>Total Polling Station</th>
                   <th>Registered Voters</th>
                   <th></th>

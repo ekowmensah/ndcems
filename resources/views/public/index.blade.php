@@ -104,7 +104,7 @@
     <div class="row" style="margin:5px;">
         <div class="col-sm-12 border" style="background-color: #327a81; border: 0.5px solid grey; text-align:center;">
 
-        <div class="col-md-1 center-block" style="text-align:center;"><a href="/candidate_logo/{{$election->photo}}" data-toggle="modal" data-target="/candidate_logo/{{$election->photo}}"><img src="/candidate_logo/{{$election->photo}}"
+        <div class="col-md-1 center-block" style="text-align:center;"><a href="{{ asset('candidate_logo/'.$election->photo) }}" data-toggle="modal" data-target="{{ asset('candidate_logo/'.$election->photo) }}"><img src="{{ asset('candidate_logo/'.$election->photo) }}"
                 alt="{{$election->first_name}} {{$election->last_name}}" title="{{$election->first_name}} {{$election->last_name}}"  width="90" class="img-circle" height="90" /></a></div>
         <div class="col-md-3" style="padding:20px 0 10px 0"><h4> <strong>{{$election->first_name}} {{$election->last_name}}</strong> </h4></div>
         <div class="col-md-4"><div style="padding:20px 0 10px 0">
@@ -212,7 +212,7 @@
                     <div class="row" style="margin:5px;">
                         <div class="col-sm-12 border" style="background-color: #327a81; border: 0.5px solid grey; text-align:center;">
 
-                        <div class="col-md-1 center-block" style="text-align:center;"><a href="/candidate_logo/${item.photo}" data-toggle="modal" data-target="/candidate_logo/${item.photo}"><img src="/candidate_logo/${item.photo}"
+                        <div class="col-md-1 center-block" style="text-align:center;"><a href="{{ asset('candidate_logo') }}/${item.photo}" data-toggle="modal" data-target="{{ asset('candidate_logo') }}/${item.photo}"><img src="{{ asset('candidate_logo') }}/${item.photo}"
                                 alt="${item.first_name} ${item.last_name}" title="${item.first_name} ${item.last_name}"  width="90" class="img-circle" height="90" /></a></div>
                         <div class="col-md-3" style="padding:20px 0 10px 0"><h4> <strong>${item.first_name} ${item.last_name}</strong> </h4></div>
                         <div class="col-md-4"><div style="padding:20px 0 10px 0">
@@ -320,7 +320,7 @@
                                     $('#electoralarea_id')
                                             .append($("<option></option>")
                                                         .attr("value","all")
-                                                        .text("Select Electral Area"));
+                                                        .text("Select Electoral Area"));
                                     $.each(result, function(key, value) {
                                         $('#electoralarea_id')
                                             .append($("<option></option>")

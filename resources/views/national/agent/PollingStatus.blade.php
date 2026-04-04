@@ -21,7 +21,7 @@
           <div class="x_title">
                 <select style="width:25vh; float:right" class="form-control filter" name="electoralarea_id" id="electoralarea_id"  required>
 
-                        <option value="all" >Electral Area's (All)<option>
+                        <option value="all" >Electoral Areas (All)<option>
                             @foreach ($countries as $electionType)
                                 <option value="{{$electionType->id}}"  >{{$electionType->name}}<option>
                             @endforeach
@@ -136,7 +136,7 @@
                                     $('#electoralarea_id')
                                             .append($("<option></option>")
                                                         .attr("value","Select")
-                                                        .text("Select Electral Area"));
+                                                        .text("Select Electoral Area"));
                                     $.each(result, function(key, value) {
                                         $('#electoralarea_id')
                                             .append($("<option></option>")

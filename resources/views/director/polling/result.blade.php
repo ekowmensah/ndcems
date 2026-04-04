@@ -154,10 +154,7 @@
                     edit = edit.replace(':number1', data.election_result_id);
                 var xlx = "{{ route('Director.resultsXlx',':number') }}";
                     xlx = xlx.replace(':number', data.election_result_id);
-                    /* if(data.election_result_user_id)
-                        edit = edit.replace(':userId', data.election_result_user_id);
-                    else */
-                        edit = edit.replace(':userId', data.id);
+                        edit = edit.replace(':userId', data.election_result_user_id || data.id);
 
 
                 if(data.verify_by_constituency==0){

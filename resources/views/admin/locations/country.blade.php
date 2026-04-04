@@ -34,7 +34,7 @@
                   <th>Country Code</th>
                   <th>Country Name</th>
                   <th>Total Constituency</th>
-                  <th>Total Elactral Area's</th>
+                  <th>Total Electoral Areas</th>
                   <th>Total Polling Station</th>
                   <th>Total Voters</th>
                 </tr>

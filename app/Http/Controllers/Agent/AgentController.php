@@ -29,7 +29,7 @@ class AgentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($election_start_up,$election_result_id=false , Request $request)
+    public function index($election_start_up, Request $request, $election_result_id=false)
     {
 
 
@@ -301,7 +301,7 @@ class AgentController extends Controller
        // dd( $electionResults->toArray());
             return view('agent.home.results',compact('electionResults'));
     }
-    public function viewResults($election_start_up,$election_result_id=false , Request $request)
+    public function viewResults($election_start_up, Request $request, $election_result_id=false)
     {
 
         $user = User::select(

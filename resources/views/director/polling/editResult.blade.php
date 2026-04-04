@@ -30,25 +30,25 @@
                                         </div>
 
                                         <div class="col-md-4">
-                                                <strong> User Type : </strong> {{$user->user_type_name}}
+                                                <strong> User Type : </strong> {{$user->user_type_name ?? 'N/A'}}
                                         </div>
                                         <div class="col-md-4">
-                                                <strong>Polling Station Name : </strong>{{$user->PollingStation_name}}
+                                                <strong>Polling Station Name : </strong>{{$user->PollingStation_name ?? 'N/A'}}
                                         </div>
                                         <div class="col-md-4">
-                                                <strong>Polling Station Code : </strong> {{$user->PollingStation_Id}}
+                                                <strong>Polling Station Code : </strong> {{$user->PollingStation_Id ?? 'N/A'}}
                                         </div>
                                         <div class="col-md-12">
                                             <br>
                                         </div>
                                         <div class="col-md-4">
-                                                <strong> Region : </strong> {{$user->region_name}}
+                                                <strong> Region : </strong> {{$user->region_name ?? 'N/A'}}
                                         </div>
                                         <div class="col-md-4">
-                                                <strong>Constituency : </strong>{{$user->constituency_name}}
+                                                <strong>Constituency : </strong>{{$user->constituency_name ?? 'N/A'}}
                                         </div>
                                         <div class="col-md-4">
-                                                <strong>Electoral Area  : </strong> {{$user->ElectoralArea_name}}
+                                                <strong>Electoral Area  : </strong> {{$user->ElectoralArea_name ?? 'N/A'}}
                                         </div>
                                 </div>
                             </div>

@@ -30,14 +30,23 @@ class AgentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($election_start_up,$election_result_id=false ,$polling_station_id=false, Request $request)
+    public function index($election_start_up, Request $request, $polling_station=false, $election_result_id=false)
     {
-        if($polling_station_id=="null"){
+        if($polling_station){
+            $polling_station_id = (int) $polling_station;
+            $pollingStation = PollingStation::find($polling_station_id);
+        } elseif($election_result_id){
             $electionResult = ElectionResult::find($election_result_id);
             $polling_station_id = $electionResult->polling_station_id;
+            $pollingStation = PollingStation::find($polling_station_id);
+        } else {
+            $request->session()->flash('error', 'Please select a polling station.');
+            return redirect(route("Director.election"));
         }
-        $pollingStation = PollingStation::find($polling_station_id);
-        ///dd($polling_station_id);
+        if(!$pollingStation){
+            $request->session()->flash('error', 'Polling station not found.');
+            return redirect(route("Director.election"));
+        }
 
         /* $user = User::select(
             'users.username',
@@ -60,7 +69,8 @@ class AgentController extends Controller
         ->join('constituency','constituency.id','=','users.constituency_id')
         ->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
         ->join('PollingStation','PollingStation.id','=','users.polling_station_id')->first(); */
-        $polling = PollingStation::find($polling_station_id);
+        $user = Auth::user();
+        $polling = $pollingStation;
         $electionStartupDetail = ElectionStartupDetail::select('election_type.name','election_startup_detail.*')
             ->join('election_type','election_type.id','=','election_startup_detail.election_type_id')
             ->where("election_startup_detail.id",$election_start_up)
@@ -298,7 +308,9 @@ class AgentController extends Controller
     }
     public function electionPost(Request $request){
             //dd($request->all());
-           return redirect(route('Director.Home',[$request->input('election_start_update'),'null',$request->input('polling_station_id')]));
+           $station = PollingStation::find($request->input('polling_station_id'));
+           $slug = $station->id . '-' . str_replace(' ', '-', $station->name);
+           return redirect(route('Director.Home',[$request->input('election_start_update'), $slug]));
     }
 
     public function results(){
@@ -323,7 +335,7 @@ class AgentController extends Controller
         //dd( $electionResults->toArray());
             return view('agent.home.results',compact('electionResults'));
     }
-    public function viewResults($election_start_up,$election_result_id=false , Request $request)
+    public function viewResults($election_start_up, Request $request, $election_result_id=false)
     {
 
         $user = User::select(

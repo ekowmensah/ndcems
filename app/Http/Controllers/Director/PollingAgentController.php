@@ -377,7 +377,7 @@ class PollingAgentController extends Controller
         $dataPoints = $dataPoint1;
         return view("region.home.presidentialResultView",compact('constituency_detail','dataPoints'));
     }
-    public function viewResults($election_start_up,$election_result_id=false , Request $request)
+    public function viewResults($election_start_up, Request $request, $election_result_id=false)
     {
 
         $user = User::select(
@@ -448,6 +448,7 @@ class PollingAgentController extends Controller
             $parties = $parties->whereNull('candidates.electoral_area_id');
         }
         $parties = $parties->get(); */
+        $parties = collect();
 
         $electionResult = ElectionResult::select(
             "party_election_result.party_id as party_election_result_party_id",
@@ -512,31 +513,37 @@ class PollingAgentController extends Controller
         return redirect()->back();
     }
 
-    public function editResult($election_start_up,$election_result_id=false ,$user_id ,Request $request)
+    public function editResult($election_start_up, Request $request, $election_result_id=false, $user_id=false)
     {
+        if(!$user_id){
+            $result = ElectionResult::find($election_result_id);
+            $user_id = $result ? $result->user_id : null;
+        }
 
-
-        $user = User::select(
-            'users.username',
-            'users.secret',
-            'users.created_at',
-            'users.name as user_name',
-            'users.id as user_id',
-            'user_type.id as user_type_id',
-            'user_type.name as user_type_name',
-            'region.name as region_name',
-            "constituency.name as constituency_name",
-            "PollingStation.name as PollingStation_name",
-            "ElectoralArea.name as ElectoralArea_name",
-            "PollingStation.polling_station_id as PollingStation_Id",
-            "PollingStation.total_voters"
-        )
-        ->where('users.id', $user_id)
-        ->join('user_type','user_type.id','=','users.user_type_id')
-        ->join('region','region.id','=','users.region_id')
-        ->join('constituency','constituency.id','=','users.constituency_id')
-        ->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-        ->join('PollingStation','PollingStation.id','=','users.polling_station_id')->first();
+        $user = null;
+        if($user_id){
+            $user = User::select(
+                'users.username',
+                'users.secret',
+                'users.created_at',
+                'users.name as user_name',
+                'users.id as user_id',
+                'user_type.id as user_type_id',
+                'user_type.name as user_type_name',
+                'region.name as region_name',
+                "constituency.name as constituency_name",
+                "PollingStation.name as PollingStation_name",
+                "ElectoralArea.name as ElectoralArea_name",
+                "PollingStation.polling_station_id as PollingStation_Id",
+                "PollingStation.total_voters"
+            )
+            ->where('users.id', $user_id)
+            ->leftJoin('user_type','user_type.id','=','users.user_type_id')
+            ->leftJoin('region','region.id','=','users.region_id')
+            ->leftJoin('constituency','constituency.id','=','users.constituency_id')
+            ->leftJoin('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
+            ->leftJoin('PollingStation','PollingStation.id','=','users.polling_station_id')->first();
+        }
 
         $electionStartupDetail = ElectionStartupDetail::select('election_type.name','election_startup_detail.*')
             ->join('election_type','election_type.id','=','election_startup_detail.election_type_id')
@@ -733,7 +740,7 @@ class PollingAgentController extends Controller
         }
         return redirect()->back();
     }
-    public function resultsXlx($election_start_up,$election_result_id=false , Request $request){
+    public function resultsXlx($election_start_up, Request $request, $election_result_id=false){
         $user = User::select(
             'users.username',
             'users.secret',

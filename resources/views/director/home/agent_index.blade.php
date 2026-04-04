@@ -41,12 +41,12 @@
                                         <div class="col-md-12">
                                             <br>
                                         </div>
-                                        <input type="hidden" name="polling_station_id" value="{{$polling->id}}">
+                                        <input type="hidden" name="polling_station_id" value="{{$polling->id ?? ''}}">
                                         <input type="hidden" name="electoral_area_id" value="{{@$polling->electoralarea_id}}">
                                         <input type="hidden" name="constituency_id" value="{{@$polling->constituency_id}}">
                                         <input type="hidden" name="region_id" value="{{@$polling->region_id}}">
                                         <input type="hidden" name="country_id" value="{{@$polling->country_id}}">
-                                        @if($election_result_id=="null" && isset($electionResult->toArray()[0]['id']))
+                                        @if(!$election_result_id && isset($electionResult->toArray()[0]['id']))
 
                                             <input type="hidden" name="election_result_id" value="{{$electionResult->toArray()[0]['id']}}">
 

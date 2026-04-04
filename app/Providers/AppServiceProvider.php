@@ -29,9 +29,9 @@ class AppServiceProvider extends ServiceProvider
                     }
             }else{
                 $result = [
-                    "name"=>"Ghana Electoral System",
+                    "name"=>"NDC Elections Management System",
                     "url"=> " ",
-                    "from_email"=>"support@ghanaelectro.com",
+                    "from_email"=>"support@ndcgh.com",
                     "from_email_title"=>" ",
                     "logo" => "img/logo.png",
                     "SuperAdminUrlPrefix" => "admin",
@@ -40,17 +40,21 @@ class AppServiceProvider extends ServiceProvider
             }
         }catch(\Exception $e){
             $result = [
-                "name"=>"Ghana Electoral System",
+                "name"=>"NDC Elections Management System",
                 "url"=> " ",
-                "from_email"=>"support@ghanaelectro.com",
+                "from_email"=>"support@ndcgh.com",
                 "from_email_title"=>" ",
                 "logo" => "img/logo.png",
                 "SuperAdminUrlPrefix" => "admin",
                 //"logo2" => " "
             ];
         }
-        $Type = UserType::all();
-        $Type = $Type->toArray();
+        try {
+            $Type = UserType::all();
+            $Type = $Type->toArray();
+        } catch(\Exception $e) {
+            $Type = [];
+        }
 
         view()->composer('*', function ($view) use($Type) {
             $view->with('UTypes', $Type);
@@ -62,8 +66,12 @@ class AppServiceProvider extends ServiceProvider
 
         config(['config' => $result]);
 
-        $ElectionType = ElectionType::all();
-        $__electionTypes = $ElectionType->toArray();
+        try {
+            $ElectionType = ElectionType::all();
+            $__electionTypes = $ElectionType->toArray();
+        } catch(\Exception $e) {
+            $__electionTypes = [];
+        }
 
         view()->composer('*', function ($view) use($__electionTypes) {
             $view->with('__electionTypes', $__electionTypes);
