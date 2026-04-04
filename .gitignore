@@ -19,3 +19,4 @@ menswebg_collation.sql
 .gitignore
 ecollation.zip
 backup_before_theme_change.zip
+resources/views/public/index.blade.php

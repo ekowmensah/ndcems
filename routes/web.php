@@ -30,10 +30,10 @@
        Artisan::call('migrate');
     });
     Route::get('/', function () {
-        return redirect(route("parliment"));
+        return redirect(route("parliament"));
     });
-    Route::get('parliment/{id?}','PublicController@parliment')->name('parliment');
-    Route::get('presidient/{id?}','PublicController@presidient')->name('presidient');
+    Route::get('parliament/{id?}','PublicController@parliament')->name('parliament');
+    Route::get('president/{id?}','PublicController@president')->name('president');
     Route::post('result-ajax','PublicController@ajaxResult')->name('ajaxResult');
     Route::post('result-count-ajax','PublicController@ajaxCountResult')->name('ajaxCountResult');
 

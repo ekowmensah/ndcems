@@ -30,8 +30,8 @@
         <div class="collapse navbar-collapse navbar-menubuilder">
             <ul class="nav navbar-nav navbar-right">
 
-                <li class=" {{ (Request::is('parliment') ? 'active' : '') }}"><a class="card-header card-header-primary text-center card-title" href="{{route('parliment')}}">Parliamentary Results</a></li>
-      <li class=" {{ (Request::is('presidient') ? 'active' : '') }}"><a class="card-header card-header-primary text-center card-title" href="{{route('presidient')}}">Presidential Results</a></li>
+                <li class=" {{ (Request::is('parliament') ? 'active' : '') }}"><a class="card-header card-header-primary text-center card-title" href="{{route('parliament')}}">Parliamentary Results</a></li>
+      <li class=" {{ (Request::is('president') ? 'active' : '') }}"><a class="card-header card-header-primary text-center card-title" href="{{route('president')}}">Presidential Results</a></li>
       <li> <a class="card-header card-header-primary text-center card-title" href="{{ route('login') }}">{{ __('Login') }}</a></li>
             </ul>
         </div>

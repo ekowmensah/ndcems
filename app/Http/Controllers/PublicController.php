@@ -22,7 +22,7 @@ class PublicController extends Controller
         $data = json_encode($request->all());
         file_put_contents($path,$data);
     }
-    public function parliment($id=false)
+    public function parliament($id=false)
     {
         $electionTypes = ElectionType::all();
 
@@ -131,7 +131,7 @@ class PublicController extends Controller
             $all_polling_count = PollingStation::select('polling_station_id')->count();
         return view('public.index',compact('polling_count','all_polling_count','regions','dataPoints','allElectionResults','colors','electionStartupDetail','id','newElectionType'));
     }
-    public function presidient($id=false)
+    public function president($id=false)
     {
         $electionTypes = ElectionType::all();
 
