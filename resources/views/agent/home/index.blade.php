@@ -1,324 +1,390 @@
 @extends('layouts.app_agent')
+@section('css')
+<style>
+    :root {
+        --ndc-green: #006B3F;
+        --ndc-green-dark: #004D2E;
+        --ndc-red: #CE1126;
+        --ndc-gold: #FCD116;
+        --ndc-black: #1a1a1a;
+    }
+    .station-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+    .station-card .card-header {
+        background: linear-gradient(135deg, var(--ndc-green), var(--ndc-green-dark));
+        color: #fff;
+        padding: 14px 16px;
+        border: none;
+        cursor: pointer;
+    }
+    .station-card .card-header h5 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+    .station-card .card-body { padding: 16px; }
+    .station-detail {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .station-detail .detail-item {
+        flex: 1 1 calc(50% - 8px);
+        min-width: 140px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 0.82rem;
+    }
+    .station-detail .detail-item .label {
+        color: #888;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: block;
+    }
+    .station-detail .detail-item .value {
+        color: var(--ndc-black);
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    .results-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+    .results-card .card-header {
+        background: #fff;
+        border-bottom: 3px solid var(--ndc-green);
+        padding: 14px 16px;
+    }
+    .results-card .card-header h5 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--ndc-black);
+    }
+    .candidate-row {
+        display: flex;
+        align-items: center;
+        padding: 10px 16px;
+        border-bottom: 1px solid #f0f0f0;
+        gap: 10px;
+    }
+    .candidate-row:last-of-type { border-bottom: none; }
+    .candidate-row .sn {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--ndc-green);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .candidate-row .candidate-info {
+        flex: 1;
+        min-width: 0;
+    }
+    .candidate-row .candidate-name {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--ndc-black);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .candidate-row .party-tag {
+        display: inline-block;
+        background: #e8f5e9;
+        color: var(--ndc-green);
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 4px;
+        letter-spacing: 0.3px;
+    }
+    .candidate-row .vote-input {
+        width: 100px;
+        flex-shrink: 0;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 10px 8px;
+        font-size: 16px;
+        font-weight: 700;
+        text-align: center;
+        transition: border-color 0.3s;
+    }
+    .candidate-row .vote-input:focus {
+        border-color: var(--ndc-green);
+        box-shadow: 0 0 0 0.15rem rgba(0,107,63,0.15);
+        outline: none;
+    }
+    .summary-section {
+        background: #f8f9fa;
+        border-radius: 0 0 12px 12px;
+        padding: 16px;
+    }
+    .summary-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e8e8e8;
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row .summary-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #444;
+    }
+    .summary-row .summary-label .badge-letter {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #fff;
+    }
+    .badge-a { background: var(--ndc-green); }
+    .badge-b { background: var(--ndc-red); }
+    .badge-c { background: var(--ndc-black); }
+    .summary-row .summary-input {
+        width: 100px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 8px;
+        font-size: 16px;
+        font-weight: 700;
+        text-align: center;
+        background: #fff;
+    }
+    .summary-row .summary-input:focus {
+        border-color: var(--ndc-green);
+        box-shadow: 0 0 0 0.15rem rgba(0,107,63,0.15);
+        outline: none;
+    }
+    .summary-row .summary-input[disabled],
+    .summary-row .summary-input[readonly] {
+        background: #e9ecef;
+        color: #333;
+    }
+    .action-bar {
+        position: sticky;
+        bottom: 0;
+        background: #fff;
+        border-top: 1px solid #e0e0e0;
+        padding: 12px 16px;
+        display: flex;
+        gap: 10px;
+        box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+        border-radius: 12px 12px 0 0;
+        z-index: 100;
+    }
+    .btn-ndc-submit {
+        flex: 2;
+        background: linear-gradient(135deg, var(--ndc-green), var(--ndc-green-dark));
+        border: none;
+        color: #fff;
+        padding: 14px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+    .btn-ndc-submit:hover, .btn-ndc-submit:focus {
+        background: linear-gradient(135deg, var(--ndc-green-dark), var(--ndc-black));
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,107,63,0.3);
+    }
+    .btn-ndc-reset {
+        flex: 1;
+        border: 2px solid #e0e0e0;
+        background: #fff;
+        color: #555;
+        padding: 14px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+    .btn-ndc-reset:hover { border-color: var(--ndc-red); color: var(--ndc-red); }
+
+    @media (max-width: 576px) {
+        .candidate-row { flex-wrap: wrap; padding: 12px; }
+        .candidate-row .vote-input { width: 100%; margin-top: 6px; }
+        .candidate-row .candidate-info { flex: 1 1 calc(100% - 40px); }
+        .station-detail .detail-item { flex: 1 1 100%; }
+        .summary-row { flex-wrap: wrap; gap: 6px; }
+        .summary-row .summary-input { width: 100%; }
+    }
+</style>
+@endsection
 @section('content')
 
+<div class="container pb-5">
+    <form action="{{ route('Agent.CaptureResult', $election_start_up) }}" method="POST" id="terminal-form">
+        @csrf
 
-        <!-- MAIN CONTENT -->
-        <form action="{{route('Agent.CaptureResult',$election_start_up)}}" method="POST" id="terminal-form" class="form-horizontal form-label-left input_mask">
-            @csrf
-            <div >
-                
-               <div class="container-fluid">
-                    
-                   <br>
-                   <!-- Button trigger modal -->
-<button type="button" class="" data-toggle="modal" data-target="#details">
-   VIEW ELECTION DETAILS
-</button>
- 
-<!-- Modal -->
-<div class="d-flex align-items-center" >
-<div class="modal fade" id="details" tabindex="-1" role="dialog" aria-labelledby="detailsLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="detailsLabel"></h4>
-      </div>
-      <div class="modal-body" style="background-image: linear-gradient(black, red, white, green)">
-        <div class="col-md-12">
-                            <div class="panel" style="background-color: aliceblue;">
-                                <div class="panel-heading">
-                                    <h1 class="panel-title"><strong>Polling Station Detail</strong></h1>
-                                </div>
-                                <div class="panel-body">
-                                        <div class="col-md-4">
-                                                <strong>Election Name: </strong> {{$electionStartupDetail->election_name}}
-                                        </div>
-                                        <div class="col-md-4">
-                                                <strong>Election Type: </strong>{{$electionStartupDetail->name}}
-                                        </div>
-                                        <div class="col-md-4">
-                                        </div>
-                                        <div class="col-md-12">
-                                            <br>
-                                        </div>
-
-                                        <div class="col-md-4">
-                                                <strong>Logged In as: </strong> {{$user->user_type_name}}
-                                        </div>
-                                        <div class="col-md-4">
-                                                <strong>Polling Station Name: </strong>{{$user->PollingStation_name}}
-                                        </div>
-                                        <div class="col-md-4">
-                                                <strong>Polling Station Code: </strong> {{$user->PollingStation_Id}}
-                                        </div>
-                                        <div class="col-md-12">
-                                            <br>
-                                        </div>
-                                        <div class="col-md-4">
-                                                <strong>Region: </strong> {{$user->region_name}}
-                                        </div>
-                                        <div class="col-md-4">
-                                                <strong>Constituency: </strong>{{$user->constituency_name}}
-                                        </div>
-                                        <div class="col-md-4">
-                                                <strong>Electoral Area: </strong> {{$user->ElectoralArea_name}}
-                                        </div>
-                                </div>
-                            </div>
-                        </div> 
-      </div>
-      <div class="modal-footer">
-      </div>
-    </div>
-  </div>
-</div>
-</div>
-                    <div class="row">
-
-                        
-
-                            <div class="col-md-12">
-                                    <div class="panel">
-                                        {{-- <div class="panel-heading">
-                                            <h3 class="panel-title">Details</h3>
-                                        </div> --}}
-                                        <div class="panel-body" style="border: 6px solid #f1f8ff; text-align:center;">
-
-                                                <div class="col-md-1" style="background-color:#86c1fb">
-                                                        <strong>S/N</strong>
-                                                </div>
-                                                <div class="col-md-4" style="background-color:#86c1fb">
-                                                        <strong>Name Of Candidate  </strong>
-                                                </div>
-                                                <div class="col-md-3" style="background-color:#86c1fb">
-                                                        <strong>Party Initial</strong>
-                                                </div>
-                                                <div class="col-md-4" style="background-color:#86c1fb">
-                                                        <strong>Votes Obtained </strong>
-                                                </div>
-                                                <div class="col-md-12">
-                                                    <br>
-                                                </div>
-                                                @if($electionResult && isset($electionResult) && count($electionResult)!=0)
-                                                    @foreach($electionResult as $key=> $_electionResult)
-                                                    <div class="col-md-12">
-                                                            <div class="col-md-1">
-                                                                    <strong>{{$key+1}}</strong>
-                                                            </div>
-                                                            <div class="col-md-4">
-                                                                    <strong>{{$_electionResult->first_name}} {{$_electionResult->last_name}}</strong>
-                                                            </div>
-                                                            <div class="col-md-3">
-                                                                    <strong>{{$_electionResult->party_initial}}</strong>
-                                                            </div>
-                                                            <div class="col-md-4">
-                                                                    <div class="form-group">
-
-                                                                            <input value="{{$_electionResult->party_election_result_obtained_vote}}"  name="party[][{{$_electionResult->party_election_result_party_id}}][{{$_electionResult->party_election_result_candidate_id}}]" type="number" class="form-control has-feedback-left party_vote" tabindex="1" data-required-error=""  id="first_name" placeholder="Obtained Votes" required>
-
-                                                                        </div>
-                                                            </div>
-                                                    </div>
-                                                    @endforeach
-
-                                                    {{-- <div class="col-md-12">
-                                                            <div class="col-md-4">
-                                                                    <div class="form-group">
-                                                                            <label>Rejected Vote</label>
-                                                                            <input value="{{$electionResult->toArray()[0]['total_rejected_ballot']}}" type="text" class="form-control has-feedback-left" tabindex="1" data-required-error=""  name="total_rejected_ballot"  placeholder="Rejected Vote" required>
-                                                                            <div class="help-block with-errors"></div>
-                                                                        </div>
-                                                            </div>
-                                                    </div> --}}
-                                                    <div class="col-md-1" >
-                                                            <strong>A</strong>
-                                                    </div>
-                                                    <div class="col-md-4" >
-                                                            <strong>Total Valid Votes  </strong>
-                                                    </div>
-                                                    <div class="col-md-3" >
-                                                            <strong></strong>
-                                                    </div>
-                                                    <div class="col-md-4" >
-                                                            <input value="{{$electionResult->toArray()[0]['total_ballot'] - $electionResult->toArray()[0]['total_rejected_ballot']}}"  type="text" class="form-control has-feedback-left" tabindex="1" data-required-error="" id="total1111"  name="total1111"  placeholder="Total Vote" disabled>
-
-                                                    </div>
-                                                    <div class="col-md-12" >
-                                                          <br>
-                                                    </div>
-                                                    <div class="col-md-1" >
-                                                            <strong>B</strong>
-                                                    </div>
-                                                    <div class="col-md-4" >
-                                                            <strong >Rejected Ballots</strong>
-                                                    </div>
-                                                    <div class="col-md-3" >
-
-                                                            <strong ></strong>
-                                                    </div>
-                                                    <div class="col-md-4" >
-                                                            <input value="{{$electionResult->toArray()[0]['total_rejected_ballot']}}" type="text" class="form-control has-feedback-left total_rejected_ballot" tabindex="1" data-required-error=""  name="total_rejected_ballot"  placeholder="Rejected Vote" required>
-                                                    </div>
-                                                    <div class="col-md-12">
-                                                            <br>
-                                                      </div>
-                                                      <div class="col-md-1" >
-                                                              <strong>C</strong>
-                                                      </div>
-                                                      <div class="col-md-4" >
-                                                              <strong>Total Vote In Ballot Box </strong>
-                                                      </div>
-                                                      <div class="col-md-3" >
-                                                              <strong></strong>
-                                                      </div>
-                                                      <div class="col-md-4" >
-                                                            <input value="{{$electionResult->toArray()[0]['total_ballot']}}"  type="text" class="form-control has-feedback-left" tabindex="1" data-required-error="" id="total_total"  name="total_total"  placeholder="Total Vote" disabled >
-
-                                                      </div>
-                                                    {{-- <div class="col-md-12">
-
-                                                            <div class="col-md-4">
-                                                                    <div class="form-group">
-                                                                            <label>Total Votes at Polling Station</label>
-                                                                            <input value="{{$electionResult->toArray()[0]['total_ballot']}}" type="text" class="form-control has-feedback-left" tabindex="1" data-required-error=""  name="total_ballot" placeholder="Total  Votes" required>
-                                                                            <div class="help-block with-errors"></div>
-                                                                        </div>
-                                                            </div>
-
-
-                                                    </div> --}}
-                                                @else
-                                                    @foreach($parties as $key => $party)
-                                                    {{-- <input type="hidden" name="candidate_id[]" value="{{$party->candidate_id}}">
-                                                    <input type="hidden" name="political_party_id[]" value="{{$party->political_party_id}}"> --}}
-                                                    <div  class="col-md-12">
-                                                            <div class="col-md-1">
-                                                                    <strong>{{$key+1}}</strong>
-                                                            </div>
-                                                            <div class="col-md-4">
-                                                                    <strong>{{$party->first_name}} {{$party->last_name}}</strong>
-                                                            </div>
-                                                            <div class="col-md-3">
-                                                                    <strong>{{$party->party_initial}}</strong>
-                                                            </div>
-                                                            <div class="col-md-4">
-                                                                    <div class="form-group">
-
-                                                                            <input  name="party[][{{$party->political_party_id}}][{{$party->candidate_id}}]" type="text" class="form-control has-feedback-left party_vote" tabindex="1" data-required-error=""  id="first_name" placeholder="Obtained Votes" required>
-
-                                                                        </div>
-                                                            </div>
-
-                                                    </div>
-                                                    @endforeach
-
-                                                    {{-- <div class="col-md-12">
-
-                                                            <div class="col-md-4">
-                                                                    <div class="form-group">
-                                                                            <label>Rejected Vote</label>
-                                                                            <input type="text" class="form-control has-feedback-left" tabindex="1" data-required-error=""  name="total_rejected_ballot"  placeholder="Rejected Vote" required>
-                                                                            <div class="help-block with-errors"></div>
-                                                                        </div>
-                                                            </div>
-
-                                                    </div> --}}
-
-                                                    <div class="col-md-1" >
-                                                            <strong>A</strong>
-                                                    </div>
-                                                    <div class="col-md-4" >
-                                                            <strong>Total Valid Votes  </strong>
-                                                    </div>
-                                                    <div class="col-md-3" >
-                                                            <strong></strong>
-                                                    </div>
-                                                    <div class="col-md-4" >
-                                                            <input  type="text" class="form-control has-feedback-left" tabindex="1" data-required-error="" id="total1111"  name="total1111"  placeholder="Total Vote" readonly>
-
-                                                    </div>
-                                                    <div class="col-md-12" >
-                                                          <br>
-                                                    </div>
-                                                    <div class="col-md-1" >
-                                                            <strong>B</strong>
-                                                    </div>
-                                                    <div class="col-md-4" >
-                                                            <strong >Rejected Ballots</strong>
-                                                    </div>
-                                                    <div class="col-md-3" >
-
-                                                            <strong ></strong>
-                                                    </div>
-                                                    <div class="col-md-4" >
-                                                            <input  type="text" class="form-control has-feedback-left total_rejected_ballot" tabindex="1" data-required-error=""  name="total_rejected_ballot"  placeholder="Rejected Vote" required>
-                                                    </div>
-                                                    <div class="col-md-12">
-                                                            <br>
-                                                      </div>
-                                                      <div class="col-md-1" >
-                                                              <strong>C</strong>
-                                                      </div>
-                                                      <div class="col-md-4" >
-                                                              <strong>Total Vote In Ballot Box </strong>
-                                                      </div>
-                                                      <div class="col-md-3" >
-                                                              <strong></strong>
-                                                      </div>
-                                                      <div class="col-md-4" >
-                                                            <input   type="text" class="form-control has-feedback-left" tabindex="1" data-required-error="" id="total_total"  name="total_total"  placeholder="Total Vote" disabled>
-
-                                                      </div>
-
-                                                @endif
-
-
-
-
-
-
-                                        </div>
-
-                                    </div>
-                            </div>
-
-                    </div>
-                    <!-- end new -->
-                    <!-- new 1 -->
-
-                </div>
-                <!-- end new 1 -->
-                <!-- new 1 -->
-                <div class="col-md-12">
-                    <div class="panel">
-                        <div class="panel-heading">
-                            <h3 class="panel-title"></h3>
+        {{-- Station Info - Collapsible --}}
+        <div class="card station-card">
+            <div class="card-header" data-toggle="collapse" data-target="#stationDetails" aria-expanded="false">
+                <h5>
+                    <i class="fas fa-map-marker-alt mr-2"></i>
+                    {{ $user->PollingStation_name ?? 'Polling Station' }}
+                    <small class="float-right"><i class="fas fa-chevron-down"></i></small>
+                </h5>
+            </div>
+            <div class="collapse" id="stationDetails">
+                <div class="card-body">
+                    <div class="station-detail">
+                        <div class="detail-item">
+                            <span class="label">Election</span>
+                            <span class="value">{{ $electionStartupDetail->election_name }}</span>
                         </div>
-                        <div class="panel-body">
-
-                                @if(isset($electionResult->toArray()[0]['id']))
-
-                                    <input type="hidden" name="election_result_id" value="{{$electionResult->toArray()[0]['id']}}">
-
-                                @endif
-
-
-                            <div class="form-group">
-                                <div class="col-md-9 col-sm-9 col-xs-12 col-md-offset-4">
-                                <input type="hidden" name="customer_ip" value="{{request()->ip()}}">
-                                    <button id="reset" class="btn btn-primary" type="reset">Reset</button>
-                                    <button id="submit" type="submit" class="btn btn-success"> <i id="submitIcon"> </i> Submit</button>
-                                </div>
-                            </div>
+                        <div class="detail-item">
+                            <span class="label">Type</span>
+                            <span class="value">{{ $electionStartupDetail->name }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Station Code</span>
+                            <span class="value">{{ $user->PollingStation_Id }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Role</span>
+                            <span class="value">{{ $user->user_type_name }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Region</span>
+                            <span class="value">{{ $user->region_name }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Constituency</span>
+                            <span class="value">{{ $user->constituency_name }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Electoral Area</span>
+                            <span class="value">{{ $user->ElectoralArea_name }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Registered Voters</span>
+                            <span class="value">{{ number_format($user->total_voters ?? 0) }}</span>
                         </div>
                     </div>
                 </div>
             </div>
-        </form>
+        </div>
 
+        {{-- Candidates & Votes --}}
+        <div class="card results-card">
+            <div class="card-header">
+                <h5><i class="fas fa-pencil-alt mr-2" style="color:var(--ndc-green)"></i>Enter Votes</h5>
+            </div>
 
+            <div class="card-body p-0">
+                @if($electionResult && isset($electionResult) && count($electionResult)!=0)
+                    @foreach($electionResult as $key => $_electionResult)
+                    <div class="candidate-row">
+                        <div class="sn">{{ $key + 1 }}</div>
+                        <div class="candidate-info">
+                            <div class="candidate-name">{{ $_electionResult->first_name }} {{ $_electionResult->last_name }}</div>
+                            <span class="party-tag">{{ $_electionResult->party_initial }}</span>
+                        </div>
+                        <input value="{{ $_electionResult->party_election_result_obtained_vote }}"
+                               name="party[][{{ $_electionResult->party_election_result_party_id }}][{{ $_electionResult->party_election_result_candidate_id }}]"
+                               type="number" class="vote-input party_vote" inputmode="numeric" pattern="[0-9]*"
+                               placeholder="0" required>
+                    </div>
+                    @endforeach
+                @else
+                    @foreach($parties as $key => $party)
+                    <div class="candidate-row">
+                        <div class="sn">{{ $key + 1 }}</div>
+                        <div class="candidate-info">
+                            <div class="candidate-name">{{ $party->first_name }} {{ $party->last_name }}</div>
+                            <span class="party-tag">{{ $party->party_initial }}</span>
+                        </div>
+                        <input name="party[][{{ $party->political_party_id }}][{{ $party->candidate_id }}]"
+                               type="number" class="vote-input party_vote" inputmode="numeric" pattern="[0-9]*"
+                               placeholder="0" required>
+                    </div>
+                    @endforeach
+                @endif
+            </div>
 
+            {{-- Summary Section --}}
+            <div class="summary-section">
+                <div class="summary-row">
+                    <div class="summary-label">
+                        <span class="badge-letter badge-a">A</span> Total Valid Votes
+                    </div>
+                    @if($electionResult && count($electionResult)!=0)
+                        <input value="{{ $electionResult->toArray()[0]['total_ballot'] - $electionResult->toArray()[0]['total_rejected_ballot'] }}"
+                               type="text" class="summary-input" id="total1111" name="total1111" placeholder="0" disabled>
+                    @else
+                        <input type="text" class="summary-input" id="total1111" name="total1111" placeholder="0" readonly>
+                    @endif
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">
+                        <span class="badge-letter badge-b">B</span> Rejected Ballots
+                    </div>
+                    @if($electionResult && count($electionResult)!=0)
+                        <input value="{{ $electionResult->toArray()[0]['total_rejected_ballot'] }}"
+                               type="number" class="summary-input total_rejected_ballot" name="total_rejected_ballot"
+                               inputmode="numeric" placeholder="0" required>
+                    @else
+                        <input type="number" class="summary-input total_rejected_ballot" name="total_rejected_ballot"
+                               inputmode="numeric" placeholder="0" required>
+                    @endif
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">
+                        <span class="badge-letter badge-c">C</span> Total Ballot Box
+                    </div>
+                    @if($electionResult && count($electionResult)!=0)
+                        <input value="{{ $electionResult->toArray()[0]['total_ballot'] }}"
+                               type="text" class="summary-input" id="total_total" name="total_total" placeholder="0" disabled>
+                    @else
+                        <input type="text" class="summary-input" id="total_total" name="total_total" placeholder="0" disabled>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        {{-- Hidden fields --}}
+        @if($electionResult && count($electionResult)!=0 && isset($electionResult->toArray()[0]['id']))
+            <input type="hidden" name="election_result_id" value="{{ $electionResult->toArray()[0]['id'] }}">
+        @endif
+        <input type="hidden" name="customer_ip" value="{{ request()->ip() }}">
+
+        {{-- Sticky Action Bar --}}
+        <div class="action-bar">
+            <button type="reset" class="btn btn-ndc-reset" id="reset">
+                <i class="fas fa-undo"></i>
+            </button>
+            <button type="submit" class="btn btn-ndc-submit" id="submit">
+                <i class="fas fa-paper-plane mr-1"></i> Submit Results
+            </button>
+        </div>
+    </form>
+</div>
 
 @endsection
 @section('script')

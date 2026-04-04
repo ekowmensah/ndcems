@@ -66,6 +66,15 @@ class AgentController extends Controller
             return redirect(route("Agent.election"));
         }
 
+        // Block access if results for this polling station + election have been confirmed by director
+        $confirmedResult = ElectionResult::where('polling_station_id', Auth::user()->polling_station_id)
+            ->where('election_start_up_id', $election_start_up)
+            ->where('verify_by_constituency', 1)
+            ->first();
+        if($confirmedResult){
+            $request->session()->flash('error', 'Sorry! Results have been confirmed by the Constituency Director. You cannot edit at this time.');
+            return redirect(route("Agent.results"));
+        }
 
         $parties = PoliticalParty::select(
             'candidates.first_name',
@@ -163,6 +172,15 @@ class AgentController extends Controller
         ->where("status",1)->first();
         $posted_Data = $request->all();
 
+        // Block saving if results have been confirmed by director
+        $confirmedResult = ElectionResult::where('polling_station_id', Auth::user()->polling_station_id)
+            ->where('election_start_up_id', $election_start_up)
+            ->where('verify_by_constituency', 1)
+            ->first();
+        if($confirmedResult){
+            $request->session()->flash('error', 'Sorry! Results have been confirmed by the Constituency Director. You cannot edit at this time.');
+            return redirect(route("Agent.results"));
+        }
 
         $e_r = ElectionResult:://where('election_result.user_id',Auth::user()->id)
             where('id',$request->input('election_result_id'))
@@ -171,6 +189,11 @@ class AgentController extends Controller
             ->first();
        //dd( $e_r->toArray());
         if($e_r){
+            // Double-check this specific result isn't confirmed
+            if($e_r->verify_by_constituency == 1){
+                $request->session()->flash('error', 'Sorry! Results have been confirmed by the Constituency Director. You cannot edit at this time.');
+                return redirect(route("Agent.results"));
+            }
             $e_r->total_ballot =0;
             $e_r->total_rejected_ballot = $request->input('total_rejected_ballot');
             $e_r->save();
