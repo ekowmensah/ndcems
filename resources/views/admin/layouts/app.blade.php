@@ -74,20 +74,34 @@
                             <h3>General</h3>
                             <ul class="nav side-menu">
                             @if (Auth::guard("superAdmin")->check())
-                                <li class="{{ (Request::is('super-admin') ? 'active' : '') }}"><a href="#"><i class="fa fa-home"></i> Dashboard </a></li>
+                                <li class="{{ (Request::is('super-admin') ? 'active' : '') }}"><a href="{{route('SuperAdmin.home')}}"><i class="fa fa-home"></i> Dashboard </a></li>
+                                <li><a><i class="fa fa-user"></i>Results <span class="fa fa-chevron-down"></span></a>
+                                    <ul class="nav child_menu" >
+                                        {{-- <li><a href="{{route('SuperAdmin.home')}}">Presidential Results</a></li>
+                                        <li><a href="{{route('SuperAdmin.parliamentaryResult')}}">Parliamentary Results</a></li>
+                                        <li>
+                                            ______
+                                        </li> --}}
+                                        @foreach ($__electionTypes as $electionType)
+                                        <li><a href="{{route('SuperAdmin.result',$electionType['id'])}}">{{$electionType['name']}} </a></li>
+                                        @endforeach
+                                    </ul>
+                                </li>
+                            <li class=""><a href="{{route('SuperAdmin.admin')}}"><i class="fa fa-user"></i> Admin Users </a></li>
+
                             {{-- <li class="{{ (Request::is('admin') ? 'active' : '') }}"><a href="{{route()}}"><i class="fa fa-user"></i> User </a></li> --}}
                             <li><a><i class="fa fa-user"></i>Managers <span class="fa fa-chevron-down"></span></a>
                                 <ul class="nav child_menu" >
-                                    <li><a href="{{route('SuperAdmin.UserTypes')}}">Manager Types</a></li>
+                                    {{-- <li><a href="{{route('SuperAdmin.UserTypes')}}">Manager Types</a></li> --}}
                                     <li><a href="{{route('SuperAdmin.Users')}}">Managers</a></li>
                                     @foreach ($UTypes as $UType)
-                                        <li><a href="{{route('SuperAdmin.New.User',$UType['id'])}}">{{$UType['name']}}</a></li>
+                                        <li><a href="{{route('SuperAdmin.Users',$UType['id'])}}">{{$UType['name']}}s</a></li>
                                     @endforeach
                                 </ul>
                             </li>
                             <li><a><i class="fa fa-tree"></i>Admin Section <span class="fa fa-chevron-down"></span></a>
                                 <ul class="nav child_menu" >
-                                    <li><a href="{{route('SuperAdmin.country')}}">Country</a></li>
+                                    {{-- <li><a href="{{route('SuperAdmin.country')}}">Country</a></li> --}}
                                     <li><a href="{{route('SuperAdmin.region')}}">Region</a></li>
                                     <li><a href="{{route('SuperAdmin.constituency')}}">Constituency</a></li>
                                     <li><a href="{{route('SuperAdmin.ElectoralArea')}}">Electoral Area</a></li>
@@ -95,9 +109,13 @@
                                 </ul>
                             </li>
 
+                            {{-- <li class=""><a href="{{route('SuperAdmin.pollingAgent')}}"><i class="fa fa-user"></i>Polling Agents </a></li> --}}
+
                             <li><a><i class="fa fa-book"></i>Election <span class="fa fa-chevron-down"></span></a>
                                 <ul class="nav child_menu" >
-                                    <li><a href="{{route('SuperAdmin.electionType')}}">Election Types</a></li>
+                                    {{-- <li><a href="{{route('SuperAdmin.electionType')}}">Election Types</a></li> --}}
+                                    <li><a href="{{route('SuperAdmin.election')}}">Election</a></li>
+
                                 </ul>
                             </li>
                             <li><a><i class="fa fa-female"></i>Political Party <span class="fa fa-chevron-down"></span></a>
@@ -105,8 +123,24 @@
                                     <li><a href="{{route('SuperAdmin.politicalParty')}}">Political Party</a></li>
                                 </ul>
                             </li>
-                            <li class=""><a href="{{route('SuperAdmin.candidate')}}"><i class="fa fa-user"></i> Candidate </a></li>
+                            {{-- <li class=""><a href="{{route('SuperAdmin.candidate')}}"><i class="fa fa-user"></i> Candidate </a></li> --}}
+                            <li><a><i class="fa fa-user"></i>Candidate <span class="fa fa-chevron-down"></span></a>
+                                <ul class="nav child_menu" >
+                                    <li><a href="{{route('SuperAdmin.candidate')}}">Candidate</a></li>
 
+                                    @foreach ($__electionTypes as $electionType)
+                                        <li><a href="{{route('SuperAdmin.candidate',$electionType['id'])}}">{{$electionType['name']}} Candidate</a></li>
+                                    @endforeach
+                                </ul>
+                            </li>
+
+                            <li><a><i class="fa fa-user"></i>Reports <span class="fa fa-chevron-down"></span></a>
+                                <ul class="nav child_menu" >
+                                   @foreach ($__electionTypes as $electionType)
+                                    <li><a href="{{route('SuperAdmin.resultReport',$electionType['id'])}}">{{$electionType['name']}} </a></li>
+                                    @endforeach
+                                </ul>
+                            </li>
                             @endif
 
                         </div>
@@ -130,7 +164,7 @@
                         @else
                             <li class="">
                                 <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                                    <img src="images/img.jpg" alt="">{{ Auth::user()->name }}
+                                    {{-- <img src="images/img.jpg" alt=""> --}}{{ Auth::user()->name }}
                                     <span class=" fa fa-angle-down"></span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-usermenu pull-right">
@@ -222,7 +256,7 @@
     <script src="{{ asset('gentelella/vendors/jszip/dist/jszip.min.js') }}"></script>
     <script src="{{ asset('gentelella/vendors/pdfmake/build/pdfmake.min.js') }}"></script>
     <script src="{{ asset('gentelella/vendors/pdfmake/build/vfs_fonts.js') }}"></script>
-<script src="{{ asset('tooltip/jBox.all.js') }}"></script>
+{{-- <script src="{{ asset('tooltip/jBox.all.js') }}"></script> --}}
 <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js">
 
 

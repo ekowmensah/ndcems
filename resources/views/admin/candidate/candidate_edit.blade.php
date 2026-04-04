@@ -60,29 +60,30 @@
                             </div>
                           </div>
 
-                          <div class="form-group">
+                          {{-- <div class="form-group">
                             <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Date Of Birth <span class="required">*</span>
                             </label>
                             <div class="col-md-6 col-sm-6 col-xs-12">
                               <input name="dob" type="text" value="{{$candidate->dob}}" required id="dob" placeholder="DD-MM-YYYY" class="form-control col-md-7 col-xs-12">
                             </div>
-                          </div>
+                          </div> --}}
+                          <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Elections  <span class="required">*</span>
+                            </label>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <select class="form-control " data-live-search="true" name="election_start_up_id" id="election_start_up_id"  required>
+
+                                        <option  >Select Elections<option>
+                                            @foreach ($electionStartupDetail as $electionType)
+                                                    <option value="{{$electionType->id}}" @if($candidate->election_start_up_id == $electionType->id) selected  @endif >{{$electionType->election_name}}<option>
+                                                @endforeach
+                                    </select>
+                            </div>
+                        </div>
 
                           <input name="country_id" id="country_id" value="{{$country[0]['id']}}" type="hidden" >
 
-                          <div class="form-group">
-                            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Political Party  <span class="required">*</span>
-                            </label>
-                            <div class="col-md-6 col-sm-6 col-xs-12">
-                                    <select class="form-control .searchabled selectpicker" data-live-search="true" name="party_id" id="party_id"  required>
 
-                                        <option value="s" disabled >Select Political Party<option>
-                                            @foreach ($PoliticalParties as $electionType)
-                                                    <option value="{{$electionType->id}}" @if($candidate->party_id == $electionType->id) selected  @endif>{{$electionType->name}}<option>
-                                                @endforeach
-                                       </select>
-                            </div>
-                            </div>
                             <input type="hidden" name="election_id" value="{{$type->id}}">
                          {{--  <div class="form-group">
                             <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Election  <span class="required">*</span>
@@ -187,12 +188,40 @@
                             </div>
 
                             <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Political Party  <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                        <select class="form-control .searchabled " data-live-search="true" name="party_id" id="party_id"  required>
+
+                                            <option value="s" disabled >Select Political Party<option>
+                                                @foreach ($PoliticalParties as $electionType)
+                                                        <option value="{{$electionType->id}}" @if($candidate->party_id == $electionType->id) selected  @endif>{{$electionType->name}}<option>
+                                                    @endforeach
+                                           </select>
+                                </div>
+                                </div>
+
+                            <div class="form-group">
                                 <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Personal <span class="required"></span>
                                 </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
                                     <textarea class="form-control" name="personal" rows="5" id="comment">{{$candidate->personal}}</textarea>
                                 </div>
                               </div>
+
+                              <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Order Positioning  <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+
+                                <input type="number" name="ordering_position" value="{{$candidate->ordering_position}}" id="ordering_position" class="form-control " data-live-search="true" required>
+
+                                </div>
+
+                                <span id="ordering_position_panel">
+
+                                </span>
+                            </div>
 
                         {{-- <div class="form-group">
                             <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Political Party ID <span class="required"></span>
@@ -239,7 +268,57 @@
 <script src="{{ asset('js/bootstrap-validator/validator.min.js') }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/bootstrap-select.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css" rel="stylesheet" />
+<script>
+    $('document').ready(function(){
+        $("#ordering_position_panel").empty();
+        $("#ordering_position_panel").append(`<span style="color:red">Must Be Unique<span>` )
+        $('select option')
+        .filter(function() {
+            return !this.value && $.trim(this.value).length == 0 && $.trim(this.text).length == 0;
+        })
+        .remove();
 
+         $('button[type="submit"]').attr('disabled','disabled');
+    });
+    $("#ordering_position").keyup(function(){
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        $("#ordering_position_panel").empty();
+        $("#ordering_position_panel").append(`<span style="color:red">Must be unique.<span>` )
+        $('button[type="submit"]').attr('disabled','disabled');
+        var value = $('#ordering_position').val();
+        var election_start_up_id = $('#election_start_up_id').val();
+        var constituency_id = $('#constituency_id').val();
+
+        if(value.length >0 && election_start_up_id != "all"){
+
+            var _token = $('input[name="_token"]').val();
+            $("#ordering_position_panel").empty();
+            $("#ordering_position_panel").append(`<span class="fa fa-spinner"><span>` )
+            $.ajax({
+                    type: "POST",
+                    url: '{{route("SuperAdmin.VerifyPositioningOrdering")}}',
+                    data: {ordering_position:value,_token:_token,election_start_up_id:election_start_up_id,constituency_id:constituency_id},
+                    //dataType: "JSON",
+                    success: function (result) {
+                        $("#ordering_position_panel").empty();
+                        if(result == "faund"){
+                            $("#ordering_position_panel").append(`<span class="fa fa-close" style="color:red"><span>` )
+
+                        }else{
+                            $('button[type="submit"]').removeAttr('disabled');
+                            $("#ordering_position_panel").append(`<span class="fa fa-check" style="color:green"><span>` )
+
+                        }
+                    }
+                });
+        }
+
+    })
+</script>
 <script>
      $('document').ready(function(){
             $('select option')
@@ -373,6 +452,44 @@ $("#region_id").on('change', '', function (e) {
                                 }
                             });
                         });
+
+                        @if(isset($NewElectionTypes[1]) && $NewElectionTypes[1] && !isset($NewElectionTypes[2]))
+                          //  $('#party_id').find('option').remove()
+
+
+                    $("#constituency_id").on('change', '', function (e) {
+                    $.ajaxSetup({
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    })
+                    //$("#electoralarea_id").empty();
+                    $('#party_id').find('option').remove()
+
+                    var constituency_id = $("#constituency_id").val()
+                    // $("#username_panel").append(`<span class="fa fa-spinner"><span>` )
+                            var _token = $('input[name="_token"]').val();
+                        $.ajax({
+                                type: "POST",
+                                url: '{{route("SuperAdmin.getPoliticalParty")}}',
+                                data: {constituency_id:constituency_id,_token:_token},
+                                //dataType: "JSON",
+                                success: function (result) {
+                                    $('#party_id')
+                                            .append($("<option></option>")
+                                                        .attr("value","Select")
+                                                        .text("Select Political Party"));
+                                    $.each(result, function(key, value) {
+                                        $('#party_id')
+                                            .append($("<option></option>")
+                                                        .attr("value",value.id)
+                                                        .text(value.name));
+                                    });
+                                }
+                            });
+                        });
+                        @endif
+
         });
 </script>
         @endsection

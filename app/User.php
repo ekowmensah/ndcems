@@ -19,7 +19,7 @@ class User extends Authenticatable
         'name', 'email', 'password','username','user_type_id','gender','constituency','phoneno',
         "country_id",
         "region_id",
-        "constituency_id","polling_station_id","electoralarea_id","added_by"
+        "constituency_id","polling_station_id","electoralarea_id","added_by","secret","photo"
     ];
 
     /**
@@ -28,6 +28,6 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token'
     ];
 }

@@ -8971,7 +8971,7 @@ button:focus {
 
 .btn.btn-primary.btn-link {
   background-color: transparent;
-  color: #9c27b0;
+  color: #DC143C;
   box-shadow: none;
 }
 
@@ -16358,7 +16358,7 @@ footer .pull-center {
 .card.bg-primary,
 .card.card-rotate.bg-primary .front,
 .card.card-rotate.bg-primary .back {
-  background: linear-gradient(60deg, #ab47bc, #7b1fa2);
+  background: linear-gradient(60deg, #006400, #006400);
 }
 
 .card .card-header-info,

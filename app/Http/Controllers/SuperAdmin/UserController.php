@@ -16,6 +16,9 @@ use App\Model\Region;
 use App\Model\Constituency;
 use App\Model\ElectoralArea;
 use App\Model\PollingStation;
+use DataTables;
+use App\Model\ElectionType;
+
 class UserController extends Controller
 {
     /**
@@ -59,13 +62,42 @@ class UserController extends Controller
         $request->session()->flash('message', ' User Type created successfully!');
         return redirect(route("SuperAdmin.UserTypes"));
     }
-    public function Users()
+    public function Users($id="all")
     {
-        $Users = User::select('users.created_at','users.name as user_name','users.id as user_id','user_type.id as user_type_id','user_type.name as user_type_name')
+        /* $Users = User::select('users.created_at','users.name as user_name','users.id as user_id','user_type.id as user_type_id','user_type.name as user_type_name')
             ->join('user_type','user_type.id','=','users.user_type_id')
             ->get();
-        $UserTypes = UserType::orderBy('id','desc')->get();
-        return view('admin.user.Users',compact('Users','UserTypes'));
+        $UserTypes = UserType::orderBy('id','desc')->get(); */
+        $UserTypes = UserType::latest()->first();
+        $UserTypes = UserType::where('id','!=',$UserTypes->id)->get();
+        //dd($id);
+
+        if($id!="all"){
+            $UserTypes = UserType::where('id','=',$id)->get();
+            $_UserTypes = UserType::where('id','<=',$id)->get();
+
+        }
+
+
+
+        // /dd($UserTypes->toArray());
+        /* $Users = User::select('users.created_at','users.name as user_name','users.id as user_id','user_type.id as user_type_id','user_type.name as user_type_name')
+            ->join('user_type','user_type.id','=','users.user_type_id')
+            ->where('user_type.id', $UserType->id)
+            ->get(); */
+        //$UserTypes = UserType::orderBy('id','desc')->get();
+        //return view('admin.user.Users',compact('Users','UserTypes'));
+        $electionTypes = Region::all();
+
+        $NewUserTypes = [];
+        if(isset($_UserTypes))
+        foreach ($_UserTypes->toArray() as $i => $value) {
+            $data = [
+                    "index"=>$i
+            ];
+            $NewUserTypes[] = array_merge($value,array_merge($value,$data));
+        }
+        return view('admin.user.Users',compact('NewUserTypes','electionTypes','Users','UserTypes','id'));
     }
     public function newUser($type_id){
         $Type = UserType::find($type_id);
@@ -151,7 +183,21 @@ class UserController extends Controller
         }else{
             $data = $request->all();
             $data['password'] = Hash::make($data['password']);
-            User::create($data);
+            $UserType = UserType::latest()->first();
+            if($data['user_type_id'] == $UserType->id){
+                $data['secret'] = $request->input('password');
+            }
+
+
+            $PoliticalParty = User::create($data);
+            if($request->file('logo')){
+                $file = $request->file('logo');
+                //$destinationPath  = storage_path('candidate_logo');
+                //$file->move($destinationPath,$PoliticalParty->id.'.'.$file->getClientOriginalExtension());
+                $file->move(public_path('/user_logo'),$PoliticalParty->id.'.'.$file->getClientOriginalExtension());
+                $PoliticalParty->photo = $PoliticalParty->id.'.'.$file->getClientOriginalExtension();
+                $PoliticalParty->save();
+            }
             $request->session()->flash('message', ' User Created Successfully!');
             return redirect(route('SuperAdmin.Users'));
         }
@@ -226,12 +272,130 @@ class UserController extends Controller
                 $user->polling_station_id =  $data['polling_station_id'];
 
             if($data['password'])
-            $user->password =   Hash::make($data['password']);
+            {
+                $user->password =   Hash::make($data['password']);
+                $UserType = UserType::latest()->first();
+                if($data['user_type_id'] == $UserType->id){
+                    $user->secret = $request->input('password');
+                }
+            }
             $user->save();
+
+            if($request->file('logo')){
+                $file = $request->file('logo');
+                if(file_exists(public_path('/user_logo').$user->photo) && $user->photo)
+                    unlink(public_path('/user_logo').$user->photo);
+                //$destinationPath  = storage_path('candidate_logo');
+                //$file->move($destinationPath,$user->id.'.'.$file->getClientOriginalExtension());
+                $file->move(public_path('/user_logo'),$user->id.'.'.$file->getClientOriginalExtension());
+                $user->photo = $user->id.'.'.$file->getClientOriginalExtension();
+                $user->save();
+            }
 
             $request->session()->flash('message', ' User Updated Successfully!');
             return redirect()->back();
         }
 
+    }
+    public function pollingAgent(){
+        $UserType = UserType::latest()->first();
+        /* $Users = User::select('users.created_at','users.name as user_name','users.id as user_id','user_type.id as user_type_id','user_type.name as user_type_name')
+            ->join('user_type','user_type.id','=','users.user_type_id')
+            ->where('user_type.id', $UserType->id)
+            ->get(); */
+        //$UserTypes = UserType::orderBy('id','desc')->get();
+        //return view('admin.user.Users',compact('Users','UserTypes'));
+        $electionTypes = Region::all();
+        return view("admin.polling_agent.polling_agent",compact('electionTypes','UserType'));
+    }
+    public function pollingAgentAjax(Request $request){
+        $UserType = UserType::latest()->first();
+        $Users = User::select(
+                'users.phoneno',
+                'users.photo',
+                'users.username',
+                'users.secret',
+                'users.created_at',
+                'users.name as user_name',
+                'users.id as user_id',
+                'user_type.id as user_type_id',
+                'user_type.name as user_type_name',
+                'region.name as region_name',
+                "constituency.name as constituency_name",
+                "PollingStation.name as PollingStation_name",
+                "ElectoralArea.name as ElectoralArea_name"
+            )
+            ->where('user_type.id', $UserType->id)
+            ->join('user_type','user_type.id','=','users.user_type_id')
+            ->join('region','region.id','=','users.region_id')
+            ->join('constituency','constituency.id','=','users.constituency_id')
+            ->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
+            ->join('PollingStation','PollingStation.id','=','users.polling_station_id');
+
+        //->leftJoin('PollingStation','PollingStation.electoralarea_id','=','ElectoralArea.id');
+            if($request->input('electoralarea_id') != "all")
+                $Users = $Users->where('users.electoralarea_id',$request->input('electoralarea_id'));
+            if($request->input('constituency_id') != "all")
+                $Users = $Users->where('users.constituency_id',$request->input('constituency_id'));
+            if($request->input('region_id') != "all")
+                $Users = $Users->where('users.region_id',$request->input('region_id'));
+            if($request->input('polling_station_id') != "all")
+                $Users = $Users->where('users.polling_station_id',$request->input('polling_station_id'));
+
+
+
+        return DataTables::of($Users)->make(true);
+    }
+    public function UsersDelete($id,Request $request){
+        $user = User::find($id);
+        $user->delete();
+        $request->session()->flash('message', ' Agent Deleted Successfully!');
+        return redirect()->back();
+    }
+
+
+
+    public function managementAgentAjax(Request $request){
+        $UserType = UserType::latest()->first();
+        $Users = User::select(
+            'users.*',
+
+                'users.photo',
+                'users.created_at',
+                'users.name as user_name',
+                'users.id as user_id',
+                'user_type.id as user_type_id',
+                'user_type.name as user_type_name',
+                'users.username',
+                'region.name as region_name',
+                "constituency.name as constituency_name",
+                "PollingStation.name as PollingStation_name",
+                "ElectoralArea.name as ElectoralArea_name"
+            )
+            //->where('user_type.id','!=', $UserType->id)
+            ->join('user_type','user_type.id','=','users.user_type_id')
+            ->leftJoin('region','region.id','=','users.region_id')
+            ->leftJoin('constituency','constituency.id','=','users.constituency_id')
+            ->leftJoin('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
+            ->leftJoin('PollingStation','PollingStation.id','=','users.polling_station_id');
+
+        //->leftJoin('PollingStation','PollingStation.electoralarea_id','=','ElectoralArea.id');
+            if($request->input('electoralarea_id') != "all")
+                $Users = $Users->where('users.electoralarea_id',$request->input('electoralarea_id'));
+            if($request->input('constituency_id') != "all")
+                $Users = $Users->where('users.constituency_id',$request->input('constituency_id'));
+            if($request->input('region_id') != "all")
+                $Users = $Users->where('users.region_id',$request->input('region_id'));
+            if($request->input('polling_station_id') != "all")
+                $Users = $Users->where('users.polling_station_id',$request->input('polling_station_id'));
+            if($request->input('user_type_id') != "all")
+                $Users = $Users->where('users.user_type_id',$request->input('user_type_id'));
+            else {
+                $Users = $Users->where('user_type.id','!=', $UserType->id);
+            }
+
+
+
+        return DataTables::of($Users)->make(true);
     }
 }

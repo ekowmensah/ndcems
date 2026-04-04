@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use App\Model\SiteSetting;
 use Illuminate\Support\Facades\Schema;
 use App\Model\UserType;
+use App\Model\ElectionType;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,7 +34,7 @@ class AppServiceProvider extends ServiceProvider
                     "from_email"=>"support@ghanaelectro.com",
                     "from_email_title"=>" ",
                     "logo" => "img/logo.png",
-                    "SuperAdminUrlPrefix" => "super-admin",
+                    "SuperAdminUrlPrefix" => "admin",
                     //"logo2" => " "
                 ];
             }
@@ -44,7 +45,7 @@ class AppServiceProvider extends ServiceProvider
                 "from_email"=>"support@ghanaelectro.com",
                 "from_email_title"=>" ",
                 "logo" => "img/logo.png",
-                "SuperAdminUrlPrefix" => "super-admin",
+                "SuperAdminUrlPrefix" => "admin",
                 //"logo2" => " "
             ];
         }
@@ -60,6 +61,13 @@ class AppServiceProvider extends ServiceProvider
         });
 
         config(['config' => $result]);
+
+        $ElectionType = ElectionType::all();
+        $__electionTypes = $ElectionType->toArray();
+
+        view()->composer('*', function ($view) use($__electionTypes) {
+            $view->with('__electionTypes', $__electionTypes);
+        });
     }
 
     /**

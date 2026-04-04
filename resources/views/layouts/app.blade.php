@@ -43,24 +43,23 @@
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    @guest
+
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav mr-auto">
 
                     </ul>
+                    <ul class="navbar-nav ml-auto">
 
+                        <li class="nav-item">
+                            <a class="btn btn-info" href="{{ route('login') }}">{{ __('Login') }}</a>
+                        </li>
+
+                </ul>
+                    @else
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ml-auto">
-                        <!-- Authentication Links -->
-                        @guest
-                            <li class="nav-item">
-                                <a class="btn btn-info" href="{{ route('login') }}">{{ __('Login') }}</a>
-                            </li>
-                            <li class="nav-item">
-                                {{-- @if (Route::has('register'))
-                                    <a class="btn btn-primary" href="{{ route('register') }}">{{ __('Register') }}</a>
-                                @endif --}}
-                            </li>
-                        @else
+
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                     {{ Auth::user()->name }} <span class="caret"></span>
@@ -78,8 +77,9 @@
                                     </form>
                                 </div>
                             </li>
-                        @endguest
                     </ul>
+                    @endguest
+
                 </div>
             </div>
         </nav>

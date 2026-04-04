@@ -22,7 +22,9 @@ class Candidate extends Model
         "is_disabled",
         "id_no",
         "phone",
-        "electoral_area_id"
+        "electoral_area_id",
+        "election_start_up_id",
+        "ordering_position"
     ];
 
 

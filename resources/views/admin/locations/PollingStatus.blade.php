@@ -9,7 +9,7 @@
         </div>
         <div class="col-md-6">
             <br>
-                <a href="{{route('SuperAdmin.New.PollingStation')}}"  style=" float:  right;" class="btn btn-success">Add New Polling Station</a>
+                <a href="{{route('SuperAdmin.New.PollingStation')}}"  style=" float:  right;" class="btn btn-success">Add Polling Station</a>
             </div>
     </div>
 
@@ -42,19 +42,19 @@
             <table class="table" id="table">
               <thead>
                 <tr>
-                    <th>Polling Station Id</th>
-                    <th>Polling Station Name</th>
-                    <th>ElectoralArea Name</th>
+                    <th>PS Id</th>
+                    <th>PS Name</th>
+                    <th>Electoral Area</th>
 
-                    <th>Constituency Name</th>
-                  <th>Region Name</th>
-                  <th>Country Name</th>
-                  <th>Total Voter</th>
+                    <th>Constituency</th>
+                  <th>Region</th>
+                  {{-- <th>Country</th> --}}
+                  <th>Registered Voters</th>
                   <th></th>
                   {{-- <th></th> --}}
                 </tr>
               </thead>
-              <tbody>
+              <tbody style="font-size:12px">
                   {{-- @foreach ($regions as $country)
                         <tr>
 
@@ -66,8 +66,8 @@
                             <td>{{$country->country_name}}</td>
                             <td>{{$country->total_voters}}</td>
                             <td>
-                                <a href="{{route('SuperAdmin.constituencyEdit',$country->id)}}"   class="btn btn-success btn-xs">Edit</a>
-                                <a href="{{route('SuperAdmin.ElectoralAreaDelete',$country->id)}}"  class="btn btn-danger btn-xs">Delete</a>
+                                <a href="{{route('SuperAdmin.constituencyEdit',$country->id)}}"   >Edit</a>
+                                <a href="{{route('SuperAdmin.ElectoralAreaDelete',$country->id)}}" >Delete</a>
                             </td>
                         </tr>
                   @endforeach --}}
@@ -110,7 +110,7 @@
 
                             $('#constituency_id')
                                     .append($("<option></option>")
-                                                .attr("value","Select")
+                                                .attr("value","all")
                                                 .text("Select Constituency"));
                             $.each(result, function(key, value) {
 
@@ -141,8 +141,8 @@
                                 success: function (result) {
                                     $('#electoralarea_id')
                                             .append($("<option></option>")
-                                                        .attr("value","Select")
-                                                        .text("Select Electral Area"));
+                                                        .attr("value","all")
+                                                        .text("Select Electoral Area"));
                                     $.each(result, function(key, value) {
                                         $('#electoralarea_id')
                                             .append($("<option></option>")
@@ -191,6 +191,10 @@
 
 
        }},
+       "columnDefs": [
+                  //  { "searchable": false, "targets": 4 },
+                    { "searchable": false, "targets": 5 }
+                ],
        columns: [
 
 
@@ -199,7 +203,7 @@
             { data: 'ElectoralArea_name', name: 'ElectoralArea.name' },
             { data: 'constituency_name', name: 'constituency.name' },
             { data: 'region_name', name: 'region.name' },
-            { data: 'country_name', name: 'countries.name' },
+            //{ data: 'country_name', name: 'countries.name' },
             { data: 'total_voters', name: 'PollingStation.total_voters' },
 
 
@@ -211,12 +215,11 @@
    var del = "{{ route('SuperAdmin.PollingStationDelete',':number') }}"
                    del = del.replace(':number', data.id);
 
-              /*  var url = "{{ route('SuperAdmin.constituencyEdit',':number') }}";
+               var url = "{{ route('SuperAdmin.PollingStationEdit',':number') }}";
                    url = url.replace(':number', data.id);
-                   <a style="color:white" class="btn btn-primary btn-xs" href=${url}>Edit</a> */
                return `
-
-                      <a style="color:white" class="btn btn-danger btn-xs" href=${del}>Delete</a>
+                    <a style="color:blue" class="fa fa-edit" style="font-size:16px" href=${url} title="Edit Polling Station"> </a>
+                    <a style="color:red" onclick="return confirm('Delete entry?')" class="fa fa-trash-o" style="font-size:16px" href=${del} title="Delete Polling Station"> </a>
                   `;
               }
            }

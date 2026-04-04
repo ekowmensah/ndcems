@@ -5,7 +5,7 @@
 <div class="container">
     <div class="row">
         <div class="col-md-6" style=" float:  left;">
-            <h3>Create New Manager</h3>
+            <h3>Create User</h3>
         </div>
 
     </div>
@@ -17,7 +17,7 @@
     <div class="col-md-8 col-sm-8 col-xs-8 col-md-offset-2">
         <div class="x_panel">
           <div class="x_title">
-            <h2>Managers  </h2>
+            <h2>User Profile  </h2>
             <div class="clearfix"></div>
           </div>
           <div class="x_content ">
@@ -32,10 +32,10 @@
                     </div>
                 @endif
 
-                <form id="demo-form2" method="POST" action="{{route('SuperAdmin.New.UserPost')}}" data-parsley-validate="" class="form-horizontal form-label-left" >
+                <form id="demo-form2" method="POST" enctype="multipart/form-data" action="{{route('SuperAdmin.New.UserPost')}}" data-parsley-validate="" class="form-horizontal form-label-left" >
                         @csrf
                         <div class="form-group">
-                                <label class="control-label col-md-3 col-sm-3">Manager Type</label>
+                                <label class="control-label col-md-3 col-sm-3">User Type</label>
                                 <div class="col-md-6">
                                         <div class="alert alert-success alert-dismissible fade in" style="margin: 0 !important;" role="alert">
                                                 {{$Type->name }}
@@ -51,21 +51,21 @@
                               </div>
 
                         <div class="form-group">
-                          <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Manager Name <span class="required">*</span>
+                          <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name"> Name <span class="required">*</span>
                           </label>
                           <div class="col-md-6 col-sm-6 col-xs-12">
                             <input name="name" type="text" id="first-name" required="required" class="form-control col-md-7 col-xs-12">
                           </div>
                         </div>
                         <div class="form-group">
-                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Manager Email <span class="required">*</span>
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name"> Email <span class="required">*</span>
                                 </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
                                   <input name="email" type="text" id="first-name" required="required" class="form-control col-md-7 col-xs-12">
                                 </div>
                         </div>
                         <div class="form-group">
-                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">ID Card No #<span class="required">*</span>
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Voter ID No#<span class="required">*</span>
                                 </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
                                   <input name="username" type="text" id="username" required="required" class="form-control col-md-7 col-xs-12">
@@ -83,6 +83,14 @@
                                   <input name="phoneno" type="text" id="first-name" required="required" class="form-control col-md-7 col-xs-12">
                                 </div>
                         </div>
+                        <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Profile Photo <span class="required"></span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="file" name="logo"   class="form-control col-md-7 col-xs-12">
+                                </div>
+
+                            </div>
                         {{-- <div class="form-group">
                             <label class="control-label col-md-3 col-sm-3">Under Constituency</label>
                             <div class="col-md-6">
@@ -201,7 +209,7 @@
     <script>
         $('document').ready(function(){
             $("#username_panel").empty();
-            $("#username_panel").append(`<span style="color:red">Lenght equall to 10th character<span>` )
+            $("#username_panel").append(`<span style="color:red">Must be 10 digits<span>` )
             $('select option')
             .filter(function() {
                 return !this.value && $.trim(this.value).length == 0 && $.trim(this.text).length == 0;
@@ -276,7 +284,7 @@
 
                             $('#constituency_id')
                                     .append($("<option></option>")
-                                                .attr("value","Select")
+                                                .attr("value","all")
                                                 .text("Select Constituency"));
                             $.each(result, function(key, value) {
 
@@ -309,7 +317,7 @@
                                 success: function (result) {
                                     $('#region_id')
                                             .append($("<option></option>")
-                                                        .attr("value","Select")
+                                                        .attr("value","all")
                                                         .text("Select Region"));
                                     $.each(result, function(key, value) {
                                         $('#region_id')
@@ -339,7 +347,7 @@
                                 success: function (result) {
                                     $('#electoralarea_id')
                                             .append($("<option></option>")
-                                                        .attr("value","Select")
+                                                        .attr("value","all")
                                                         .text("Select Electral Area"));
                                     $.each(result, function(key, value) {
                                         $('#electoralarea_id')
@@ -369,7 +377,7 @@
                                 success: function (result) {
                                     $('#polling_station_id')
                                             .append($("<option></option>")
-                                                        .attr("value","Select")
+                                                        .attr("value","all")
                                                         .text("Select Polling Station"));
                                     $.each(result, function(key, value) {
                                         $('#polling_station_id')

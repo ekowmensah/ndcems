@@ -17,24 +17,33 @@
 </div>
 <div class="clearfix"></div>
 <div class="row">
-    <div class="col-md-8 col-sm-8 col-xs-8 col-md-offset-2">
+    <div class="col-md-12 col-sm-12 col-xs-12">
         <div class="x_panel">
           <div class="x_title">
-            <h2>Regions </h2>
+                <select style="width:25vh" class="form-control filter" name="country_id" id="country_id"  required>
+                        <option value="all" >Country (All)<option>
+                            @foreach ($countries as $electionType)
+                                 <option value="{{$electionType->id}}"  >{{$electionType->name}}<option>
+                             @endforeach
+                    </select>
 
             <div class="clearfix"></div>
           </div>
           <div class="x_content ">
 
-            <table class="table">
+            <table class="table" id="table">
               <thead>
                 <tr>
-                  <th>Region Name</th>
-                  <th>Country Name</th>
+                  <th>Region</th>
+                  <th>Total Constituency</th>
+                  <th>Total Elactral Area's</th>
+                  <th>Total Polling Station</th>
+                  <th>Registered Voters</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
-                  @foreach ($regions as $country)
+                {{--   @foreach ($regions as $country)
                         <tr>
 
                             <td>{{$country->name}}</td>
@@ -44,7 +53,7 @@
                                 <a href="{{route('SuperAdmin.countryDelete',$country->id)}}"  class="btn btn-danger btn-xs">Delete</a>
                             </td>
                         </tr>
-                  @endforeach
+                  @endforeach --}}
 
 
               </tbody>
@@ -57,5 +66,80 @@
 @endsection
 
 @section("script")
+    <script type="text/javascript">
+ $(document).ready(function () {
+    $('select option')
+            .filter(function() {
+                return !this.value || $.trim(this.value).length == 0 || $.trim(this.text).length == 0;
+            })
+            .remove();
+    var data_table = $('#table').DataTable({
+        //responsive: true,
+    processing: true,
+    serverSide: true,
+    //"iDisplayLength": 100,
+    "pageLength": 10,
+    "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+   stateSave: true,
+    "order": [[ 1, "asc" ]],
+    ajax: {url:'{!! route("SuperAdmin.regionAjax") !!}',
+           data: function (d) {
+            if($('#country_id').val()){
+                d.country_id = $('#country_id').val();
+              }else{
+                d.country_id = "all"
+              }
+
+    }},
+    "columnDefs": [
+    { "searchable": false, "targets": 1 },
+    { "searchable": false, "targets": 2 },
+    { "searchable": false, "targets": 3 },
+    { "searchable": false, "targets": 4 },
+    { "searchable": false, "targets": 5 }
+  ],
+    columns: [
+
+
+       { data: 'name', name: 'region.name' },
+       //{ data: 'country_name', name: 'countries.name' },
+       { data: 'total_constituency', name: 'total_constituency' },
+       { data: 'total_electral', name: 'total_electral' },
+       { data: 'total_polling', name: 'total_polling' },
+       { data: 'total_voters', name: 'total_voters' },
+       {
+        mData:null,
+        name:"id",
+          "mRender": function (data) {
+
+var del = "{{ route('SuperAdmin.regionDelete',':number') }}"
+                del = del.replace(':number', data.id);
+
+            var url = "{{ route('SuperAdmin.regionEdit',':number') }}";
+                url = url.replace(':number', data.id);
+            return `
+                   <a style="color:white" class="btn btn-primary btn-xs" href=${url}>Edit</a>
+                   <a style="color:white" onclick="return confirm('Delete entry?')" class="btn btn-danger btn-xs" href=${del}>Delete</a>
+               `;
+           }
+        }
+        ]
+    });
+
+    $('.filter').on('change', function (e) {
+
+        data_table.draw();
+    });
+    $( ".filter" ).keyup(function() {
+        data_table.draw();
+    });
+});
+</script>
+ <style>
+     .current
+     {
+         background-color: #DDD !important;
+     }
+ </style>
 
         @endsection

@@ -41,7 +41,7 @@
 
                             <td>
                                 <a href="{{route('SuperAdmin.electionTypesEdit',$UserType->id)}}"   class="btn btn-success btn-xs">Edit</a>
-                                <a href="{{route('SuperAdmin.electionTypesDelete',$UserType->id)}}"  class="btn btn-danger btn-xs">Delete</a>
+                              {{--   <a href="{{route('SuperAdmin.electionTypesDelete',$UserType->id)}}" onclick="return confirm('Delete entry?')" class="btn btn-danger btn-xs">Delete</a> --}}
                             </td>
                         </tr>
                   @endforeach

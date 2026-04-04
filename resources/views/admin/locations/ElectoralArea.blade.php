@@ -39,11 +39,13 @@
             <table class="table" id="table">
               <thead>
                 <tr>
-                    <th>ElectoralArea Name</th>
+                    <th>Electoral Areas</th>
 
-                    <th>Constituency Name</th>
-                  <th>Region Name</th>
-                  <th>Country Name</th>
+                    <th>Constituency</th>
+                  <th>Region</th>
+                 {{--  <th>Country</th> --}}
+                  <th>Total Polling Stations</th>
+                  <th>Registered Voters</th>
                   <th></th>
                 </tr>
               </thead>
@@ -99,8 +101,8 @@ $("#region_id").on('change', '', function (e) {
                 success: function (result) {
 
                     $('#constituency_id')
-                            .append($("<option></option>")
-                                        .attr("value","Select")
+                            .append($("<option ></option>")
+                                        .attr("value","all")
                                         .text("Select Constituency"));
                     $.each(result, function(key, value) {
 
@@ -149,13 +151,20 @@ $("#region_id").on('change', '', function (e) {
 
 
                }},
+               "columnDefs": [
+                    { "searchable": false, "targets": 4 },
+                    { "searchable": false, "targets": 5 }
+                ],
                columns: [
 
 
                   { data: 'name', name: 'ElectoralArea.name' },
                   { data: 'constituency_name', name: 'constituency.name' },
                   { data: 'region_name', name: 'region.name' },
-                  { data: 'country_name', name: 'countries.name' },
+                  //{ data: 'country_name', name: 'countries.name' },
+                  { data: 'total_polling', name: 'total_polling' },
+                  { data: 'total_voters', name: 'total_voters' },
+
                   {
                    mData:null,
                    name:"id",
@@ -164,12 +173,12 @@ $("#region_id").on('change', '', function (e) {
            var del = "{{ route('SuperAdmin.ElectoralAreaDelete',':number') }}"
                            del = del.replace(':number', data.id);
 
-                      /*  var url = "{{ route('SuperAdmin.constituencyEdit',':number') }}";
+                       var url = "{{ route('SuperAdmin.ElectoralAreaEdit',':number') }}";
                            url = url.replace(':number', data.id);
-                           <a style="color:white" class="btn btn-primary btn-xs" href=${url}>Edit</a> */
-                       return `
 
-                              <a style="color:white" class="btn btn-danger btn-xs" href=${del}>Delete</a>
+                       return `
+                       <a style="color:white" class="btn btn-primary btn-xs" href=${url}>Edit</a>
+                              <a onclick="return confirm('Delete entry?')" style="color:white" class="btn btn-danger btn-xs" href=${del}>Delete</a>
                           `;
                       }
                    }

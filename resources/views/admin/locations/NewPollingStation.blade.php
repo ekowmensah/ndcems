@@ -48,20 +48,20 @@
                           </div>
 
                           <div class="form-group">
-                            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Total Voter <span class="required">*</span>
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Registered Voters <span class="required">*</span>
                             </label>
                             <div class="col-md-6 col-sm-6 col-xs-12">
                               <input name="total_voters" type="text" id="total_voters" required="required" class="form-control col-md-7 col-xs-12">
                             </div>
                           </div>
 
-                          <div class="form-group">
-                            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Total Candidates <span class="required">*</span>
+                          {{-- <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Candidates <span class="required">*</span>
                             </label>
                             <div class="col-md-6 col-sm-6 col-xs-12">
                               <input name="total_candidates" type="text" id="total_candidates" required="required" class="form-control col-md-7 col-xs-12">
                             </div>
-                          </div>
+                          </div> --}}
                         <div class="form-group">
                                 <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Country  <span class="required">*</span>
                                 </label>
@@ -93,7 +93,7 @@
                             </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Electral Area  <span class="required">*</span>
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Electoral Area  <span class="required">*</span>
                         </label>
                         <div class="col-md-6 col-sm-6 col-xs-12">
                                 <select class="form-control" name="electoralarea_id" id="electoralarea_id"  required>
@@ -214,7 +214,7 @@
                                     $('#electoralarea_id')
                                             .append($("<option></option>")
                                                         .attr("value","Select")
-                                                        .text("Select Electral Area"));
+                                                        .text("Select Electoral Area"));
                                     $.each(result, function(key, value) {
                                         $('#electoralarea_id')
                                             .append($("<option></option>")

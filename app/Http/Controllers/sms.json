@@ -1,0 +1,23 @@
+{
+    "ToCountry": "US",
+    "ErrorUrl": "http:\/\/lootloo.pk\/notify_me",
+    "ToState": "CA",
+    "SmsMessageSid": "SM2fffa3aecaccdfacb8c5d459bdaff827",
+    "ErrorCode": "11200",
+    "NumMedia": "0",
+    "ToCity": "TRABUCO",
+    "FromZip": null,
+    "SmsSid": "SM2fffa3aecaccdfacb8c5d459bdaff827",
+    "FromState": null,
+    "SmsStatus": "received",
+    "FromCity": null,
+    "Body": "1000000001,123456",
+    "FromCountry": "GH",
+    "To": "YOUR_TWILIO_NUMBER",
+    "ToZip": "92679",
+    "NumSegments": "1",
+    "MessageSid": "SM2fffa3aecaccdfacb8c5d459bdaff827",
+    "AccountSid": "YOUR_TWILIO_ACCOUNT_SID",
+    "From": "+233545644749",
+    "ApiVersion": "2010-04-01"
+}

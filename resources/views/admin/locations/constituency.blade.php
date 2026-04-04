@@ -17,7 +17,7 @@
 </div>
 <div class="clearfix"></div>
 <div class="row">
-    <div class="col-md-10 col-sm-10 col-xs-10 col-md-offset-1">
+    <div class="col-md-12 col-sm-12 col-xs-12">
         <div class="x_panel">
           <div class="x_title">
             <select style="width:25vh" class="form-control filter" name="region_id" id="region_id"  required>
@@ -33,9 +33,12 @@
             <table class="table" id="table">
               <thead>
                 <tr>
-                  <th>Constituency Name</th>
-                  <th>Region Name</th>
-                  <th>Country Name</th>
+                  <th>Constituency</th>
+                  <th>Region</th>
+               {{--    <th>Country Name</th> --}}
+                  <th>Total Electoral Area's</th>
+                  <th>Total Polling Station</th>
+                  <th>Registered Voters</th>
                   <th></th>
                 </tr>
               </thead>
@@ -75,12 +78,24 @@
            d.region_id = $('#region_id').val();
 
     }},
+    "columnDefs": [
+
+    { "searchable": false, "targets": 2 },
+    { "searchable": false, "targets": 3 },
+    { "searchable": false, "targets": 4 },
+    { "searchable": false, "targets": 5 }
+  ],
     columns: [
 
 
        { data: 'name', name: 'constituency.name' },
        { data: 'region_name', name: 'region.name' },
-       { data: 'country_name', name: 'countries.name' },
+       //{ data: 'country_name', name: 'countries.name' },
+       { data: 'total_electral', name: 'total_electral' },
+       { data: 'total_polling', name: 'total_polling' },
+
+       { data: 'total_voters', name: 'total_voters' },
+
        {
         mData:null,
         name:"id",
@@ -93,7 +108,7 @@ var del = "{{ route('SuperAdmin.constituencyDelete',':number') }}"
                 url = url.replace(':number', data.id);
             return `
                    <a style="color:white" class="btn btn-primary btn-xs" href=${url}>Edit</a>
-                   <a style="color:white" class="btn btn-danger btn-xs" href=${del}>Delete</a>
+                   <a style="color:white" onclick="return confirm('Delete entry?')" class="btn btn-danger btn-xs" href=${del}>Delete</a>
                `;
            }
         }
