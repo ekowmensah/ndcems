@@ -150,9 +150,9 @@ class ElectionController extends Controller
     public function electionNew($id=false){
         $electionTypes =  ElectionType::all();
         $countries = Country::select(
-            DB::raw("(select sum(total_voters) from PollingStation where  PollingStation.country_id = countries.id) as total_voters"),
-            DB::raw("(select count(id) from PollingStation where  PollingStation.country_id = countries.id) as total_polling"),
-            DB::raw("(select count(id) from ElectoralArea where  ElectoralArea.country_id = countries.id) as total_electral"),
+            DB::raw("(select sum(total_voters) from pollingstation where  pollingstation.country_id = countries.id) as total_voters"),
+            DB::raw("(select count(id) from pollingstation where  pollingstation.country_id = countries.id) as total_polling"),
+            DB::raw("(select count(id) from electoralarea where  electoralarea.country_id = countries.id) as total_electral"),
             DB::raw("(select count(id) from constituency where  constituency.country_id = countries.id) as total_constituency"),
             'countries.*'
         )->get();
@@ -162,9 +162,9 @@ class ElectionController extends Controller
     }
     public function electionDetail($id){
         $countries = Country::select(
-            DB::raw("(select sum(total_voters) from PollingStation where  PollingStation.country_id = countries.id) as total_voters"),
-            DB::raw("(select count(id) from PollingStation where  PollingStation.country_id = countries.id) as total_polling"),
-            DB::raw("(select count(id) from ElectoralArea where  ElectoralArea.country_id = countries.id) as total_electral"),
+            DB::raw("(select sum(total_voters) from pollingstation where  pollingstation.country_id = countries.id) as total_voters"),
+            DB::raw("(select count(id) from pollingstation where  pollingstation.country_id = countries.id) as total_polling"),
+            DB::raw("(select count(id) from electoralarea where  electoralarea.country_id = countries.id) as total_electral"),
             DB::raw("(select count(id) from constituency where  constituency.country_id = countries.id) as total_constituency"),
             'countries.*'
         )->get();
@@ -240,3 +240,4 @@ class ElectionController extends Controller
     }
 
 }
+

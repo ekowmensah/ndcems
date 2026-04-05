@@ -11,22 +11,22 @@ $user = App\User::select(
             //"constituency.name as constituency_name"
             DB::raw("(select count(id) from constituency where  region.id = constituency.region_id) as total_constituency"),
 
-            DB::raw("(select sum(total_voters) from PollingStation where  PollingStation.region_id = region.id) as total_voters"),
-            DB::raw("(select count(id) from PollingStation where  PollingStation.region_id = region.id) as total_polling"),
-            DB::raw("(select count(id) from ElectoralArea where  ElectoralArea.region_id = region.id) as total_electoralArea")
+            DB::raw("(select sum(total_voters) from pollingstation where  pollingstation.region_id = region.id) as total_voters"),
+            DB::raw("(select count(id) from pollingstation where  pollingstation.region_id = region.id) as total_polling"),
+            DB::raw("(select count(id) from electoralarea where  electoralarea.region_id = region.id) as total_electoralArea")
             //DB::raw("(select count(id) from candidates where  candidates.constituency_id = users.constituency_id) as total_candidate")
 
-            //DB::raw("(select count(id) from ElectoralArea where  ElectoralArea.constituency_id = constituency.id) as total_electral")
-            //"PollingStation.name as PollingStation_name",
-            //"ElectoralArea.name as ElectoralArea_name"
-            //"PollingStation.polling_station_id as PollingStation_Id"
+            //DB::raw("(select count(id) from electoralarea where  electoralarea.constituency_id = constituency.id) as total_electral")
+            //"pollingstation.name as PollingStation_name",
+            //"electoralarea.name as ElectoralArea_name"
+            //"pollingstation.polling_station_id as PollingStation_Id"
         )
         ->where('users.id', Auth::user()->id)
         ->join('user_type','user_type.id','=','users.user_type_id')
         ->join('region','region.id','=','users.region_id')
         //->join('constituency','constituency.id','=','users.constituency_id')
-        //->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-        //->join('PollingStation','PollingStation.id','=','users.polling_station_id')
+        //->join('electoralarea','electoralarea.id','=','users.electoralarea_id')
+        //->join('pollingstation','pollingstation.id','=','users.polling_station_id')
         ->first();
 
 ?>
@@ -236,3 +236,4 @@ $user = App\User::select(
 
 </body>
 </html>
+

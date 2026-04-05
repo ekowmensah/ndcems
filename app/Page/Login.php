@@ -25,13 +25,13 @@ class Login implements Constant {
     public function login(){
 
         $user =  User::select(
-            'PollingStation.name as PollingStation_name',
+            'pollingstation.name as PollingStation_name',
             'users.name as user_name',
             'users.*'
             )
         ->where('username',$this->username)
         ->where('user_type_id',self::POLLING_AGENT)
-        ->join('PollingStation','PollingStation.id','=','users.polling_station_id')
+        ->join('pollingstation','pollingstation.id','=','users.polling_station_id')
         ->first();
         if(!$user || !$user->secret){
             return false;
@@ -52,3 +52,4 @@ class Login implements Constant {
         return $user;
     }
 }
+

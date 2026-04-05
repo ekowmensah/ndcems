@@ -107,8 +107,8 @@
           { data: 'user_type_name', name: 'user_type_name' },
             { data: 'region_name', name: 'region.name' },
           { data: 'constituency_name', name: 'constituency.name' },
-          { data: 'ElectoralArea_name', name: 'ElectoralArea.name' },
-          { data: 'PollingStation_name', name: 'PollingStation.name' },
+          { data: 'ElectoralArea_name', name: 'electoralarea.name' },
+          { data: 'PollingStation_name', name: 'pollingstation.name' },
           { data: 'created_at', name: 'users.created_at' },
             {
            mData:null,
@@ -244,3 +244,4 @@
 
 
 @endsection
+

@@ -113,7 +113,7 @@ class CandidateController extends Controller
             'political_party.name as political_party_name',
             'region.name as region_name',
             'constituency.name as constituency_name',
-            'PollingStation.name as polling_station_name',
+            'pollingstation.name as polling_station_name',
             'election_startup_detail.election_name',
             'candidates.*'
             )
@@ -122,7 +122,7 @@ class CandidateController extends Controller
             ->join('political_party','political_party.id','=','candidates.party_id')
             ->leftJoin('region','region.id','=','candidates.region_id')
             ->leftJoin('constituency','constituency.id','=','candidates.constituency_id')
-            ->leftJoin('PollingStation','PollingStation.id','=','candidates.polling_station_id')
+            ->leftJoin('pollingstation','pollingstation.id','=','candidates.polling_station_id')
         ->where("candidates.is_disabled",0)
         ;
         /* if($request->input('electoralarea_id') != "all")
@@ -217,3 +217,4 @@ class CandidateController extends Controller
             return redirect()->back();
     }
 }
+

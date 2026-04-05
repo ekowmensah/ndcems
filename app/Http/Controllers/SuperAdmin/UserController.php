@@ -328,17 +328,17 @@ class UserController extends Controller
                 'user_type.name as user_type_name',
                 'region.name as region_name',
                 "constituency.name as constituency_name",
-                "PollingStation.name as PollingStation_name",
-                "ElectoralArea.name as ElectoralArea_name"
+                "pollingstation.name as PollingStation_name",
+                "electoralarea.name as ElectoralArea_name"
             )
             ->where('user_type.id', $UserType->id)
             ->join('user_type','user_type.id','=','users.user_type_id')
             ->join('region','region.id','=','users.region_id')
             ->join('constituency','constituency.id','=','users.constituency_id')
-            ->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-            ->join('PollingStation','PollingStation.id','=','users.polling_station_id');
+            ->join('electoralarea','electoralarea.id','=','users.electoralarea_id')
+            ->join('pollingstation','pollingstation.id','=','users.polling_station_id');
 
-        //->leftJoin('PollingStation','PollingStation.electoralarea_id','=','ElectoralArea.id');
+        //->leftJoin('pollingstation','pollingstation.electoralarea_id','=','electoralarea.id');
             if($request->input('electoralarea_id') != "all")
                 $Users = $Users->where('users.electoralarea_id',$request->input('electoralarea_id'));
             if($request->input('constituency_id') != "all")
@@ -375,17 +375,17 @@ class UserController extends Controller
                 'users.username',
                 'region.name as region_name',
                 "constituency.name as constituency_name",
-                "PollingStation.name as PollingStation_name",
-                "ElectoralArea.name as ElectoralArea_name"
+                "pollingstation.name as PollingStation_name",
+                "electoralarea.name as ElectoralArea_name"
             )
             //->where('user_type.id','!=', $UserType->id)
             ->join('user_type','user_type.id','=','users.user_type_id')
             ->leftJoin('region','region.id','=','users.region_id')
             ->leftJoin('constituency','constituency.id','=','users.constituency_id')
-            ->leftJoin('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-            ->leftJoin('PollingStation','PollingStation.id','=','users.polling_station_id');
+            ->leftJoin('electoralarea','electoralarea.id','=','users.electoralarea_id')
+            ->leftJoin('pollingstation','pollingstation.id','=','users.polling_station_id');
 
-        //->leftJoin('PollingStation','PollingStation.electoralarea_id','=','ElectoralArea.id');
+        //->leftJoin('pollingstation','pollingstation.electoralarea_id','=','electoralarea.id');
             if($request->input('electoralarea_id') != "all")
                 $Users = $Users->where('users.electoralarea_id',$request->input('electoralarea_id'));
             if($request->input('constituency_id') != "all")
@@ -405,3 +405,4 @@ class UserController extends Controller
         return DataTables::of($Users)->make(true);
     }
 }
+

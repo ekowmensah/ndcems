@@ -134,7 +134,7 @@
                        columns: [
 
 
-                          { data: 'name', name: 'ElectoralArea.name' },
+                          { data: 'name', name: 'electoralarea.name' },
                           { data: 'constituency_name', name: 'constituency.name' },
                           { data: 'region_name', name: 'region.name' },
                           { data: 'country_name', name: 'countries.name' },
@@ -177,3 +177,4 @@
                         }
                     </style>
         @endsection
+

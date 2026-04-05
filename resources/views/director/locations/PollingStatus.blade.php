@@ -192,13 +192,13 @@
        columns: [
 
 
-          { data: 'polling_station_id', name: 'PollingStation.polling_station_id' },
-          { data: 'name', name: 'PollingStation.name' },
-            { data: 'ElectoralArea_name', name: 'ElectoralArea.name' },
+          { data: 'polling_station_id', name: 'pollingstation.polling_station_id' },
+          { data: 'name', name: 'pollingstation.name' },
+            { data: 'ElectoralArea_name', name: 'electoralarea.name' },
             { data: 'constituency_name', name: 'constituency.name' },
             { data: 'region_name', name: 'region.name' },
             { data: 'country_name', name: 'countries.name' },
-            { data: 'total_voters', name: 'PollingStation.total_voters' },
+            { data: 'total_voters', name: 'pollingstation.total_voters' },
 
 
           {
@@ -237,3 +237,4 @@
     </style>
 
         @endsection
+

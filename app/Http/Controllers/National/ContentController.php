@@ -142,9 +142,9 @@ class ContentController extends Controller
             "constituency.id",
             "constituency.name",
             'region.name as region_name',
-            DB::raw("(select sum(total_voters) from PollingStation where  PollingStation.constituency_id = constituency.id) as total_voters"),
-            DB::raw("(select count(id) from PollingStation where  PollingStation.constituency_id = constituency.id) as total_polling"),
-            DB::raw("(select count(id) from ElectoralArea where  ElectoralArea.constituency_id = constituency.id) as total_electral")
+            DB::raw("(select sum(total_voters) from pollingstation where  pollingstation.constituency_id = constituency.id) as total_voters"),
+            DB::raw("(select count(id) from pollingstation where  pollingstation.constituency_id = constituency.id) as total_polling"),
+            DB::raw("(select count(id) from electoralarea where  electoralarea.constituency_id = constituency.id) as total_electral")
 
         )
         /* ->join('constituency', function($join)
@@ -152,11 +152,11 @@ class ContentController extends Controller
            // $join->on('users.id', '=', 'contacts.user_id');
            $join->on('countries','countries.id','=','constituency.country_id');
            $join->on('region','region.id','=','constituency.region_id');
-           $join->on('PollingStation','PollingStation.constituency_id','=','constituency.id');
+           $join->on('pollingstation','pollingstation.constituency_id','=','constituency.id');
         }); */
         ->join('countries','countries.id','=','constituency.country_id')
         ->join('region','region.id','=','constituency.region_id');
-        //->leftJoin('PollingStation','PollingStation.constituency_id','=','constituency.id');
+        //->leftJoin('pollingstation','pollingstation.constituency_id','=','constituency.id');
         //if($request->input('region_id') != 'all')
             $regions = $regions ->where('constituency.region_id',Auth::user()->region_id);
         return DataTables::of($regions)->make(true);
@@ -318,17 +318,17 @@ class ContentController extends Controller
                 'user_type.name as user_type_name',
                 'region.name as region_name',
                 "constituency.name as constituency_name",
-                "PollingStation.name as PollingStation_name",
-                "ElectoralArea.name as ElectoralArea_name"
+                "pollingstation.name as PollingStation_name",
+                "electoralarea.name as ElectoralArea_name"
             )
             ->where('user_type.id', $UserType->id)
             ->join('user_type','user_type.id','=','users.user_type_id')
             ->join('region','region.id','=','users.region_id')
             ->join('constituency','constituency.id','=','users.constituency_id')
-            ->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-            ->join('PollingStation','PollingStation.id','=','users.polling_station_id');
+            ->join('electoralarea','electoralarea.id','=','users.electoralarea_id')
+            ->join('pollingstation','pollingstation.id','=','users.polling_station_id');
 
-        //->leftJoin('PollingStation','PollingStation.electoralarea_id','=','ElectoralArea.id');
+        //->leftJoin('pollingstation','pollingstation.electoralarea_id','=','electoralarea.id');
             if($request->input('electoralarea_id') != "all")
                 $Users = $Users->where('users.electoralarea_id',$request->input('electoralarea_id'));
             if($request->input('constituency_id') != "all")
@@ -376,14 +376,14 @@ class ContentController extends Controller
             'political_party.name as political_party_name',
             'region.name as region_name',
             'constituency.name as constituency_name',
-            'PollingStation.name as polling_station_name',
+            'pollingstation.name as polling_station_name',
             'candidates.*'
             )
             ->join('election_type','election_type.id','=','candidates.election_id')
             ->join('political_party','political_party.id','=','candidates.party_id')
             ->leftJoin('region','region.id','=','candidates.region_id')
             ->leftJoin('constituency','constituency.id','=','candidates.constituency_id')
-            ->leftJoin('PollingStation','PollingStation.id','=','candidates.polling_station_id')
+            ->leftJoin('pollingstation','pollingstation.id','=','candidates.polling_station_id')
         ->where("candidates.is_disabled",0);
         /* if($request->input('electoralarea_id') != "all")
             $candidate = $candidate->where('candidates.electoralarea_id',$request->input('electoralarea_id'));
@@ -413,11 +413,11 @@ class ContentController extends Controller
                 'countries.name as country_name',
                 'region.name as region_name',
                 "constituency.name as constituency_name",
-                "ElectoralArea.*"
+                "electoralarea.*"
             )
-            ->join('countries','countries.id','=','ElectoralArea.country_id')
-            ->join('region','region.id','=','ElectoralArea.region_id')
-            ->join('constituency','constituency.id','=','ElectoralArea.constituency_id')
+            ->join('countries','countries.id','=','electoralarea.country_id')
+            ->join('region','region.id','=','electoralarea.region_id')
+            ->join('constituency','constituency.id','=','electoralarea.constituency_id')
             ->get(); */
             $regions = Region::orderBy('name','asc')->get();
         return view('national.agent.ElectoralArea',compact('regions'));
@@ -428,20 +428,20 @@ class ContentController extends Controller
             'countries.name as country_name',
             'region.name as region_name',
             "constituency.name as constituency_name",
-            "ElectoralArea.*",
-            DB::raw("(select sum(total_voters) from PollingStation where  PollingStation.electoralarea_id = ElectoralArea.id) as total_voters"),
-            DB::raw("(select count(id) from PollingStation where  PollingStation.electoralarea_id = ElectoralArea.id) as total_polling")
+            "electoralarea.*",
+            DB::raw("(select sum(total_voters) from pollingstation where  pollingstation.electoralarea_id = electoralarea.id) as total_voters"),
+            DB::raw("(select count(id) from pollingstation where  pollingstation.electoralarea_id = electoralarea.id) as total_polling")
 
         )
-        ->join('countries','countries.id','=','ElectoralArea.country_id')
-        ->join('region','region.id','=','ElectoralArea.region_id')
-        ->join('constituency','constituency.id','=','ElectoralArea.constituency_id');
-        //->leftJoin('PollingStation','PollingStation.electoralarea_id','=','ElectoralArea.id');
+        ->join('countries','countries.id','=','electoralarea.country_id')
+        ->join('region','region.id','=','electoralarea.region_id')
+        ->join('constituency','constituency.id','=','electoralarea.constituency_id');
+        //->leftJoin('pollingstation','pollingstation.electoralarea_id','=','electoralarea.id');
 
         if($request->input('region_id') != 'all')
-            $regions = $regions ->where('ElectoralArea.region_id',$request->input('region_id'));
+            $regions = $regions ->where('electoralarea.region_id',$request->input('region_id'));
         if($request->input('constituency_id') != 'all')
-            $regions = $regions ->where('ElectoralArea.constituency_id',$request->input('constituency_id'));
+            $regions = $regions ->where('electoralarea.constituency_id',$request->input('constituency_id'));
         return DataTables::of($regions)->make(true);
 
     }
@@ -452,13 +452,13 @@ class ContentController extends Controller
                 'countries.name as country_name',
                 'region.name as region_name',
                 "constituency.name as constituency_name",
-                "ElectoralArea.name as ElectoralArea_name",
-                "PollingStation.*"
+                "electoralarea.name as ElectoralArea_name",
+                "pollingstation.*"
             )
-            ->join('countries','countries.id','=','PollingStation.country_id')
-            ->join('region','region.id','=','PollingStation.region_id')
-            ->join('constituency','constituency.id','=','PollingStation.constituency_id')
-            ->join('ElectoralArea','ElectoralArea.id','=','PollingStation.electoralarea_id')
+            ->join('countries','countries.id','=','pollingstation.country_id')
+            ->join('region','region.id','=','pollingstation.region_id')
+            ->join('constituency','constituency.id','=','pollingstation.constituency_id')
+            ->join('electoralarea','electoralarea.id','=','pollingstation.electoralarea_id')
             ->get(); */
             $regions = Region::orderBy('name','asc')->get();
         return view('national.agent.Polling',compact('regions'));
@@ -469,20 +469,20 @@ class ContentController extends Controller
             'countries.name as country_name',
             'region.name as region_name',
             "constituency.name as constituency_name",
-            "ElectoralArea.name as ElectoralArea_name",
-            "PollingStation.*"
+            "electoralarea.name as ElectoralArea_name",
+            "pollingstation.*"
         )
-        ->join('countries','countries.id','=','PollingStation.country_id')
-        ->join('region','region.id','=','PollingStation.region_id')
-        ->join('constituency','constituency.id','=','PollingStation.constituency_id')
-        ->leftJoin('ElectoralArea','ElectoralArea.id','=','PollingStation.electoralarea_id');
+        ->join('countries','countries.id','=','pollingstation.country_id')
+        ->join('region','region.id','=','pollingstation.region_id')
+        ->join('constituency','constituency.id','=','pollingstation.constituency_id')
+        ->leftJoin('electoralarea','electoralarea.id','=','pollingstation.electoralarea_id');
         if($request->input('region_id') != 'all')
-            $regions = $regions ->where('PollingStation.region_id',$request->input('region_id'));
+            $regions = $regions ->where('pollingstation.region_id',$request->input('region_id'));
         if($request->input('constituency_id') != 'all')
-            $regions = $regions ->where('PollingStation.constituency_id',$request->input('constituency_id'));
+            $regions = $regions ->where('pollingstation.constituency_id',$request->input('constituency_id'));
 
             if($request->input('electoralarea_id') != 'all')
-            $regions = $regions ->where('PollingStation.electoralarea_id',$request->input('electoralarea_id'));
+            $regions = $regions ->where('pollingstation.electoralarea_id',$request->input('electoralarea_id'));
         return DataTables::of($regions)->make(true);
     }
     public function profile(){
@@ -497,16 +497,16 @@ class ContentController extends Controller
             'user_type.name as user_type_name'
             //'region.name as region_name',
             //"constituency.name as constituency_name"
-            //"PollingStation.name as PollingStation_name",
-            //"ElectoralArea.name as ElectoralArea_name"
-            //"PollingStation.polling_station_id as PollingStation_Id"
+            //"pollingstation.name as PollingStation_name",
+            //"electoralarea.name as ElectoralArea_name"
+            //"pollingstation.polling_station_id as PollingStation_Id"
         )
         ->where('users.id', Auth::user()->id)
         ->join('user_type','user_type.id','=','users.user_type_id')
         //->join('region','region.id','=','users.region_id')
         //->join('constituency','constituency.id','=','users.constituency_id')
-        //->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-        //->join('PollingStation','PollingStation.id','=','users.polling_station_id')
+        //->join('electoralarea','electoralarea.id','=','users.electoralarea_id')
+        //->join('pollingstation','pollingstation.id','=','users.polling_station_id')
         ->first();
         //dd($user->toArray());
         return view('director.candidate.profile',compact('user'));
@@ -735,3 +735,4 @@ class ContentController extends Controller
         return $PoliticalParties;
     }
 }
+

@@ -458,10 +458,10 @@ class HomeController extends Controller
             "election_startup_detail.election_name",
             'region.name as region_name',
             "constituency.name as constituency_name",
-            "ElectoralArea.name as ElectoralArea_name",
-            "PollingStation.name as PollingStation_name",
-            "PollingStation.id as PollingStation_id",
-            "PollingStation.polling_station_id as PollingStation_code"
+            "electoralarea.name as ElectoralArea_name",
+            "pollingstation.name as PollingStation_name",
+            "pollingstation.id as PollingStation_id",
+            "pollingstation.polling_station_id as PollingStation_code"
         )
             ->join('election_result','region.id','=','election_result.region_id')
             ->join('party_election_result', 'party_election_result.election_result_id', '=', 'election_result.id')
@@ -469,9 +469,9 @@ class HomeController extends Controller
             ->join('candidates', 'candidates.id', '=', 'party_election_result.candidate_id')
             ->join('election_type','election_type.id','=','election_result.election_type_id')
             ->join('election_startup_detail','election_startup_detail.id','=','election_result.election_start_up_id')
-            ->join('PollingStation','PollingStation.id','=','election_result.polling_station_id')
+            ->join('pollingstation','pollingstation.id','=','election_result.polling_station_id')
             ->join('constituency','constituency.id','=','election_result.constituency_id')
-            ->join('ElectoralArea','ElectoralArea.id','=','election_result.electoral_area_id')
+            ->join('electoralarea','electoralarea.id','=','election_result.electoral_area_id')
             ->orderBy('candidates.ordering_position','ASC');
 
         if ($request->input('election_type_id') ) {
@@ -494,8 +494,8 @@ class HomeController extends Controller
         }
         /* $electionResult3 = $electionResult->groupBy('political_party.party_initial')
             ->selectRaw('sum(party_election_result.obtained_vote) as party_election_result_obtained_vote'); */
-        $electionResults = $electionResult->orderBy('PollingStation.id')->get();
-        $electionResults2 = $electionResult->groupBy('PollingStation.id')->get();
+        $electionResults = $electionResult->orderBy('pollingstation.id')->get();
+        $electionResults2 = $electionResult->groupBy('pollingstation.id')->get();
         $PollingStation = @$electionResults->toArray();
         //dd($PollingStation);
         //====================== new sheet ====================
@@ -684,3 +684,4 @@ class HomeController extends Controller
         exit;
     }
 }
+

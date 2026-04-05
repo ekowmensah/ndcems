@@ -164,7 +164,7 @@
 
           //{ data: 'name', name: 'constituency.name' },
           //{ data: 'region_name', name: 'region.name' },
-          //{ data: 'name', name: 'PollingStation.name' },
+          //{ data: 'name', name: 'pollingstation.name' },
           {
            mData:null,
            name:"name",
@@ -174,7 +174,7 @@
             },
           { data: 'election_type_name', name: 'election_type.name' },
           { data: 'election_name', name: 'election_startup_detail.election_name' },
-          { data: 'total_voters', name: 'PollingStation.total_voters' },
+          { data: 'total_voters', name: 'pollingstation.total_voters' },
           { data: 'obtained_votes', name: 'election_result.obtained_votes' },
           { data: 'total_ballot', name: 'election_result.total_ballot' },
           { data: 'total_rejected_ballot', name: 'election_result.total_rejected_ballot' },
@@ -332,3 +332,4 @@
 
     </style>
 @endsection
+
