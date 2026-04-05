@@ -21,7 +21,6 @@ use App\Model\PollingStation;
 use App\Model\Country;
 use Illuminate\Support\Facades\Hash;
 use DB;
-use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
@@ -273,33 +272,14 @@ class PollingAgentController extends Controller
     public function result(){
         $election = ElectionType::all();
         $constituencyId = Auth::user()->constituency_id;
-        $analytics = $this->buildResultAnalytics($constituencyId, 'all');
-        return view('director.polling.result', compact('election') + $analytics);
-    }
-
-    public function resultAnalytics(Request $request)
-    {
-        $constituencyId = Auth::user()->constituency_id;
-        $electionTypeId = $request->input('election_type_id', 'all');
-        $analytics = $this->buildResultAnalytics($constituencyId, $electionTypeId);
-        return response()->json($analytics);
-    }
-
-    private function buildResultAnalytics($constituencyId, $electionTypeId = 'all')
-    {
-        $baseQuery = ElectionResult::where('election_result.constituency_id', $constituencyId);
-        if ($electionTypeId !== 'all') {
-            $baseQuery->where('election_result.election_type_id', (int) $electionTypeId);
-        }
-
-        $summary = (clone $baseQuery)->selectRaw('
-            COUNT(*) as submitted,
-            SUM(CASE WHEN verify_by_constituency = 1 THEN 1 ELSE 0 END) as confirmed,
-            SUM(CASE WHEN verify_by_constituency = 0 THEN 1 ELSE 0 END) as pending,
-            SUM(CASE WHEN pink_sheet_path IS NOT NULL AND pink_sheet_path != "" THEN 1 ELSE 0 END) as pink_sheets,
-            SUM(obtained_votes) as total_valid_votes,
-            SUM(total_rejected_ballot) as total_rejected_votes
-        ')->first();
+        $summary = ElectionResult::selectRaw('
+                COUNT(*) as submitted,
+                SUM(CASE WHEN verify_by_constituency = 1 THEN 1 ELSE 0 END) as confirmed,
+                SUM(CASE WHEN verify_by_constituency = 0 THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN pink_sheet_path IS NOT NULL AND pink_sheet_path != "" THEN 1 ELSE 0 END) as pink_sheets
+            ')
+            ->where('constituency_id', $constituencyId)
+            ->first();
 
         $totalPollingStations = PollingStation::where('constituency_id', $constituencyId)->count();
         $submitted = (int) ($summary->submitted ?? 0);
@@ -307,113 +287,18 @@ class PollingAgentController extends Controller
         $pending = (int) ($summary->pending ?? 0);
         $pinkSheets = (int) ($summary->pink_sheets ?? 0);
 
-        $overVoting = (clone $baseQuery)
-            ->join('pollingstation', 'pollingstation.id', '=', 'election_result.polling_station_id')
-            ->whereRaw('election_result.total_ballot > pollingstation.total_voters')
-            ->count();
-
         $resultSummary = [
             'submitted' => $submitted,
             'confirmed' => $confirmed,
             'pending' => $pending,
             'pink_sheets' => $pinkSheets,
-            'missing_pink_sheets' => max($submitted - $pinkSheets, 0),
             'total_polling_stations' => $totalPollingStations,
             'coverage_rate' => $totalPollingStations > 0 ? round(($submitted / $totalPollingStations) * 100, 2) : 0,
             'confirmation_rate' => $submitted > 0 ? round(($confirmed / $submitted) * 100, 2) : 0,
             'pink_sheet_rate' => $submitted > 0 ? round(($pinkSheets / $submitted) * 100, 2) : 0,
-            'total_valid_votes' => (int) ($summary->total_valid_votes ?? 0),
-            'total_rejected_votes' => (int) ($summary->total_rejected_votes ?? 0),
-            'over_voting_cases' => (int) $overVoting,
         ];
 
-        $statusPie = [
-            'labels' => ['Confirmed', 'Pending'],
-            'values' => [$confirmed, $pending],
-        ];
-
-        $pinkSheetPie = [
-            'labels' => ['With Pink Sheet', 'Missing Pink Sheet'],
-            'values' => [$pinkSheets, max($submitted - $pinkSheets, 0)],
-        ];
-
-        $electionTypeRows = ElectionResult::select(
-                'election_type.name as election_type_name',
-                DB::raw('COUNT(election_result.id) as submissions'),
-                DB::raw('SUM(CASE WHEN election_result.verify_by_constituency = 1 THEN 1 ELSE 0 END) as confirmations')
-            )
-            ->join('election_type', 'election_type.id', '=', 'election_result.election_type_id')
-            ->where('election_result.constituency_id', $constituencyId)
-            ->groupBy('election_type.id', 'election_type.name')
-            ->orderBy('election_type.name', 'asc')
-            ->get();
-
-        $electionTypeBar = [
-            'labels' => $electionTypeRows->pluck('election_type_name')->values(),
-            'submissions' => $electionTypeRows->pluck('submissions')->map(function ($value) {
-                return (int) $value;
-            })->values(),
-            'confirmations' => $electionTypeRows->pluck('confirmations')->map(function ($value) {
-                return (int) $value;
-            })->values(),
-        ];
-
-        $partyVotesQuery = PartyElectionResult::select(
-                'political_party.party_initial',
-                DB::raw('SUM(party_election_result.obtained_vote) as total_votes')
-            )
-            ->join('political_party', 'political_party.id', '=', 'party_election_result.party_id')
-            ->where('party_election_result.constituency_id', $constituencyId);
-        if ($electionTypeId !== 'all') {
-            $partyVotesQuery->join('election_result', 'election_result.id', '=', 'party_election_result.election_result_id')
-                ->where('election_result.election_type_id', (int) $electionTypeId);
-        }
-        $partyVotes = $partyVotesQuery
-            ->groupBy('political_party.id', 'political_party.party_initial')
-            ->orderByDesc('total_votes')
-            ->limit(8)
-            ->get();
-
-        $partyVotePie = [
-            'labels' => $partyVotes->pluck('party_initial')->values(),
-            'values' => $partyVotes->pluck('total_votes')->map(function ($value) {
-                return (int) $value;
-            })->values(),
-        ];
-
-        $hourSlots = collect(range(23, 1))->map(function ($offset) {
-            return Carbon::now()->subHours($offset)->format('Y-m-d H:00:00');
-        })->push(Carbon::now()->format('Y-m-d H:00:00'));
-
-        $hourlyRows = (clone $baseQuery)
-            ->select(
-                DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d %H:00:00") as hour_slot'),
-                DB::raw('COUNT(id) as submissions')
-            )
-            ->where('created_at', '>=', Carbon::now()->subHours(24))
-            ->groupBy(DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d %H:00:00")'))
-            ->orderBy('hour_slot', 'asc')
-            ->get()
-            ->keyBy('hour_slot');
-
-        $trendHourly = [
-            'labels' => [],
-            'submissions' => [],
-        ];
-        foreach ($hourSlots as $slot) {
-            $row = $hourlyRows->get($slot);
-            $trendHourly['labels'][] = Carbon::parse($slot)->format('H:i');
-            $trendHourly['submissions'][] = (int) optional($row)->submissions;
-        }
-
-        return [
-            'resultSummary' => $resultSummary,
-            'statusPie' => $statusPie,
-            'pinkSheetPie' => $pinkSheetPie,
-            'electionTypeBar' => $electionTypeBar,
-            'partyVotePie' => $partyVotePie,
-            'trendHourly' => $trendHourly,
-        ];
+        return view('director.polling.result',compact('election', 'resultSummary'));
     }
     public function pollingStationResultAajax(Request $request ){
         $regions = PollingStation::select(
@@ -520,7 +405,32 @@ class PollingAgentController extends Controller
     }
     public function viewResults($election_start_up, Request $request, $election_result_id=false)
     {
-        $resultId = $election_result_id ?: $election_start_up;
+
+        $user = User::select(
+            'users.username',
+            'users.created_at',
+            'users.name as user_name',
+            'users.id as user_id',
+            'user_type.id as user_type_id',
+            'user_type.name as user_type_name',
+            'region.name as region_name',
+            "constituency.name as constituency_name",
+            "pollingstation.name as PollingStation_name",
+            "electoralarea.name as ElectoralArea_name",
+            "pollingstation.polling_station_id as PollingStation_Id"
+        )
+        ->where('users.id', Auth::user()->id)
+        ->join('user_type','user_type.id','=','users.user_type_id')
+        ->join('region','region.id','=','users.region_id')
+        ->join('constituency','constituency.id','=','users.constituency_id')
+        ->join('electoralarea','electoralarea.id','=','users.electoralarea_id')
+        ->join('pollingstation','pollingstation.id','=','users.polling_station_id')->first();
+
+        $electionStartupDetail = ElectionStartupDetail::select('election_type.name','election_startup_detail.*')
+            ->join('election_type','election_type.id','=','election_startup_detail.election_type_id')
+            ->where("election_startup_detail.id",$election_start_up)
+            ->where("status",1)
+            ->first();
         /* if(!$electionStartupDetail){
             $request->session()->flash('error', ' Something went wrong!');
 
@@ -578,11 +488,6 @@ class PollingAgentController extends Controller
             "election_result.election_start_up_id",
             "election_result.obtained_votes",
             "pollingstation.total_voters",
-            "pollingstation.name as PollingStation_name",
-            "pollingstation.polling_station_id as PollingStation_Id",
-            "electoralarea.name as ElectoralArea_name",
-            "constituency.name as constituency_name",
-            "region.name as region_name",
             "election_result.verify_by_constituency",
             "election_result.verify_by_regional",
             "election_result.pink_sheet_path"
@@ -592,14 +497,10 @@ class PollingAgentController extends Controller
         ->join('candidates','candidates.id','=','party_election_result.candidate_id')
         //->where('election_result.user_id',Auth::user()->id)
         ->join('pollingstation','pollingstation.id','=','election_result.polling_station_id')
-        ->join('electoralarea','electoralarea.id','=','election_result.electoral_area_id')
-        ->join('constituency','constituency.id','=','election_result.constituency_id')
-        ->join('region','region.id','=','election_result.region_id')
         //->where('candidates.polling_station_id',Auth::user()->polling_station_id)
         //->where('candidates.election_id',$electionStartupDetail->election_type_id)
         ->orderBy('candidates.ordering_position','ASC')
-        ->where('election_result.constituency_id', Auth::user()->constituency_id)
-        ->where('election_result.id',$resultId);
+        ->where('election_result.id',$election_start_up);
         //->orderBy('candidates.ordering_position','ASC');
             //dd($electionResult);
 
@@ -608,25 +509,6 @@ class PollingAgentController extends Controller
             $electionResult = $electionResult->where('election_result.id',$election_result_id);
         } */
         $electionResult =$electionResult->get();
-        if($electionResult->isEmpty()){
-            $request->session()->flash('error', 'Result not found for this constituency.');
-            return redirect(route('Director.Result'));
-        }
-
-        $resultMeta = $electionResult->first();
-        $electionStartupDetail = ElectionStartupDetail::select('election_type.name','election_startup_detail.*')
-            ->join('election_type','election_type.id','=','election_startup_detail.election_type_id')
-            ->where("election_startup_detail.id",$resultMeta->election_start_up_id)
-            ->first();
-
-        $user = (object) [
-            'PollingStation_name' => $resultMeta->PollingStation_name,
-            'PollingStation_Id' => $resultMeta->PollingStation_Id,
-            'ElectoralArea_name' => $resultMeta->ElectoralArea_name,
-            'constituency_name' => $resultMeta->constituency_name,
-            'region_name' => $resultMeta->region_name,
-            'user_type_name' => 'Constituency Director',
-        ];
 
         //dd($electionResult);
 
@@ -652,69 +534,6 @@ class PollingAgentController extends Controller
         return response()->file($path, [
             'Cache-Control' => 'private, no-store, max-age=0',
             'Pragma' => 'no-cache',
-        ]);
-    }
-    public function resultDetail($id)
-    {
-        $resultMeta = ElectionResult::select(
-                'election_result.id',
-                'election_result.total_ballot',
-                'election_result.total_rejected_ballot',
-                'election_result.obtained_votes',
-                'election_result.pink_sheet_path',
-                'election_result.verify_by_constituency',
-                'election_startup_detail.election_name',
-                'election_type.name as election_type_name',
-                'pollingstation.name as polling_station_name',
-                'pollingstation.polling_station_id as polling_station_code',
-                'pollingstation.total_voters'
-            )
-            ->join('election_startup_detail', 'election_startup_detail.id', '=', 'election_result.election_start_up_id')
-            ->join('election_type', 'election_type.id', '=', 'election_result.election_type_id')
-            ->join('pollingstation', 'pollingstation.id', '=', 'election_result.polling_station_id')
-            ->where('election_result.id', $id)
-            ->where('election_result.constituency_id', Auth::user()->constituency_id)
-            ->first();
-
-        if(!$resultMeta){
-            return response()->json(['message' => 'Result not found.'], 404);
-        }
-
-        $candidates = PartyElectionResult::select(
-                'candidates.first_name',
-                'candidates.last_name',
-                'political_party.party_initial',
-                'party_election_result.obtained_vote'
-            )
-            ->join('candidates', 'candidates.id', '=', 'party_election_result.candidate_id')
-            ->join('political_party', 'political_party.id', '=', 'party_election_result.party_id')
-            ->where('party_election_result.election_result_id', $resultMeta->id)
-            ->orderBy('candidates.ordering_position', 'asc')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'candidate_name' => trim($item->first_name . ' ' . $item->last_name),
-                    'party_initial' => $item->party_initial,
-                    'votes' => (int) $item->obtained_vote,
-                ];
-            })
-            ->values();
-
-        return response()->json([
-            'id' => (int) $resultMeta->id,
-            'election_name' => $resultMeta->election_name,
-            'election_type_name' => $resultMeta->election_type_name,
-            'polling_station_name' => $resultMeta->polling_station_name,
-            'polling_station_code' => $resultMeta->polling_station_code,
-            'total_voters' => (int) $resultMeta->total_voters,
-            'obtained_votes' => (int) $resultMeta->obtained_votes,
-            'total_rejected_ballot' => (int) $resultMeta->total_rejected_ballot,
-            'total_ballot' => (int) $resultMeta->total_ballot,
-            'verify_by_constituency' => (int) $resultMeta->verify_by_constituency,
-            'has_pink_sheet' => !empty($resultMeta->pink_sheet_path),
-            'pink_sheet_view_url' => !empty($resultMeta->pink_sheet_path) ? route('Director.ViewPinkSheet', $resultMeta->id) : null,
-            'pink_sheet_download_url' => !empty($resultMeta->pink_sheet_path) ? route('Director.DownloadPinkSheet', $resultMeta->id) : null,
-            'candidates' => $candidates,
         ]);
     }
     public function downloadPinkSheet($election_result_id){

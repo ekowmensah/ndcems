@@ -233,7 +233,6 @@ Route::group(['prefix' =>"director",'namespace'=>'Director','as' => 'Director.']
 
 
         Route::get('/','HomeController@index')->name('home');
-        Route::get('/dashboard-data','HomeController@dashboardData')->name('dashboardData');
         Route::get('/polling-agent','PollingAgentController@pollingAgent')->name('pollingAgent');
         Route::get('/polling-agent-ajax','PollingAgentController@pollingAgentAjax')->name('pollingAgentAjax');
 
@@ -283,8 +282,6 @@ Route::group(['prefix' =>"director",'namespace'=>'Director','as' => 'Director.']
 
 
         Route::get('/result','PollingAgentController@result')->name('Result');
-        Route::get('/result-analytics','PollingAgentController@resultAnalytics')->name('ResultAnalytics');
-        Route::get('/result-detail/{id}','PollingAgentController@resultDetail')->name('ResultDetail');
         Route::get('/result/delete/{id}','PollingAgentController@deleteResults')->name('deleteResults');
         Route::post('/pink-sheet-upload/{election_result_id}','PollingAgentController@uploadPinkSheet')->name('UploadPinkSheet');
         Route::get('/pink-sheet/{election_result_id}','PollingAgentController@viewPinkSheet')->name('ViewPinkSheet');

@@ -19,34 +19,6 @@ $user = App\User::select(
         ->join('region','region.id','=','users.region_id')
         ->join('constituency','constituency.id','=','users.constituency_id')
         ->first();
-
-$resultSummary = \App\Model\ElectionResult::selectRaw('
-        COUNT(*) as submitted,
-        SUM(CASE WHEN verify_by_constituency = 1 THEN 1 ELSE 0 END) as confirmed,
-        SUM(CASE WHEN verify_by_constituency = 0 THEN 1 ELSE 0 END) as pending,
-        SUM(CASE WHEN pink_sheet_path IS NOT NULL AND pink_sheet_path != "" THEN 1 ELSE 0 END) as pink_sheets,
-        SUM(obtained_votes) as total_valid_votes,
-        SUM(total_rejected_ballot) as total_rejected_votes
-    ')
-    ->where('constituency_id', Auth::user()->constituency_id)
-    ->first();
-
-$submittedCount = (int) ($resultSummary->submitted ?? 0);
-$confirmedCount = (int) ($resultSummary->confirmed ?? 0);
-$pendingCount = (int) ($resultSummary->pending ?? 0);
-$pinkSheetCount = (int) ($resultSummary->pink_sheets ?? 0);
-
-$captureCoverage = ((int) ($user->total_polling ?? 0)) > 0
-    ? round(($submittedCount / (int) $user->total_polling) * 100, 2)
-    : 0;
-
-$confirmationCoverage = $submittedCount > 0
-    ? round(($confirmedCount / $submittedCount) * 100, 2)
-    : 0;
-
-$pinkSheetCoverage = $submittedCount > 0
-    ? round(($pinkSheetCount / $submittedCount) * 100, 2)
-    : 0;
 ?>
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}">
@@ -72,7 +44,6 @@ $pinkSheetCoverage = $submittedCount > 0
     <link rel="stylesheet" href="{{ asset('AdminLTE/plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
     <!-- AdminLTE -->
     <link rel="stylesheet" href="{{ asset('AdminLTE/dist/css/adminlte.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/director-dashboard.css?v=20260405') }}">
     @yield("css")
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -188,51 +159,75 @@ $pinkSheetCoverage = $submittedCount > 0
         <!-- Content Header -->
         <div class="content-header">
             <div class="container-fluid">
-                <div class="director-hero">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center">
-                        <div>
-                            <h1>Constituency Results Command Center</h1>
-                            <p>
-                                {{ $user->region_name ?? 'N/A' }} Region
-                                <span class="mx-1">|</span>
-                                {{ $user->constituency_name ?? 'N/A' }} Constituency
-                            </p>
+                <div class="row mb-2">
+                    <div class="col-sm-12">
+                        <!-- Info Boxes -->
+                        <div class="row">
+                            <div class="col-md-3 col-sm-6">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info elevation-1"><i class="fas fa-user-shield"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Logged in as</span>
+                                        <span class="info-box-number">{{ $user->user_type_name ?? 'N/A' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success elevation-1"><i class="fas fa-globe-africa"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Region</span>
+                                        <span class="info-box-number">{{ $user->region_name ?? 'N/A' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-landmark"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Constituency</span>
+                                        <span class="info-box-number">{{ $user->constituency_name ?? 'N/A' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-poll"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Polling Stations</span>
+                                        <span class="info-box-number">{{ $user->total_polling ?? 0 }}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mt-2 mt-md-0">
-                            <span class="badge badge-light">{{ $user->user_type_name ?? 'Director' }}</span>
-                            <a href="{{ route('Director.election') }}" class="btn btn-sm btn-light ml-2">
-                                <i class="fas fa-plus-circle mr-1"></i> Capture/Update Result
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="director-kpi-grid">
-                    <div class="director-kpi-card">
-                        <span class="director-kpi-title">Results Submitted</span>
-                        <div class="director-kpi-value">{{ number_format($submittedCount) }}</div>
-                        <span class="director-kpi-sub">{{ number_format($user->total_polling ?? 0) }} polling stations total</span>
-                    </div>
-                    <div class="director-kpi-card">
-                        <span class="director-kpi-title">Confirmed Results</span>
-                        <div class="director-kpi-value text-success">{{ number_format($confirmedCount) }}</div>
-                        <span class="director-kpi-sub">{{ $confirmationCoverage }}% of submitted results</span>
-                    </div>
-                    <div class="director-kpi-card">
-                        <span class="director-kpi-title">Pending Confirmation</span>
-                        <div class="director-kpi-value text-warning">{{ number_format($pendingCount) }}</div>
-                        <span class="director-kpi-sub">Needs final director action</span>
-                    </div>
-                    <div class="director-kpi-card">
-                        <span class="director-kpi-title">Pink Sheet Coverage</span>
-                        <div class="director-kpi-value">{{ number_format($pinkSheetCount) }}</div>
-                        <span class="director-kpi-sub">{{ $pinkSheetCoverage }}% of submitted results</span>
-                    </div>
-                    <div class="director-kpi-card">
-                        <span class="director-kpi-title">Capture Coverage</span>
-                        <div class="director-kpi-value">{{ $captureCoverage }}%</div>
-                        <div class="director-progress mt-2">
-                            <span style="width: {{ min(100, max(0, $captureCoverage)) }}%;"></span>
+                        <div class="row">
+                            <div class="col-md-4 col-sm-6">
+                                <div class="small-box bg-gradient-info">
+                                    <div class="inner">
+                                        <h4>{{ number_format($user->total_electoralArea ?? 0) }}</h4>
+                                        <p>Electoral Areas</p>
+                                    </div>
+                                    <div class="icon"><i class="fas fa-map-marker-alt"></i></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-sm-6">
+                                <div class="small-box bg-gradient-success">
+                                    <div class="inner">
+                                        <h4>{{ number_format($user->total_voters ?? 0) }}</h4>
+                                        <p>Registered Voters</p>
+                                    </div>
+                                    <div class="icon"><i class="fas fa-users"></i></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-sm-6">
+                                <div class="small-box bg-gradient-warning">
+                                    <div class="inner">
+                                        <h4>{{ $user->total_candidate ?? 0 }}</h4>
+                                        <p>Candidates</p>
+                                    </div>
+                                    <div class="icon"><i class="fas fa-user-check"></i></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
