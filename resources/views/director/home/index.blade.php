@@ -56,19 +56,6 @@
 
         <div class="card director-card mt-3">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title">Parliamentary Results (Constituency)</h3>
-                <span class="director-chip director-chip-primary">Full Graph</span>
-            </div>
-            <div class="card-body">
-                <div style="height: 420px; position: relative; overflow: hidden;">
-                    <canvas id="parliamentaryResultsChart" style="height:100% !important;"></canvas>
-                </div>
-                <div id="parliamentary_results_list" class="mt-3"></div>
-            </div>
-        </div>
-
-        <div class="card director-card mt-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
                 <h3 class="card-title">Election Type Performance Matrix</h3>
                 <span class="director-chip director-chip-warning">Operational Table</span>
             </div>
@@ -168,6 +155,23 @@
                 <a href="{{ route('Director.election') }}" class="btn btn-success btn-sm mb-2">
                     <i class="fas fa-vote-yea mr-1"></i>Capture / Edit Result
                 </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card director-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title">Parliamentary Results (Constituency)</h3>
+                <span class="director-chip director-chip-primary">Full Graph</span>
+            </div>
+            <div class="card-body">
+                <div style="height: 420px; position: relative; overflow: hidden;">
+                    <canvas id="parliamentaryResultsChart" style="height:100% !important;"></canvas>
+                </div>
+                <div id="parliamentary_results_list" class="mt-3"></div>
             </div>
         </div>
     </div>
@@ -275,7 +279,7 @@
             return;
         }
 
-        let html = '<div class="table-responsive"><table class="table table-sm table-hover mb-0"><thead><tr><th>#</th><th>Candidate</th><th>Party</th><th class="text-right">Votes</th></tr></thead><tbody>';
+        let html = '<div class="table-responsive"><table class="table table-sm table-hover mb-0"><thead><tr><th>#</th><th>Candidate Image</th><th>Party</th><th class="text-right">Total Votes</th></tr></thead><tbody>';
         rows.forEach(function (row, index) {
             const candidatePhoto = row.candidate_photo_url || fallbackCandidateAvatar;
             const partyLogo = row.party_logo_url || fallbackPartyLogo;
@@ -283,12 +287,7 @@
                 <tr>
                     <td class="align-middle">${index + 1}</td>
                     <td class="align-middle">
-                        <div class="d-flex align-items-center">
-                            <img src="${candidatePhoto}" alt="${row.candidate_name}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:1px solid #ddd;" onerror="this.src='${fallbackCandidateAvatar}'">
-                            <div class="ml-2">
-                                <strong>${row.candidate_name}</strong>
-                            </div>
-                        </div>
+                        <img src="${candidatePhoto}" alt="Candidate" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid #ddd;" onerror="this.src='${fallbackCandidateAvatar}'">
                     </td>
                     <td class="align-middle">
                         <div class="d-flex align-items-center">
@@ -378,14 +377,25 @@
             })
         });
 
-        const parliamentary = data.parliamentaryResultsChart || { labels: [], votes: [] };
+        const parliamentary = data.parliamentaryResultsChart || { labels: [], votes: [], rows: [] };
+        const parliamentaryRows = parliamentary.rows || [];
+        const chartLabels = parliamentaryRows.length
+            ? parliamentaryRows.map(function (row) { return row.party_initial || '-'; })
+            : (parliamentary.labels || []);
+        const chartCandidateNames = parliamentaryRows.length
+            ? parliamentaryRows.map(function (row) { return row.candidate_name || ''; })
+            : [];
+        const chartVotes = parliamentaryRows.length
+            ? parliamentaryRows.map(function (row) { return Number(row.votes || 0); })
+            : (parliamentary.votes || []);
         parliamentaryChart = makeOrUpdateChart(parliamentaryChart, 'parliamentaryResultsChart', {
             type: 'bar',
             data: {
-                labels: parliamentary.labels || [],
+                labels: chartLabels,
+                candidateNames: chartCandidateNames,
                 datasets: [{
                     label: 'Confirmed Votes',
-                    data: parliamentary.votes || [],
+                    data: chartVotes,
                     backgroundColor: '#16a34a',
                     borderRadius: 6,
                     maxBarThickness: 38
@@ -407,15 +417,23 @@
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
+                            title: function(items) {
+                                if (!items || !items.length) return '';
+                                const index = items[0].dataIndex;
+                                const names = items[0].chart?.data?.candidateNames || [];
+                                const candidate = names[index] || '';
+                                return candidate ? `Candidate: ${candidate}` : '';
+                            },
                             label: function(context) {
-                                return `Votes: ${Number(context.parsed.y || 0).toLocaleString()}`;
+                                const party = context.label || '-';
+                                return `Party: ${party} | Votes: ${Number(context.parsed.y || 0).toLocaleString()}`;
                             }
                         }
                     }
                 }
             })
         });
-        renderParliamentaryList(parliamentary.rows || []);
+        renderParliamentaryList(parliamentaryRows);
 
         renderElectionTypePerformance(data.electionTypePerformance || []);
         renderStartupProgress(data.startupPerformance || []);

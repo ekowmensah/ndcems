@@ -149,6 +149,12 @@ $pinkSheetCoverage = $submittedCount > 0
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="{{ route('Director.collation') }}" class="nav-link {{ Request::is('director/collation*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-layer-group"></i>
+                            <p>Collation View</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{{ route('Director.election') }}" class="nav-link {{ Request::is('director/election*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-vote-yea"></i>
                             <p>Capture Result</p>

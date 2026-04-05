@@ -234,6 +234,8 @@ Route::group(['prefix' =>"director",'namespace'=>'Director','as' => 'Director.']
 
         Route::get('/','HomeController@index')->name('home');
         Route::get('/dashboard-data','HomeController@dashboardData')->name('dashboardData');
+        Route::get('/collation','HomeController@collation')->name('collation');
+        Route::get('/collation-data','HomeController@collationData')->name('collationData');
         Route::get('/polling-agent','PollingAgentController@pollingAgent')->name('pollingAgent');
         Route::get('/polling-agent-ajax','PollingAgentController@pollingAgentAjax')->name('pollingAgentAjax');
 

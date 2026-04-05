@@ -45,8 +45,31 @@ class HomeController extends Controller
         return response()->json($analytics);
     }
 
+    public function collation()
+    {
+        $constituencyId = Auth::user()->constituency_id;
+        $analytics = $this->buildDashboardAnalytics($constituencyId);
+        return view('director.home.collation', $analytics);
+    }
+
+    public function collationData()
+    {
+        $constituencyId = Auth::user()->constituency_id;
+        $analytics = $this->buildDashboardAnalytics($constituencyId);
+        return response()->json($analytics);
+    }
+
     private function buildDashboardAnalytics($constituencyId)
     {
+        $directorContext = User::select(
+                'region.name as region_name',
+                'constituency.name as constituency_name'
+            )
+            ->join('region', 'region.id', '=', 'users.region_id')
+            ->join('constituency', 'constituency.id', '=', 'users.constituency_id')
+            ->where('users.id', Auth::id())
+            ->first();
+
         $totalPollingStations = PollingStation::where('constituency_id', $constituencyId)->count();
 
         $overall = ElectionResult::selectRaw('
@@ -196,6 +219,7 @@ class HomeController extends Controller
 
         $parliamentaryRows = PartyElectionResult::select(
                 DB::raw("CONCAT(candidates.first_name, ' ', candidates.last_name) as candidate_name"),
+                'political_party.name as party_name',
                 'political_party.party_initial',
                 'candidates.photo as candidate_photo',
                 'political_party.logo as party_logo',
@@ -211,9 +235,40 @@ class HomeController extends Controller
                 $query->where('election_result.election_type_id', 2)
                     ->orWhereRaw('LOWER(election_type.name) LIKE ?', ['%parliament%']);
             })
-            ->groupBy('candidates.id', 'candidates.first_name', 'candidates.last_name', 'candidates.photo', 'political_party.party_initial', 'political_party.logo')
+            ->groupBy('candidates.id', 'candidates.first_name', 'candidates.last_name', 'candidates.photo', 'political_party.name', 'political_party.party_initial', 'political_party.logo')
             ->orderByDesc('total_votes')
             ->get();
+
+        $totalParliamentaryVotes = (int) $parliamentaryRows->sum('total_votes');
+
+        $parliamentaryElectionContext = ElectionResult::select(
+                'election_startup_detail.election_name',
+                'election_type.name as election_type_name'
+            )
+            ->join('election_startup_detail', 'election_startup_detail.id', '=', 'election_result.election_start_up_id')
+            ->join('election_type', 'election_type.id', '=', 'election_result.election_type_id')
+            ->where('election_result.constituency_id', $constituencyId)
+            ->where(function ($query) {
+                $query->where('election_result.election_type_id', 2)
+                    ->orWhereRaw('LOWER(election_type.name) LIKE ?', ['%parliament%']);
+            })
+            ->orderByDesc('election_result.id')
+            ->first();
+
+        if (!$parliamentaryElectionContext) {
+            $parliamentaryElectionContext = ElectionStartupDetail::select(
+                    'election_startup_detail.election_name',
+                    'election_type.name as election_type_name'
+                )
+                ->join('election_type', 'election_type.id', '=', 'election_startup_detail.election_type_id')
+                ->where('election_startup_detail.status', 1)
+                ->where(function ($query) {
+                    $query->where('election_startup_detail.election_type_id', 2)
+                        ->orWhereRaw('LOWER(election_type.name) LIKE ?', ['%parliament%']);
+                })
+                ->orderByDesc('election_startup_detail.id')
+                ->first();
+        }
 
         $parliamentaryResultsChart = [
             'labels' => $parliamentaryRows->map(function ($row) {
@@ -225,8 +280,45 @@ class HomeController extends Controller
             'rows' => $parliamentaryRows->map(function ($row) {
                 return [
                     'candidate_name' => trim($row->candidate_name),
+                    'party_name' => $row->party_name,
                     'party_initial' => $row->party_initial,
                     'votes' => (int) $row->total_votes,
+                    'candidate_photo_url' => $row->candidate_photo ? asset('candidate_logo/' . $row->candidate_photo) : null,
+                    'party_logo_url' => $row->party_logo ? asset('party_logo/' . $row->party_logo) : null,
+                ];
+            })->values(),
+        ];
+
+        $totalBallotCast = ((int) ($overall->total_valid_votes ?? 0)) + ((int) ($overall->total_rejected_votes ?? 0));
+        $rejectedRate = $totalBallotCast > 0
+            ? round((((int) ($overall->total_rejected_votes ?? 0)) / $totalBallotCast) * 100, 2)
+            : 0;
+
+        $constituencyCollation = [
+            'title' => 'NDC Election Collation',
+            'context' => [
+                'constituency_name' => optional($directorContext)->constituency_name,
+                'region_name' => optional($directorContext)->region_name,
+                'election_name' => optional($parliamentaryElectionContext)->election_name,
+                'election_type_name' => optional($parliamentaryElectionContext)->election_type_name,
+            ],
+            'coverage' => [
+                'reported' => $submitted,
+                'total' => $totalPollingStations,
+                'percent' => $coverageRate,
+            ],
+            'valid_votes' => (int) ($overall->total_valid_votes ?? 0),
+            'rejected_votes' => (int) ($overall->total_rejected_votes ?? 0),
+            'rejected_rate' => $rejectedRate,
+            'top_parties' => $parliamentaryRows->take(3)->values()->map(function ($row, $index) use ($totalParliamentaryVotes) {
+                $votes = (int) $row->total_votes;
+                return [
+                    'rank' => $index + 1,
+                    'candidate_name' => trim($row->candidate_name),
+                    'party_name' => $row->party_name,
+                    'party_initial' => $row->party_initial,
+                    'votes' => $votes,
+                    'percentage' => $totalParliamentaryVotes > 0 ? round(($votes / $totalParliamentaryVotes) * 100, 2) : 0,
                     'candidate_photo_url' => $row->candidate_photo ? asset('candidate_logo/' . $row->candidate_photo) : null,
                     'party_logo_url' => $row->party_logo ? asset('party_logo/' . $row->party_logo) : null,
                 ];
@@ -241,6 +333,7 @@ class HomeController extends Controller
             'trendDaily' => $trendDaily,
             'topStationsChart' => $topStationsChart,
             'parliamentaryResultsChart' => $parliamentaryResultsChart,
+            'constituencyCollation' => $constituencyCollation,
         ];
     }
     public function pollingAgent(){
