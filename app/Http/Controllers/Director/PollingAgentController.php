@@ -61,18 +61,18 @@ class PollingAgentController extends Controller
                 'user_type.name as user_type_name',
                 'region.name as region_name',
                 "constituency.name as constituency_name",
-                "PollingStation.name as PollingStation_name",
-                "ElectoralArea.name as ElectoralArea_name"
+                "pollingstation.name as PollingStation_name",
+                "electoralarea.name as ElectoralArea_name"
             )
             ->where('user_type.id', $UserType->id)
             ->where('constituency.id', Auth::user()->constituency_id)
             ->join('user_type','user_type.id','=','users.user_type_id')
             ->join('region','region.id','=','users.region_id')
             ->join('constituency','constituency.id','=','users.constituency_id')
-            ->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-            ->join('PollingStation','PollingStation.id','=','users.polling_station_id');
+            ->join('electoralarea','electoralarea.id','=','users.electoralarea_id')
+            ->join('pollingstation','pollingstation.id','=','users.polling_station_id');
 
-        //->leftJoin('PollingStation','PollingStation.electoralarea_id','=','ElectoralArea.id');
+        //->leftJoin('pollingstation','pollingstation.electoralarea_id','=','electoralarea.id');
             if($request->input('electoralarea_id') != "all")
                 $Users = $Users->where('users.electoralarea_id',$request->input('electoralarea_id'));
             if($request->input('constituency_id') != "all")
@@ -276,8 +276,8 @@ class PollingAgentController extends Controller
     }
     public function pollingStationResultAajax(Request $request ){
         $regions = PollingStation::select(
-            'PollingStation.*',
-            'PollingStation.total_voters',
+            'pollingstation.*',
+            'pollingstation.total_voters',
             'election_result.obtained_votes',
             'election_result.total_ballot',
             'election_result.user_id as election_result_user_id',
@@ -293,7 +293,7 @@ class PollingAgentController extends Controller
             'users.name as agent_name',
             'users.phoneno as agent_phoneno'
         )
-        ->join('election_result','election_result.polling_station_id','=','PollingStation.id')
+        ->join('election_result','election_result.polling_station_id','=','pollingstation.id')
         ->join('election_startup_detail','election_startup_detail.id','=','election_result.election_start_up_id')
         ->join('election_type','election_result.election_type_id','=','election_type.id')
         //->join("users","users.constituency_id","=","election_result.constituency_id")
@@ -301,7 +301,7 @@ class PollingAgentController extends Controller
         ->leftJoin('users','users.id','=','election_result.result_by_constituency')
 
         ;
-        //->distinct('PollingStation.id')
+        //->distinct('pollingstation.id')
 
         //->leftJoin('users','users.id','=','election_result.result_by_constituency')
 
@@ -312,7 +312,7 @@ class PollingAgentController extends Controller
         })
         ->get(); */
 
-        //->leftJoin('PollingStation','PollingStation.constituency_id','=','constituency.id');
+        //->leftJoin('pollingstation','pollingstation.constituency_id','=','constituency.id');
         //if($request->input('region_id') != 'all')
         if($request->input('election_type_id')!="all"){
             $regions = $regions->where('election_type.id',$request->input('election_type_id'));
@@ -389,16 +389,16 @@ class PollingAgentController extends Controller
             'user_type.name as user_type_name',
             'region.name as region_name',
             "constituency.name as constituency_name",
-            "PollingStation.name as PollingStation_name",
-            "ElectoralArea.name as ElectoralArea_name",
-            "PollingStation.polling_station_id as PollingStation_Id"
+            "pollingstation.name as PollingStation_name",
+            "electoralarea.name as ElectoralArea_name",
+            "pollingstation.polling_station_id as PollingStation_Id"
         )
         ->where('users.id', Auth::user()->id)
         ->join('user_type','user_type.id','=','users.user_type_id')
         ->join('region','region.id','=','users.region_id')
         ->join('constituency','constituency.id','=','users.constituency_id')
-        ->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-        ->join('PollingStation','PollingStation.id','=','users.polling_station_id')->first();
+        ->join('electoralarea','electoralarea.id','=','users.electoralarea_id')
+        ->join('pollingstation','pollingstation.id','=','users.polling_station_id')->first();
 
         $electionStartupDetail = ElectionStartupDetail::select('election_type.name','election_startup_detail.*')
             ->join('election_type','election_type.id','=','election_startup_detail.election_type_id')
@@ -461,7 +461,7 @@ class PollingAgentController extends Controller
             "election_result.total_rejected_ballot",
             "election_result.election_start_up_id",
             "election_result.obtained_votes",
-            "PollingStation.total_voters",
+            "pollingstation.total_voters",
             "election_result.verify_by_constituency",
             "election_result.verify_by_regional",
             "election_result.pink_sheet_path"
@@ -470,7 +470,7 @@ class PollingAgentController extends Controller
         ->join('political_party','political_party.id','=','party_election_result.party_id')
         ->join('candidates','candidates.id','=','party_election_result.candidate_id')
         //->where('election_result.user_id',Auth::user()->id)
-        ->join('PollingStation','PollingStation.id','=','election_result.polling_station_id')
+        ->join('pollingstation','pollingstation.id','=','election_result.polling_station_id')
         //->where('candidates.polling_station_id',Auth::user()->polling_station_id)
         //->where('candidates.election_id',$electionStartupDetail->election_type_id)
         ->orderBy('candidates.ordering_position','ASC')
@@ -667,10 +667,10 @@ class PollingAgentController extends Controller
                 'user_type.name as user_type_name',
                 'region.name as region_name',
                 "constituency.name as constituency_name",
-                "PollingStation.name as PollingStation_name",
-                "ElectoralArea.name as ElectoralArea_name",
-                "PollingStation.polling_station_id as PollingStation_Id",
-                "PollingStation.total_voters",
+                "pollingstation.name as PollingStation_name",
+                "electoralarea.name as ElectoralArea_name",
+                "pollingstation.polling_station_id as PollingStation_Id",
+                "pollingstation.total_voters",
                 "users.constituency_id",
                 "users.polling_station_id"
             )
@@ -678,27 +678,27 @@ class PollingAgentController extends Controller
             ->leftJoin('user_type','user_type.id','=','users.user_type_id')
             ->leftJoin('region','region.id','=','users.region_id')
             ->leftJoin('constituency','constituency.id','=','users.constituency_id')
-            ->leftJoin('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-            ->leftJoin('PollingStation','PollingStation.id','=','users.polling_station_id')->first();
+            ->leftJoin('electoralarea','electoralarea.id','=','users.electoralarea_id')
+            ->leftJoin('pollingstation','pollingstation.id','=','users.polling_station_id')->first();
             if(!$user || (int) $user->constituency_id !== (int) Auth::user()->constituency_id){
                 abort(403);
             }
         } elseif($result){
             $user = PollingStation::select(
                 DB::raw("'N/A' as user_type_name"),
-                'PollingStation.total_voters',
-                'PollingStation.constituency_id',
-                'PollingStation.id as polling_station_id',
+                'pollingstation.total_voters',
+                'pollingstation.constituency_id',
+                'pollingstation.id as polling_station_id',
                 'region.name as region_name',
                 'constituency.name as constituency_name',
-                "PollingStation.name as PollingStation_name",
-                "ElectoralArea.name as ElectoralArea_name",
-                "PollingStation.polling_station_id as PollingStation_Id"
+                "pollingstation.name as PollingStation_name",
+                "electoralarea.name as ElectoralArea_name",
+                "pollingstation.polling_station_id as PollingStation_Id"
             )
-            ->leftJoin('region','region.id','=','PollingStation.region_id')
-            ->leftJoin('constituency','constituency.id','=','PollingStation.constituency_id')
-            ->leftJoin('ElectoralArea','ElectoralArea.id','=','PollingStation.electoralarea_id')
-            ->where('PollingStation.id', $result->polling_station_id)
+            ->leftJoin('region','region.id','=','pollingstation.region_id')
+            ->leftJoin('constituency','constituency.id','=','pollingstation.constituency_id')
+            ->leftJoin('electoralarea','electoralarea.id','=','pollingstation.electoralarea_id')
+            ->where('pollingstation.id', $result->polling_station_id)
             ->first();
             if(!$user || (int) $user->constituency_id !== (int) Auth::user()->constituency_id){
                 abort(403);
@@ -827,9 +827,9 @@ class PollingAgentController extends Controller
                 'user_type.name as user_type_name',
                 'region.name as region_name',
                 "constituency.name as constituency_name",
-                "PollingStation.name as PollingStation_name",
-                "ElectoralArea.name as ElectoralArea_name",
-                "PollingStation.polling_station_id as PollingStation_Id",
+                "pollingstation.name as PollingStation_name",
+                "electoralarea.name as ElectoralArea_name",
+                "pollingstation.polling_station_id as PollingStation_Id",
                 "users.country_id",
                 "users.region_id",
                 "users.constituency_id",
@@ -840,8 +840,8 @@ class PollingAgentController extends Controller
             ->join('user_type','user_type.id','=','users.user_type_id')
             ->join('region','region.id','=','users.region_id')
             ->join('constituency','constituency.id','=','users.constituency_id')
-            ->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-            ->join('PollingStation','PollingStation.id','=','users.polling_station_id')->first();
+            ->join('electoralarea','electoralarea.id','=','users.electoralarea_id')
+            ->join('pollingstation','pollingstation.id','=','users.polling_station_id')->first();
             if(!$user || (int) $user->constituency_id !== (int) Auth::user()->constituency_id){
                 abort(403);
             }
@@ -973,16 +973,16 @@ class PollingAgentController extends Controller
             'user_type.name as user_type_name',
             'region.name as region_name',
             "constituency.name as constituency_name",
-            "PollingStation.name as PollingStation_name",
-            "ElectoralArea.name as ElectoralArea_name",
-            "PollingStation.polling_station_id as PollingStation_Id"
+            "pollingstation.name as PollingStation_name",
+            "electoralarea.name as ElectoralArea_name",
+            "pollingstation.polling_station_id as PollingStation_Id"
         )
         ->where('users.id', Auth::user()->id)
         ->join('user_type','user_type.id','=','users.user_type_id')
         ->join('region','region.id','=','users.region_id')
         ->join('constituency','constituency.id','=','users.constituency_id')
-        ->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-        ->join('PollingStation','PollingStation.id','=','users.polling_station_id')->first();
+        ->join('electoralarea','electoralarea.id','=','users.electoralarea_id')
+        ->join('pollingstation','pollingstation.id','=','users.polling_station_id')->first();
 
         $electionStartupDetail = ElectionStartupDetail::select('election_type.name','election_startup_detail.*')
             ->join('election_type','election_type.id','=','election_startup_detail.election_type_id')
@@ -1001,7 +1001,7 @@ class PollingAgentController extends Controller
             "election_result.total_rejected_ballot",
             "election_result.election_start_up_id",
             "election_result.obtained_votes",
-            "PollingStation.total_voters",
+            "pollingstation.total_voters",
             "election_result.verify_by_constituency",
             "election_result.verify_by_regional",
 
@@ -1009,24 +1009,24 @@ class PollingAgentController extends Controller
             "election_startup_detail.election_name",
             'region.name as region_name',
             "constituency.name as constituency_name",
-            "ElectoralArea.name as ElectoralArea_name",
-            "PollingStation.name as PollingStation_name",
-            "PollingStation.polling_station_id as PollingStation_code"
+            "electoralarea.name as ElectoralArea_name",
+            "pollingstation.name as PollingStation_name",
+            "pollingstation.polling_station_id as PollingStation_code"
 
 
         )
         ->join('party_election_result','party_election_result.election_result_id','=','election_result.id')
         ->join('political_party','political_party.id','=','party_election_result.party_id')
         ->join('candidates','candidates.id','=','party_election_result.candidate_id')
-        ->join('PollingStation','PollingStation.id','=','election_result.polling_station_id')
+        ->join('pollingstation','pollingstation.id','=','election_result.polling_station_id')
 
         ->join('election_type','election_type.id','=','election_result.election_type_id')
         ->join('election_startup_detail','election_startup_detail.id','=','election_result.election_start_up_id')
 
         ->join('region','region.id','=','election_result.region_id')
         ->join('constituency','constituency.id','=','election_result.constituency_id')
-        ->join('ElectoralArea','ElectoralArea.id','=','election_result.electoral_area_id')
-        //->join('PollingStation','PollingStation.id','=','election_result.polling_station_id')
+        ->join('electoralarea','electoralarea.id','=','election_result.electoral_area_id')
+        //->join('pollingstation','pollingstation.id','=','election_result.polling_station_id')
         ->orderBy('candidates.ordering_position','ASC')
         ->where('election_result.id',$election_start_up);
         $styleArray = array(
@@ -1103,3 +1103,4 @@ class PollingAgentController extends Controller
 
     }
 }
+

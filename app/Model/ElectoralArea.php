@@ -7,7 +7,7 @@ use Auth;
 
 class ElectoralArea extends Model
 {
-    protected $table = "ElectoralArea";
+    protected $table = "electoralarea";
     protected $fillable = [
         "name",
         "country_id",
@@ -18,4 +18,3 @@ class ElectoralArea extends Model
 
 
 }
-

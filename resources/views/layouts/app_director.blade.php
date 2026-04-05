@@ -9,9 +9,9 @@ $user = App\User::select(
             'user_type.name as user_type_name',
             'region.name as region_name',
             "constituency.name as constituency_name",
-            DB::raw("(select sum(total_voters) from PollingStation where  PollingStation.constituency_id = constituency.id) as total_voters"),
-            DB::raw("(select count(id) from PollingStation where  PollingStation.constituency_id = constituency.id) as total_polling"),
-            DB::raw("(select count(id) from ElectoralArea where  ElectoralArea.constituency_id = users.constituency_id) as total_electoralArea"),
+            DB::raw("(select sum(total_voters) from pollingstation where pollingstation.constituency_id = constituency.id) as total_voters"),
+            DB::raw("(select count(id) from pollingstation where pollingstation.constituency_id = constituency.id) as total_polling"),
+            DB::raw("(select count(id) from electoralarea where electoralarea.constituency_id = users.constituency_id) as total_electoralArea"),
             DB::raw("(select count(id) from candidates where  candidates.constituency_id = users.constituency_id) as total_candidate")
         )
         ->where('users.id', Auth::user()->id)

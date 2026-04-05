@@ -44,17 +44,17 @@ class AgentController extends Controller
             'user_type.name as user_type_name',
             'region.name as region_name',
             "constituency.name as constituency_name",
-            "PollingStation.name as PollingStation_name",
-            "ElectoralArea.name as ElectoralArea_name",
-            "PollingStation.polling_station_id as PollingStation_Id",
-            "PollingStation.total_voters"
+            "pollingstation.name as PollingStation_name",
+            "electoralarea.name as ElectoralArea_name",
+            "pollingstation.polling_station_id as PollingStation_Id",
+            "pollingstation.total_voters"
         )
         ->where('users.id', Auth::user()->id)
         ->join('user_type','user_type.id','=','users.user_type_id')
         ->join('region','region.id','=','users.region_id')
         ->join('constituency','constituency.id','=','users.constituency_id')
-        ->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-        ->join('PollingStation','PollingStation.id','=','users.polling_station_id')->first();
+        ->join('electoralarea','electoralarea.id','=','users.electoralarea_id')
+        ->join('pollingstation','pollingstation.id','=','users.polling_station_id')->first();
 
         $electionStartupDetail = ElectionStartupDetail::select('election_type.name','election_startup_detail.*')
             ->join('election_type','election_type.id','=','election_startup_detail.election_type_id')
@@ -174,17 +174,17 @@ class AgentController extends Controller
             'user_type.name as user_type_name',
             'region.name as region_name',
             "constituency.name as constituency_name",
-            "PollingStation.name as PollingStation_name",
-            "ElectoralArea.name as ElectoralArea_name",
-            "PollingStation.polling_station_id as PollingStation_Id",
+            "pollingstation.name as PollingStation_name",
+            "electoralarea.name as ElectoralArea_name",
+            "pollingstation.polling_station_id as PollingStation_Id",
             "users.country_id"
         )
         ->where('users.id', Auth::user()->id)
         ->join('user_type','user_type.id','=','users.user_type_id')
         ->join('region','region.id','=','users.region_id')
         ->join('constituency','constituency.id','=','users.constituency_id')
-        ->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-        ->join('PollingStation','PollingStation.id','=','users.polling_station_id')->first();
+        ->join('electoralarea','electoralarea.id','=','users.electoralarea_id')
+        ->join('pollingstation','pollingstation.id','=','users.polling_station_id')->first();
 
         $electionStartupDetail = ElectionStartupDetail::select(
                 'election_type.name',
@@ -559,11 +559,11 @@ class AgentController extends Controller
                 "election_result.verify_by_constituency",
                 "election_result.pink_sheet_path",
                 "election_result.election_start_up_id",
-                "PollingStation.total_voters",
+                "pollingstation.total_voters",
                 "election_type.name as election_type_name"
             )
             ->join('election_startup_detail','election_startup_detail.id','=','election_result.election_start_up_id')
-            ->join('PollingStation','PollingStation.id','=','election_result.polling_station_id')
+            ->join('pollingstation','pollingstation.id','=','election_result.polling_station_id')
             ->join('election_type','election_result.election_type_id','=','election_type.id')
             ->whereIn('election_result.id', $latestResultIds)
             ->orderBy('election_result.id','desc')
@@ -584,16 +584,16 @@ class AgentController extends Controller
             'user_type.name as user_type_name',
             'region.name as region_name',
             "constituency.name as constituency_name",
-            "PollingStation.name as PollingStation_name",
-            "ElectoralArea.name as ElectoralArea_name",
-            "PollingStation.polling_station_id as PollingStation_Id"
+            "pollingstation.name as PollingStation_name",
+            "electoralarea.name as ElectoralArea_name",
+            "pollingstation.polling_station_id as PollingStation_Id"
         )
         ->where('users.id', Auth::user()->id)
         ->join('user_type','user_type.id','=','users.user_type_id')
         ->join('region','region.id','=','users.region_id')
         ->join('constituency','constituency.id','=','users.constituency_id')
-        ->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-        ->join('PollingStation','PollingStation.id','=','users.polling_station_id')->first();
+        ->join('electoralarea','electoralarea.id','=','users.electoralarea_id')
+        ->join('pollingstation','pollingstation.id','=','users.polling_station_id')->first();
 
         $electionStartupDetail = ElectionStartupDetail::select('election_type.name','election_startup_detail.*')
             ->join('election_type','election_type.id','=','election_startup_detail.election_type_id')
@@ -657,13 +657,13 @@ class AgentController extends Controller
             "election_result.election_start_up_id",
             "election_result.obtained_votes",
             "election_result.pink_sheet_path",
-            "PollingStation.total_voters"
+            "pollingstation.total_voters"
         )
         ->join('party_election_result','party_election_result.election_result_id','=','election_result.id')
         ->join('political_party','political_party.id','=','party_election_result.party_id')
         ->join('candidates','candidates.id','=','party_election_result.candidate_id')
 //        ->where('election_result.user_id',Auth::user()->id)
-        ->join('PollingStation','PollingStation.id','=','election_result.polling_station_id')
+        ->join('pollingstation','pollingstation.id','=','election_result.polling_station_id')
         //->where('candidates.polling_station_id',Auth::user()->polling_station_id)
         ->where('candidates.election_id',$electionStartupDetail->election_type_id)
 
@@ -683,3 +683,4 @@ class AgentController extends Controller
         return view('agent.home.viewResults',compact('election_start_up','electionResult','parties','user','electionStartupDetail'));
     }
 }
+

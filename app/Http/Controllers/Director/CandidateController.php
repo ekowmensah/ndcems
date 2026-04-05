@@ -61,14 +61,14 @@ class CandidateController extends Controller
             'political_party.name as political_party_name',
             'region.name as region_name',
             'constituency.name as constituency_name',
-            'PollingStation.name as polling_station_name',
+            'pollingstation.name as polling_station_name',
             'candidates.*'
             )
             ->join('election_type','election_type.id','=','candidates.election_id')
             ->join('political_party','political_party.id','=','candidates.party_id')
             ->leftJoin('region','region.id','=','candidates.region_id')
             ->leftJoin('constituency','constituency.id','=','candidates.constituency_id')
-            ->leftJoin('PollingStation','PollingStation.id','=','candidates.polling_station_id')
+            ->leftJoin('pollingstation','pollingstation.id','=','candidates.polling_station_id')
             ->where("constituency.id",Auth::user()->constituency_id)
             ->where("candidates.is_disabled",0);
         /* if($request->input('electoralarea_id') != "all")
@@ -258,18 +258,19 @@ class CandidateController extends Controller
             'user_type.name as user_type_name',
             'region.name as region_name',
             "constituency.name as constituency_name"
-            //"PollingStation.name as PollingStation_name",
-            //"ElectoralArea.name as ElectoralArea_name"
-            //"PollingStation.polling_station_id as PollingStation_Id"
+            //"pollingstation.name as PollingStation_name",
+            //"electoralarea.name as ElectoralArea_name"
+            //"pollingstation.polling_station_id as PollingStation_Id"
         )
         ->where('users.id', Auth::user()->id)
         ->join('user_type','user_type.id','=','users.user_type_id')
         ->join('region','region.id','=','users.region_id')
         ->join('constituency','constituency.id','=','users.constituency_id')
-        //->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-        //->join('PollingStation','PollingStation.id','=','users.polling_station_id')
+        //->join('electoralarea','electoralarea.id','=','users.electoralarea_id')
+        //->join('pollingstation','pollingstation.id','=','users.polling_station_id')
         ->first();
         //dd($user->toArray());
         return view('director.candidate.profile',compact('user'));
     }
 }
+

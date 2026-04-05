@@ -7,7 +7,7 @@ use Auth;
 
 class PollingStation extends Model
 {
-    protected $table = "PollingStation";
+    protected $table = "pollingstation";
     protected $fillable = [
         "name",
         "country_id",
@@ -18,4 +18,3 @@ class PollingStation extends Model
 
 
 }
-

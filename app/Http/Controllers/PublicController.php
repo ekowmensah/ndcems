@@ -129,7 +129,7 @@ class PublicController extends Controller
                     ->where('election_result.election_type_id', $NewElectionTypes[1]['id'])->count();
 
             $all_polling_count = PollingStation::select('polling_station_id')->count();
-        return view('public.index',compact('polling_count','all_polling_count','regions','dataPoints','allElectionResults','colors','electionStartupDetail','id','newElectionType'));
+        return view('public.parliament',compact('polling_count','all_polling_count','regions','dataPoints','allElectionResults','colors','electionStartupDetail','id','newElectionType'));
     }
     public function president($id=false)
     {
@@ -237,7 +237,7 @@ class PublicController extends Controller
             $newElectionType = $NewElectionTypes[0]['id'];
             $regions = Region::all();
 
-        return view('public.index',compact('polling_count','all_polling_count','regions','allElectionResults','colors','electionStartupDetail','id','newElectionType'));
+        return view('public.president',compact('polling_count','all_polling_count','regions','allElectionResults','colors','electionStartupDetail','id','newElectionType'));
     }
     public function ajaxResult(Request $request){
         if($request->input('election_type_id'))
