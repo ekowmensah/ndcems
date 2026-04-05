@@ -277,6 +277,9 @@
 
                             <div class="form-group">
                                 <div class="col-md-9 col-sm-9 col-xs-12 col-md-offset-4">
+                                @if(isset($electionResult) && count($electionResult) > 0)
+                                <input type="hidden" name="election_result_id" value="{{$electionResult->first()->id}}">
+                                @endif
                                 <input type="hidden" name="customer_ip" value="{{request()->ip()}}">
                                     <button id="reset" class="btn btn-primary" type="reset">Reset</button>
                                     <button id="submit" type="submit" class="btn btn-success"> <i id="submitIcon"> </i> Submit</button>

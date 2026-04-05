@@ -240,6 +240,22 @@
         </div>
         @endif
     </div>
+
+    @if($electionResult && isset($electionResult) && count($electionResult) != 0)
+    <div class="card view-results-card">
+        <div class="card-header">
+            <h5><i class="fas fa-camera mr-2" style="color:var(--ndc-red)"></i>Pink Sheet</h5>
+        </div>
+        <div class="card-body text-center">
+            @if(!empty($electionResult->toArray()[0]['pink_sheet_path']))
+                <p><a href="{{ route('Agent.ViewPinkSheet', $electionResult->toArray()[0]['id']) }}" target="_blank" rel="noopener">Open Full Image</a></p>
+                <img src="{{ route('Agent.ViewPinkSheet', $electionResult->toArray()[0]['id']) }}" alt="Pink Sheet" style="max-width:100%;max-height:380px;border:1px solid #ddd;border-radius:8px;padding:4px;background:#fff;">
+            @else
+                <p class="text-muted mb-0">Pink sheet has not been uploaded yet.</p>
+            @endif
+        </div>
+    </div>
+    @endif
 </div>
 
 

@@ -282,6 +282,7 @@ class PollingAgentController extends Controller
             'election_result.total_ballot',
             'election_result.user_id as election_result_user_id',
             'election_result.total_rejected_ballot',
+            'election_result.pink_sheet_path',
             'election_result.id as election_result_id',
             'election_result.election_start_up_id',
             "election_result.verify_by_constituency",
@@ -462,7 +463,8 @@ class PollingAgentController extends Controller
             "election_result.obtained_votes",
             "PollingStation.total_voters",
             "election_result.verify_by_constituency",
-            "election_result.verify_by_regional"
+            "election_result.verify_by_regional",
+            "election_result.pink_sheet_path"
         )
         ->join('party_election_result','party_election_result.election_result_id','=','election_result.id')
         ->join('political_party','political_party.id','=','party_election_result.party_id')
@@ -487,6 +489,119 @@ class PollingAgentController extends Controller
         return view('director.polling.viewResults',compact('election_start_up','electionResult','parties','user','electionStartupDetail'));
         //return view('director.polling.viewResults');
 
+    }
+    public function viewPinkSheet($election_result_id){
+        $electionResult = ElectionResult::where('id', $election_result_id)
+            ->where('constituency_id', Auth::user()->constituency_id)
+            ->first();
+        if(!$electionResult){
+            abort(403);
+        }
+        if(!$electionResult->pink_sheet_path){
+            abort(404);
+        }
+
+        $path = $this->resolvePinkSheetPath($electionResult->pink_sheet_path);
+        if(!$path){
+            abort(404);
+        }
+        return response()->file($path, [
+            'Cache-Control' => 'private, no-store, max-age=0',
+            'Pragma' => 'no-cache',
+        ]);
+    }
+    public function downloadPinkSheet($election_result_id){
+        $electionResult = ElectionResult::where('id', $election_result_id)
+            ->where('constituency_id', Auth::user()->constituency_id)
+            ->first();
+        if(!$electionResult){
+            abort(403);
+        }
+        if(!$electionResult->pink_sheet_path){
+            abort(404);
+        }
+
+        $path = $this->resolvePinkSheetPath($electionResult->pink_sheet_path);
+        if(!$path){
+            abort(404);
+        }
+
+        $pollingStation = PollingStation::find($electionResult->polling_station_id);
+        $stationName = $this->sanitizeFilenamePart(optional($pollingStation)->name ?? 'polling_station');
+        $stationCode = $this->sanitizeFilenamePart(optional($pollingStation)->polling_station_id ?? 'code');
+        $extension = pathinfo($electionResult->pink_sheet_path, PATHINFO_EXTENSION);
+        if(!$extension){
+            $extension = pathinfo($path, PATHINFO_EXTENSION) ?: 'jpg';
+        }
+        $downloadFilename = $stationName.'_'.$stationCode.'.'.$extension;
+
+        return response()->download($path, $downloadFilename, [
+            'Cache-Control' => 'private, no-store, max-age=0',
+            'Pragma' => 'no-cache',
+        ]);
+    }
+    public function uploadPinkSheet($election_result_id, Request $request){
+        $request->validate([
+            'pink_sheet' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ]);
+
+        $electionResult = ElectionResult::where('id', $election_result_id)
+            ->where('constituency_id', Auth::user()->constituency_id)
+            ->first();
+        if(!$electionResult){
+            abort(403);
+        }
+        if((int) $electionResult->verify_by_constituency === 1){
+            $request->session()->flash('error', 'Confirmed results are locked. Unconfirm first to upload pink sheet.');
+            return redirect()->back();
+        }
+
+        $pinkSheetDirectory = storage_path('app/pink_sheets');
+        if(!is_dir($pinkSheetDirectory)){
+            mkdir($pinkSheetDirectory, 0755, true);
+        }
+
+        $file = $request->file('pink_sheet');
+        $filename = 'pink_sheet_'.$electionResult->id.'_'.time().'.'.$file->getClientOriginalExtension();
+        $file->move($pinkSheetDirectory, $filename);
+
+        $previousPinkSheet = $electionResult->pink_sheet_path;
+        $electionResult->pink_sheet_path = $filename;
+        $electionResult->save();
+
+        if($previousPinkSheet){
+            $previousStoragePath = $pinkSheetDirectory.DIRECTORY_SEPARATOR.$previousPinkSheet;
+            if(file_exists($previousStoragePath)){
+                @unlink($previousStoragePath);
+            }
+            $previousPublicPath = public_path('pink_sheets').DIRECTORY_SEPARATOR.$previousPinkSheet;
+            if(file_exists($previousPublicPath)){
+                @unlink($previousPublicPath);
+            }
+        }
+
+        $request->session()->flash('message', 'Pink sheet uploaded successfully.');
+        return redirect()->back();
+    }
+    private function resolvePinkSheetPath(string $filename){
+        $storagePath = storage_path('app/pink_sheets').DIRECTORY_SEPARATOR.$filename;
+        if(file_exists($storagePath)){
+            return $storagePath;
+        }
+        $legacyPublicPath = public_path('pink_sheets').DIRECTORY_SEPARATOR.$filename;
+        if(file_exists($legacyPublicPath)){
+            return $legacyPublicPath;
+        }
+        return false;
+    }
+    private function sanitizeFilenamePart($value){
+        $value = trim((string) $value);
+        if($value === ''){
+            return 'unknown';
+        }
+        $value = preg_replace('/[^A-Za-z0-9]+/', '_', $value);
+        $value = trim($value, '_');
+        return $value !== '' ? $value : 'unknown';
     }
     public function confirmResults($id){
         $confirmResults = ElectionResult::where('id', $id)
@@ -523,14 +638,22 @@ class PollingAgentController extends Controller
 
     public function editResult($election_start_up, Request $request, $election_result_id=false, $user_id=false)
     {
-        if(!$user_id){
+        $result = null;
+        if($election_result_id){
             $result = ElectionResult::where('id', $election_result_id)
+                ->where('election_start_up_id', $election_start_up)
                 ->where('constituency_id', Auth::user()->constituency_id)
                 ->first();
-            $user_id = $result ? $result->user_id : null;
+            if(!$result){
+                abort(403);
+            }
+            if((int) $result->verify_by_constituency === 1){
+                $request->session()->flash('error', 'Confirmed results cannot be edited. Unconfirm first to continue.');
+                return redirect(route('Director.Result'));
+            }
         }
-        if(!$user_id){
-            abort(403);
+        if(!$user_id && $result){
+            $user_id = $result->user_id;
         }
 
         $user = null;
@@ -560,6 +683,28 @@ class PollingAgentController extends Controller
             if(!$user || (int) $user->constituency_id !== (int) Auth::user()->constituency_id){
                 abort(403);
             }
+        } elseif($result){
+            $user = PollingStation::select(
+                DB::raw("'N/A' as user_type_name"),
+                'PollingStation.total_voters',
+                'PollingStation.constituency_id',
+                'PollingStation.id as polling_station_id',
+                'region.name as region_name',
+                'constituency.name as constituency_name',
+                "PollingStation.name as PollingStation_name",
+                "ElectoralArea.name as ElectoralArea_name",
+                "PollingStation.polling_station_id as PollingStation_Id"
+            )
+            ->leftJoin('region','region.id','=','PollingStation.region_id')
+            ->leftJoin('constituency','constituency.id','=','PollingStation.constituency_id')
+            ->leftJoin('ElectoralArea','ElectoralArea.id','=','PollingStation.electoralarea_id')
+            ->where('PollingStation.id', $result->polling_station_id)
+            ->first();
+            if(!$user || (int) $user->constituency_id !== (int) Auth::user()->constituency_id){
+                abort(403);
+            }
+        } else {
+            abort(403);
         }
 
         $electionStartupDetail = ElectionStartupDetail::select('election_type.name','election_startup_detail.*')
@@ -610,6 +755,7 @@ class PollingAgentController extends Controller
             "candidates.last_name",
             "election_result.total_ballot",
             "election_result.total_rejected_ballot",
+            "election_result.pink_sheet_path",
             "election_result.election_start_up_id"
 
         )
@@ -618,7 +764,6 @@ class PollingAgentController extends Controller
         ->join('candidates','candidates.id','=','party_election_result.candidate_id')
         //->where('candidates.polling_station_id',Auth::user()->polling_station_id)
         ->where('candidates.election_id',$electionStartupDetail->election_type_id)
-        ->where('election_result.user_id',$user_id)
         ->where('election_result.constituency_id',Auth::user()->constituency_id)
         ->where('election_result.election_start_up_id',$election_start_up)
         ->orderBy('candidates.ordering_position','ASC');
@@ -627,6 +772,8 @@ class PollingAgentController extends Controller
         if( $election_result_id){
 
             $electionResult = $electionResult->where('election_result.id',$election_result_id);
+        }elseif($user_id){
+            $electionResult = $electionResult->where('election_result.user_id',$user_id);
         }
         $electionResult =$electionResult->get();
 
@@ -635,30 +782,8 @@ class PollingAgentController extends Controller
         return view('director.polling.editResult',compact('user_id','election_start_up','electionResult','parties','user','electionStartupDetail'));
     }
     public function captureResult($election_start_up,$user_id,Request $request){
-        $user = User::select(
-            'users.id as user_id',
-            'user_type.id as user_type_id',
-            'user_type.name as user_type_name',
-            'region.name as region_name',
-            "constituency.name as constituency_name",
-            "PollingStation.name as PollingStation_name",
-            "ElectoralArea.name as ElectoralArea_name",
-            "PollingStation.polling_station_id as PollingStation_Id",
-            "users.country_id",
-            "users.region_id",
-            "users.constituency_id",
-            "users.electoralarea_id",
-            "users.polling_station_id"
-        )
-        ->where('users.id', $user_id)
-        ->join('user_type','user_type.id','=','users.user_type_id')
-        ->join('region','region.id','=','users.region_id')
-        ->join('constituency','constituency.id','=','users.constituency_id')
-        ->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
-        ->join('PollingStation','PollingStation.id','=','users.polling_station_id')->first();
-        if(!$user || (int) $user->constituency_id !== (int) Auth::user()->constituency_id){
-            abort(403);
-        }
+        $user = null;
+        $inputElectionResultId = (int) $request->input('election_result_id', 0);
 
         $electionStartupDetail = ElectionStartupDetail::select(
                 'election_type.name',
@@ -683,13 +808,51 @@ class PollingAgentController extends Controller
             return redirect()->back();
         }
 
+        $e_r = null;
+        if($inputElectionResultId > 0){
+            $e_r = ElectionResult::where('id', $inputElectionResultId)
+                ->where('election_start_up_id', $election_start_up)
+                ->where('constituency_id', Auth::user()->constituency_id)
+                ->first();
+            if(!$e_r){
+                $request->session()->flash('error', 'Result not found.');
+                return redirect()->back();
+            }
+        }
 
-        $e_r = ElectionResult::where('election_result.user_id',$user_id)
-         ->where('election_result.election_start_up_id',$election_start_up)
-         ->where('election_result.constituency_id', Auth::user()->constituency_id)
-         ->where('election_result.polling_station_id', $user->polling_station_id)
-         //->where('election_result.election_type_id',$electionStartupDetail->election_type_id)
-            ->first();
+        if(!$e_r){
+            $user = User::select(
+                'users.id as user_id',
+                'user_type.id as user_type_id',
+                'user_type.name as user_type_name',
+                'region.name as region_name',
+                "constituency.name as constituency_name",
+                "PollingStation.name as PollingStation_name",
+                "ElectoralArea.name as ElectoralArea_name",
+                "PollingStation.polling_station_id as PollingStation_Id",
+                "users.country_id",
+                "users.region_id",
+                "users.constituency_id",
+                "users.electoralarea_id",
+                "users.polling_station_id"
+            )
+            ->where('users.id', $user_id)
+            ->join('user_type','user_type.id','=','users.user_type_id')
+            ->join('region','region.id','=','users.region_id')
+            ->join('constituency','constituency.id','=','users.constituency_id')
+            ->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
+            ->join('PollingStation','PollingStation.id','=','users.polling_station_id')->first();
+            if(!$user || (int) $user->constituency_id !== (int) Auth::user()->constituency_id){
+                abort(403);
+            }
+
+            $e_r = ElectionResult::where('election_result.user_id',$user_id)
+             ->where('election_result.election_start_up_id',$election_start_up)
+             ->where('election_result.constituency_id', Auth::user()->constituency_id)
+             ->where('election_result.polling_station_id', $user->polling_station_id)
+             //->where('election_result.election_type_id',$electionStartupDetail->election_type_id)
+                ->first();
+        }
 
         if($e_r){
             if((int) $e_r->verify_by_constituency === 1){
@@ -701,27 +864,47 @@ class PollingAgentController extends Controller
             $e_r->save();
 
             foreach ($posted_Data['party'] as $key => $value) {
+                $partyId = (int) key($value);
                 foreach($value as $_value){
                     $candidateId = (int) key($_value);
                     $obtainedVote = (int) current($_value);
-                    if($candidateId <= 0 || $obtainedVote < 0){
+                    if($partyId <= 0 || $candidateId <= 0 || $obtainedVote < 0){
                         continue;
                     }
-                    $partyElectionResult = PartyElectionResult::where('user_id',$user_id)
-                        ->where('election_result_id',$e_r->id)
+                    $partyElectionResult = PartyElectionResult::where('election_result_id',$e_r->id)
                         ->where('polling_station_id',$e_r->polling_station_id)
                         ->where('candidate_id', $candidateId)
-                        ->first();
+                        ->where('party_id', $partyId);
+                    if(is_null($e_r->user_id)){
+                        $partyElectionResult = $partyElectionResult->whereNull('user_id');
+                    }else{
+                        $partyElectionResult = $partyElectionResult->where('user_id', $e_r->user_id);
+                    }
+                    $partyElectionResult = $partyElectionResult->first();
                     if(!$partyElectionResult){
-                        continue;
+                        $partyElectionResult = new PartyElectionResult;
+                        $partyElectionResult->user_id = $e_r->user_id;
+                        $partyElectionResult->election_result_id = $e_r->id;
+                        $partyElectionResult->polling_station_id = $e_r->polling_station_id;
+                        $partyElectionResult->country_id = $e_r->country_id;
+                        $partyElectionResult->region_id = $e_r->region_id;
+                        $partyElectionResult->constituency_id = $e_r->constituency_id;
+                        $partyElectionResult->electoral_area_id = $e_r->electoral_area_id;
+                        $partyElectionResult->party_id = $partyId;
+                        $partyElectionResult->candidate_id = $candidateId;
                     }
                     $partyElectionResult->obtained_vote = $obtainedVote;
                     $partyElectionResult->save();
                 }
             }
-            $e_r->obtained_votes = PartyElectionResult::where('election_result_id',$e_r->id)
-                ->where('user_id', $user_id)
-                ->where('polling_station_id', $e_r->polling_station_id)->sum('obtained_vote');
+            $obtainedVoteQuery = PartyElectionResult::where('election_result_id',$e_r->id)
+                ->where('polling_station_id', $e_r->polling_station_id);
+            if(is_null($e_r->user_id)){
+                $obtainedVoteQuery = $obtainedVoteQuery->whereNull('user_id');
+            }else{
+                $obtainedVoteQuery = $obtainedVoteQuery->where('user_id', $e_r->user_id);
+            }
+            $e_r->obtained_votes = $obtainedVoteQuery->sum('obtained_vote');
             $e_r->save();
             $e_r->total_ballot = $e_r->obtained_votes +   $e_r->total_rejected_ballot;
             $e_r->save();

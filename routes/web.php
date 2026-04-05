@@ -32,8 +32,8 @@
         return response()->json(['status' => 'ok', 'message' => 'Migration executed.']);
     });
     Route::get('/', function () {
-        return redirect(route("parliament"));
-    });
+        return view('public.landing');
+    })->name('landing');
     Route::get('parliament/{id?}','PublicController@parliament')->name('parliament');
     Route::get('president/{id?}','PublicController@president')->name('president');
     Route::post('result-ajax','PublicController@ajaxResult')->name('ajaxResult');
@@ -52,6 +52,8 @@ Route::group(['prefix' =>"agent",'namespace'=>'Agent','as' => 'Agent.'], functio
         Route::post('/election',  'AgentController@electionPost')->name("electionPost");
         Route::get('/home/{election_start_up}/{election_result_id?}',  'AgentController@index')->name("Home");
         Route::post('/result-capture/{election_start_up}',  'AgentController@captureResult')->name("CaptureResult");
+        Route::post('/pink-sheet-upload/{election_start_up}',  'AgentController@uploadPinkSheet')->name("UploadPinkSheet");
+        Route::get('/pink-sheet/{election_result_id}',  'AgentController@viewPinkSheet')->name("ViewPinkSheet");
         Route::get('/results',  'AgentController@results')->name("results");
         Route::get('/view-result/{election_start_up}/{election_result_id?}',  'AgentController@viewResults')->name("viewResults");
     });
@@ -281,6 +283,9 @@ Route::group(['prefix' =>"director",'namespace'=>'Director','as' => 'Director.']
 
         Route::get('/result','PollingAgentController@result')->name('Result');
         Route::get('/result/delete/{id}','PollingAgentController@deleteResults')->name('deleteResults');
+        Route::post('/pink-sheet-upload/{election_result_id}','PollingAgentController@uploadPinkSheet')->name('UploadPinkSheet');
+        Route::get('/pink-sheet/{election_result_id}','PollingAgentController@viewPinkSheet')->name('ViewPinkSheet');
+        Route::get('/pink-sheet/{election_result_id}/download','PollingAgentController@downloadPinkSheet')->name('DownloadPinkSheet');
 
         Route::get('/polling-station-result-ajax','PollingAgentController@pollingStationResultAajax')->name('pollingStationResultAajax');
         ///Route::get('/result/{id}','PollingAgentController@constituencyView')->name('constituencyView');

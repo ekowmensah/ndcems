@@ -23,10 +23,10 @@ class ElectionResult extends Model
         "obtained_votes",
         "total_ballot",
         "total_rejected_ballot",
+        "pink_sheet_path",
         "election_start_up_id",
         "verify_by_regional",
         "verify_by_constituency",
         "result_by_constituency"
     ];
 }
-

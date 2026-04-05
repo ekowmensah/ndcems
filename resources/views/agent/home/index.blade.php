@@ -225,6 +225,32 @@
         transition: all 0.3s;
     }
     .btn-ndc-reset:hover { border-color: var(--ndc-red); color: var(--ndc-red); }
+    .upload-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        margin-top: 16px;
+    }
+    .upload-card .card-header {
+        background: #fff;
+        border-bottom: 3px solid var(--ndc-gold);
+        padding: 14px 16px;
+    }
+    .upload-card .card-header h5 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--ndc-black);
+    }
+    .pink-sheet-preview {
+        max-width: 100%;
+        max-height: 280px;
+        border: 1px solid #ddd;
+        background: #fff;
+        padding: 4px;
+        border-radius: 8px;
+        margin-top: 8px;
+    }
 
     @media (max-width: 576px) {
         .candidate-row { flex-wrap: wrap; padding: 12px; }
@@ -369,8 +395,8 @@
         </div>
 
         {{-- Hidden fields --}}
-        @if($electionResult && count($electionResult)!=0 && isset($electionResult->toArray()[0]['id']))
-            <input type="hidden" name="election_result_id" value="{{ $electionResult->toArray()[0]['id'] }}">
+        @if(isset($existingElectionResult) && $existingElectionResult && isset($existingElectionResult->id))
+            <input type="hidden" name="election_result_id" value="{{ $existingElectionResult->id }}">
         @endif
         <input type="hidden" name="customer_ip" value="{{ request()->ip() }}">
 
@@ -384,6 +410,34 @@
             </button>
         </div>
     </form>
+
+    <div class="card upload-card">
+        <div class="card-header">
+            <h5><i class="fas fa-camera mr-2" style="color:var(--ndc-red)"></i>Upload Pink Sheet</h5>
+        </div>
+        <div class="card-body">
+            <p style="margin-bottom:10px;color:#555;">You can upload the official pink sheet image now, even before final vote submission.</p>
+            @if(isset($existingElectionResult) && $existingElectionResult && !empty($existingElectionResult->pink_sheet_path))
+                <div style="margin-bottom:10px;">
+                    <a href="{{ route('Agent.ViewPinkSheet', $existingElectionResult->id) }}" target="_blank" rel="noopener">Open Current Pink Sheet</a>
+                    <img src="{{ route('Agent.ViewPinkSheet', $existingElectionResult->id) }}" class="pink-sheet-preview" alt="Pink Sheet">
+                </div>
+            @endif
+            <form action="{{ route('Agent.UploadPinkSheet', $election_start_up) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                @if(isset($existingElectionResult) && $existingElectionResult && isset($existingElectionResult->id))
+                    <input type="hidden" name="election_result_id" value="{{ $existingElectionResult->id }}">
+                @endif
+                <div class="form-group">
+                    <input type="file" name="pink_sheet" class="form-control" accept=".jpg,.jpeg,.png,.webp" required>
+                    <small class="text-muted">Allowed: JPG, PNG, WEBP. Max size: 5MB.</small>
+                </div>
+                <button type="submit" class="btn btn-ndc-submit" style="max-width:280px;">
+                    <i class="fas fa-upload mr-1"></i> Upload Pink Sheet
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
 
 @endsection
