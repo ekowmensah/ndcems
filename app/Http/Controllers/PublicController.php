@@ -128,8 +128,16 @@ class PublicController extends Controller
                 $all_polling_count = ElectionResult::select('polling_station_id')
                     ->where('election_result.election_type_id', $NewElectionTypes[1]['id'])->count();
 
+            $summaryQuery = ElectionResult::where('election_result.election_type_id', $NewElectionTypes[1]['id'])
+                ->where('election_result.verify_by_constituency', 1);
+            if($id) {
+                $summaryQuery = $summaryQuery->where('election_result.election_start_up_id', $id);
+            }
+            $total_valid_votes = (int) (clone $summaryQuery)->sum('election_result.obtained_votes');
+            $total_rejected_votes = (int) (clone $summaryQuery)->sum('election_result.total_rejected_ballot');
+
             $all_polling_count = PollingStation::select('polling_station_id')->count();
-        return view('public.parliament',compact('polling_count','all_polling_count','regions','dataPoints','allElectionResults','colors','electionStartupDetail','id','newElectionType'));
+        return view('public.parliament',compact('polling_count','all_polling_count','regions','dataPoints','allElectionResults','colors','electionStartupDetail','id','newElectionType','total_valid_votes','total_rejected_votes'));
     }
     public function president($id=false)
     {
@@ -190,6 +198,14 @@ class PublicController extends Controller
                 $all_polling_count = ElectionResult::select('polling_station_id')
                     ->where('election_result.election_type_id', $NewElectionTypes[0]['id'])->count();
 
+            $summaryQuery = ElectionResult::where('election_result.election_type_id', $NewElectionTypes[0]['id'])
+                ->where('election_result.verify_by_constituency', 1);
+            if($id) {
+                $summaryQuery = $summaryQuery->where('election_result.election_start_up_id', $id);
+            }
+            $total_valid_votes = (int) (clone $summaryQuery)->sum('election_result.obtained_votes');
+            $total_rejected_votes = (int) (clone $summaryQuery)->sum('election_result.total_rejected_ballot');
+
             $electionResult = ElectionResult::select(
                 "party_election_result.obtained_vote as party_election_result_obtained_vote",
                 "election_result.id",
@@ -237,7 +253,7 @@ class PublicController extends Controller
             $newElectionType = $NewElectionTypes[0]['id'];
             $regions = Region::all();
 
-        return view('public.president',compact('polling_count','all_polling_count','regions','allElectionResults','colors','electionStartupDetail','id','newElectionType'));
+        return view('public.president',compact('polling_count','all_polling_count','regions','allElectionResults','colors','electionStartupDetail','id','newElectionType','total_valid_votes','total_rejected_votes'));
     }
     public function ajaxResult(Request $request){
         if($request->input('election_type_id'))
@@ -346,20 +362,65 @@ class PublicController extends Controller
         return $countries;
     }
     public function ajaxCountResult(Request $request){
-        $id = $request->input('election_type_id');
+        $startupId = $request->input('election_start_up_id');
         $_newElectionType = $request->input('newElectionType');
 
-        $polling_count = ElectionResult::select('polling_station_id')
-                ->where('election_result.election_type_id', $_newElectionType)
-                ->where('election_result.verify_by_constituency', 1);
-            if($id)
-                $polling_count = $polling_count->where('election_result.election_start_up_id', $id);
-                $polling_count = $polling_count->count();
-                $all_polling_count = ElectionResult::select('polling_station_id')
-                    ->where('election_result.election_type_id', $_newElectionType)->count();
+        $pollingCountQuery = ElectionResult::select('election_result.polling_station_id')
+            ->where('election_result.election_type_id', $_newElectionType)
+            ->where('election_result.verify_by_constituency', 1);
+
+        $summaryQuery = ElectionResult::where('election_result.election_type_id', $_newElectionType)
+            ->where('election_result.verify_by_constituency', 1);
+
+        $allPollingQuery = PollingStation::query();
+
+        if ($startupId && $startupId !== 'all') {
+            $pollingCountQuery = $pollingCountQuery->where('election_result.election_start_up_id', $startupId);
+            $summaryQuery = $summaryQuery->where('election_result.election_start_up_id', $startupId);
+        }
+
+        if ($request->input('region_id') != 'all') {
+            $regionId = $request->input('region_id');
+            $pollingCountQuery = $pollingCountQuery->where('election_result.region_id', $regionId);
+            $summaryQuery = $summaryQuery->where('election_result.region_id', $regionId);
+            $allPollingQuery = $allPollingQuery->where('pollingstation.region_id', $regionId);
+        }
+
+        if ($request->input('constituency_id') != 'all') {
+            $constituencyId = $request->input('constituency_id');
+            $pollingCountQuery = $pollingCountQuery->where('election_result.constituency_id', $constituencyId);
+            $summaryQuery = $summaryQuery->where('election_result.constituency_id', $constituencyId);
+            $allPollingQuery = $allPollingQuery->where('pollingstation.constituency_id', $constituencyId);
+        }
+
+        if ($request->input('electoralarea_id') != 'all') {
+            $electoralAreaId = $request->input('electoralarea_id');
+            $pollingCountQuery = $pollingCountQuery->where('election_result.electoral_area_id', $electoralAreaId);
+            $summaryQuery = $summaryQuery->where('election_result.electoral_area_id', $electoralAreaId);
+            $allPollingQuery = $allPollingQuery->where('pollingstation.electoralarea_id', $electoralAreaId);
+        }
+
+        if ($request->input('polling_station_id') != 'all') {
+            $pollingStationId = $request->input('polling_station_id');
+            $pollingCountQuery = $pollingCountQuery->where('election_result.polling_station_id', $pollingStationId);
+            $summaryQuery = $summaryQuery->where('election_result.polling_station_id', $pollingStationId);
+            $allPollingQuery = $allPollingQuery->where('pollingstation.id', $pollingStationId);
+        }
+
+        $polling_count = $pollingCountQuery->distinct()->count('election_result.polling_station_id');
+        $all_polling_count = $allPollingQuery->distinct()->count('pollingstation.id');
+
+        $total_valid_votes = (int) (clone $summaryQuery)->sum('election_result.obtained_votes');
+        $total_rejected_votes = (int) (clone $summaryQuery)->sum('election_result.total_rejected_ballot');
+        $total_ballot_cast = $total_valid_votes + $total_rejected_votes;
+        $rejected_rate = $total_ballot_cast > 0 ? round(($total_rejected_votes / $total_ballot_cast) * 100, 2) : 0;
+
         return array(
             'polling_count'=>$polling_count,
-            'all_polling_count'=>$all_polling_count
+            'all_polling_count'=>$all_polling_count,
+            'total_valid_votes'=>$total_valid_votes,
+            'total_rejected_votes'=>$total_rejected_votes,
+            'rejected_rate'=>$rejected_rate
         );
     }
     function aasort ($array, $key) {
