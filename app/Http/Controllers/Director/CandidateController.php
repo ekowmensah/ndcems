@@ -167,6 +167,9 @@ class CandidateController extends Controller
     public function candidateEdit($id){
 
        $candidate = Candidate::find($id);
+        if (!$candidate) {
+            abort(404);
+        }
 
         $electionTypes = ElectionType::all();
         $PoliticalParties = PoliticalParty::all();
@@ -187,6 +190,22 @@ class CandidateController extends Controller
         $regions = Region::where('id',$candidate->region_id)->get();
 
         $Constituencies = Constituency::where('id',$candidate->constituency_id)->get();
+
+        $ElectoralAreas = ElectoralArea::where('constituency_id', $candidate->constituency_id)->get();
+
+        $selectedElectoralAreaId = $candidate->electoral_area_id;
+        if (!$selectedElectoralAreaId && $candidate->polling_station_id) {
+            $selectedPolling = PollingStation::find($candidate->polling_station_id);
+            if ($selectedPolling) {
+                $selectedElectoralAreaId = $selectedPolling->electoralarea_id;
+            }
+        }
+
+        if ($selectedElectoralAreaId) {
+            $pollings = PollingStation::where('electoralarea_id', $selectedElectoralAreaId)->get();
+        } else {
+            $pollings = PollingStation::where('constituency_id', $candidate->constituency_id)->get();
+        }
 
         $electionStartupDetail = ElectionStartupDetail::all();
 

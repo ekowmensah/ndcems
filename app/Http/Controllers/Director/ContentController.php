@@ -532,7 +532,7 @@ class ContentController extends Controller
         $ee = ElectoralArea::where('id',$polling->electoralarea_id)->get();
         $countries = ElectoralArea::where('constituency_id',Auth::user()->constituency_id)->get();
 
-        return view('director.locations.EditPollingStation',compact('ee','cc','ps','polling','countries','reg'));
+        return view('director.locations.EditPollingStation',compact('ee','cc','ps','polling','countries'));
     }
     public function PollingStationEditPost($id, Request $request){
         $polling = PollingStation::find($id);
