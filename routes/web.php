@@ -26,8 +26,10 @@
 
     Route::any('/notify_me','MessageHandler@handle');
 //Route::group(['middleware' => ['auth']], function () {
-    Route::get('/command', function (Request $request) {
-       Artisan::call('migrate');
+    Route::middleware(['auth:superAdmin'])->get('/command', function () {
+        abort_unless(app()->environment('local'), 404);
+        Artisan::call('migrate', ['--force' => true]);
+        return response()->json(['status' => 'ok', 'message' => 'Migration executed.']);
     });
     Route::get('/', function () {
         return redirect(route("parliament"));
@@ -225,7 +227,7 @@ Route::group(['prefix' =>"director",'namespace'=>'Director','as' => 'Director.']
         Route::get('/election',  'AgentController@election')->name("election");
         Route::post('/election',  'AgentController@electionPost')->name("electionPost");
         Route::get('/home/{election_start_up}/{polling_station?}/{election_result_id?}',  'AgentController@index')->name("Home");
-        Route::post('/result-capture/{election_start_up}',  'AgentController@captureResult')->name("CaptureResult");
+        Route::post('/result-capture/{election_start_up}',  'AgentController@captureResult')->name("CaptureResultSelf");
 
 
         Route::get('/','HomeController@index')->name('home');

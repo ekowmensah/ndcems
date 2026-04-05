@@ -25,6 +25,9 @@ class MessageHandler extends BaseController implements Constant,Messages
 
         public function handleNew(Request $request){
             try{
+                if(!$this->isTrustedWebhookRequest($request)){
+                    return response('Unauthorized', 403);
+                }
                 $req = $request->all();
                 $this->from =  $request->From;
                 if(!$this->from) return;
@@ -47,6 +50,9 @@ class MessageHandler extends BaseController implements Constant,Messages
 
         public function handle(Request $request){
             try{
+                if(!$this->isTrustedWebhookRequest($request)){
+                    return response('Unauthorized', 403);
+                }
                 $req = $request->all();
                 $this->from =  $request->From;
                 if(!$this->from) return;
@@ -103,9 +109,20 @@ class MessageHandler extends BaseController implements Constant,Messages
 
         public function sendMessage($to,$message){
 
-            $account_sid = self::TWILIO_ACCOUNT_SID;
-            $auth_token = self::TWILIO_AUTH_TOKEN;
-            $twilio_number = self::TWILIO_NUMBER;
+            $account_sid = env('TWILIO_ACCOUNT_SID', self::TWILIO_ACCOUNT_SID);
+            $auth_token = env('TWILIO_AUTH_TOKEN', self::TWILIO_AUTH_TOKEN);
+            $twilio_number = env('TWILIO_NUMBER', self::TWILIO_NUMBER);
+            if(
+                !$account_sid || !$auth_token || !$twilio_number ||
+                strpos($account_sid, 'YOUR_') === 0 ||
+                strpos($auth_token, 'YOUR_') === 0 ||
+                strpos($twilio_number, 'YOUR_') === 0
+            ){
+                return false;
+            }
+            if(!class_exists(Client::class)){
+                throw new \RuntimeException('Twilio SDK is not installed.');
+            }
             $client = new Client($account_sid, $auth_token);
             $client->messages->create(
                 $to,
@@ -216,6 +233,30 @@ class MessageHandler extends BaseController implements Constant,Messages
             if(!$this->logout)
                 $type = $this->init($this->from,self::POLLING_AGENT,$this->stage,$obj);
             return  $this->response_text;
+        }
+        private function isTrustedWebhookRequest(Request $request): bool
+        {
+            $mustValidate = filter_var(env('TWILIO_VALIDATE_SIGNATURE', false), FILTER_VALIDATE_BOOLEAN);
+            if(!$mustValidate){
+                return true;
+            }
+            $authToken = env('TWILIO_AUTH_TOKEN');
+            $signature = (string) $request->header('X-Twilio-Signature', '');
+            if(!$authToken || $signature === ''){
+                return false;
+            }
+            return hash_equals($this->buildTwilioSignature($request, $authToken), $signature);
+        }
+        private function buildTwilioSignature(Request $request, string $authToken): string
+        {
+            $url = $request->fullUrl();
+            $params = $request->post();
+            ksort($params);
+            $payload = $url;
+            foreach ($params as $key => $value) {
+                $payload .= $key.$value;
+            }
+            return base64_encode(hash_hmac('sha1', $payload, $authToken, true));
         }
         public function logout(){
             MessageProcess::where('phone',$this->from)->delete();

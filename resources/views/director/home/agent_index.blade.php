@@ -3,7 +3,7 @@
 
 
         <!-- MAIN CONTENT -->
-        <form action="{{route('Director.CaptureResult',$election_start_up)}}" method="POST" id="terminal-form" class="form-horizontal form-label-left input_mask">
+        <form action="{{route('Director.CaptureResultSelf',$election_start_up)}}" method="POST" id="terminal-form" class="form-horizontal form-label-left input_mask">
             @csrf
             <div >
                 <div class="container-fluid">

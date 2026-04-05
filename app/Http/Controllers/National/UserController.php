@@ -171,7 +171,7 @@ class UserController extends Controller
             $data['password'] = Hash::make($data['password']);
             $UserType = UserType::latest()->first();
             if($data['user_type_id'] == $UserType->id){
-                $data['secret'] = $request->input('password');
+                $data['secret'] = Hash::make($request->input('password'));
             }
 
 
@@ -254,7 +254,7 @@ class UserController extends Controller
                 $user->password =   Hash::make($data['password']);
                 $UserType = UserType::latest()->first();
                 if($data['user_type_id'] == $UserType->id){
-                    $user->secret = $request->input('password');
+                    $user->secret = Hash::make($request->input('password'));
                 }
             }
             $user->save();
@@ -281,7 +281,6 @@ class UserController extends Controller
         $UserType = UserType::latest()->first();
         $Users = User::select(
                 'users.username',
-                'users.secret',
                 'users.created_at',
                 'users.name as user_name',
                 'users.id as user_id',

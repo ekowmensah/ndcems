@@ -4,7 +4,7 @@ use App\User;
 use BadMethodCallException;
 use Services_Twilio;
 use stdClass;
-use Hash;
+use Illuminate\Support\Facades\Hash;
 use App\UserOption;
 use App\Referrer;
 use App\Page\Constant;
@@ -24,16 +24,31 @@ class Login implements Constant {
     }
     public function login(){
 
-        $username =  User::select(
+        $user =  User::select(
             'PollingStation.name as PollingStation_name',
             'users.name as user_name',
             'users.*'
             )
         ->where('username',$this->username)
         ->where('user_type_id',self::POLLING_AGENT)
-        ->where('secret',$this->password)
         ->join('PollingStation','PollingStation.id','=','users.polling_station_id')
         ->first();
-        return $username;
+        if(!$user || !$user->secret){
+            return false;
+        }
+
+        $secretMatchesHash = Hash::check($this->password, $user->secret);
+        $secretMatchesLegacyPlain = hash_equals((string) $user->secret, (string) $this->password);
+        if(!$secretMatchesHash && !$secretMatchesLegacyPlain){
+            return false;
+        }
+
+        // Seamless migration path: convert legacy plaintext secret to hash on next successful login.
+        if($secretMatchesLegacyPlain && !$secretMatchesHash){
+            $user->secret = Hash::make($this->password);
+            $user->save();
+        }
+
+        return $user;
     }
 }

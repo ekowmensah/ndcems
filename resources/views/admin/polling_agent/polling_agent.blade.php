@@ -50,7 +50,6 @@
                     <th></th>
                   <th>Name</th>
                   <th>Username</th>
-                  <th>Password</th>
                   <th>Type</th>
 
                   <th>Region Name</th>
@@ -146,8 +145,6 @@
 
           { data: 'user_name', name: 'users.name' },
           { data: 'username', name: 'users.username' },
-          { data: 'secret', name: 'users.secret' },
-
           { data: 'user_type_name', name: 'user_type_name' },
             { data: 'region_name', name: 'region.name' },
           { data: 'constituency_name', name: 'constituency.name' },

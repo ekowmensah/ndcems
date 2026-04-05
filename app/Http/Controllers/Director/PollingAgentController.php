@@ -54,7 +54,6 @@ class PollingAgentController extends Controller
         $UserType = UserType::latest()->first();
         $Users = User::select(
                 'users.username',
-                'users.secret',
                 'users.created_at',
                 'users.name as user_name',
                 'users.id as user_id',
@@ -158,7 +157,7 @@ class PollingAgentController extends Controller
                 $user->password =   Hash::make($data['password']);
                 $UserType = UserType::latest()->first();
                 if($data['user_type_id'] == $UserType->id){
-                    $user->secret = $request->input('password');
+                    $user->secret = Hash::make($request->input('password'));
                 }
             }
             $user->save();
@@ -259,13 +258,13 @@ class PollingAgentController extends Controller
             $data['password'] = Hash::make($data['password']);
             $UserType = UserType::latest()->first();
             if($data['user_type_id'] == $UserType->id){
-                $data['secret'] = $request->input('password');
+                $data['secret'] = Hash::make($request->input('password'));
             }
 
 
             User::create($data);
             $request->session()->flash('message', ' User Created Successfully!');
-            return redirect(route('SuperAdmin.Users'));
+            return redirect(route('Director.pollingAgent'));
         }
 
 
@@ -382,7 +381,6 @@ class PollingAgentController extends Controller
 
         $user = User::select(
             'users.username',
-            'users.secret',
             'users.created_at',
             'users.name as user_name',
             'users.id as user_id',
@@ -409,7 +407,7 @@ class PollingAgentController extends Controller
         /* if(!$electionStartupDetail){
             $request->session()->flash('error', ' Something went wrong!');
 
-            return redirect(route("Agent.election"));
+            return redirect(route("Director.election"));
         } */
        /*  $parties = PoliticalParty::select(
             'candidates.first_name',
@@ -491,7 +489,12 @@ class PollingAgentController extends Controller
 
     }
     public function confirmResults($id){
-        $confirmResults = ElectionResult::find($id);
+        $confirmResults = ElectionResult::where('id', $id)
+            ->where('constituency_id', Auth::user()->constituency_id)
+            ->first();
+        if(!$confirmResults){
+            abort(403);
+        }
         if($confirmResults->verify_by_constituency == 0){
              $confirmResults->verify_by_constituency = 1;
         }else if($confirmResults->verify_by_constituency == 1){
@@ -501,7 +504,12 @@ class PollingAgentController extends Controller
         return redirect()->back();
     }
     public function deleteResults($id,Request $request){
-        $confirmResults = ElectionResult::find($id);
+        $confirmResults = ElectionResult::where('id', $id)
+            ->where('constituency_id', Auth::user()->constituency_id)
+            ->first();
+        if(!$confirmResults){
+            abort(403);
+        }
         $delete = PartyElectionResult::where('election_result_id',$confirmResults->id)->delete();
         if($delete){
             $confirmResults->delete();
@@ -516,15 +524,19 @@ class PollingAgentController extends Controller
     public function editResult($election_start_up, Request $request, $election_result_id=false, $user_id=false)
     {
         if(!$user_id){
-            $result = ElectionResult::find($election_result_id);
+            $result = ElectionResult::where('id', $election_result_id)
+                ->where('constituency_id', Auth::user()->constituency_id)
+                ->first();
             $user_id = $result ? $result->user_id : null;
+        }
+        if(!$user_id){
+            abort(403);
         }
 
         $user = null;
         if($user_id){
             $user = User::select(
                 'users.username',
-                'users.secret',
                 'users.created_at',
                 'users.name as user_name',
                 'users.id as user_id',
@@ -535,7 +547,9 @@ class PollingAgentController extends Controller
                 "PollingStation.name as PollingStation_name",
                 "ElectoralArea.name as ElectoralArea_name",
                 "PollingStation.polling_station_id as PollingStation_Id",
-                "PollingStation.total_voters"
+                "PollingStation.total_voters",
+                "users.constituency_id",
+                "users.polling_station_id"
             )
             ->where('users.id', $user_id)
             ->leftJoin('user_type','user_type.id','=','users.user_type_id')
@@ -543,6 +557,9 @@ class PollingAgentController extends Controller
             ->leftJoin('constituency','constituency.id','=','users.constituency_id')
             ->leftJoin('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
             ->leftJoin('PollingStation','PollingStation.id','=','users.polling_station_id')->first();
+            if(!$user || (int) $user->constituency_id !== (int) Auth::user()->constituency_id){
+                abort(403);
+            }
         }
 
         $electionStartupDetail = ElectionStartupDetail::select('election_type.name','election_startup_detail.*')
@@ -553,7 +570,7 @@ class PollingAgentController extends Controller
         if(!$electionStartupDetail){
             $request->session()->flash('error', ' Something went wrong!');
 
-            return redirect(route("Agent.election"));
+            return redirect(route("Director.election"));
         }
 
 
@@ -569,9 +586,9 @@ class PollingAgentController extends Controller
         if($electionStartupDetail->election_type_id != 1){
             $parties = $parties->where('candidates.election_id',$electionStartupDetail->election_type_id);
             if($electionStartupDetail->election_type_id != 2 ){
-                    $parties = $parties->where('candidates.polling_station_id',Auth::user()->polling_station_id);            }
+                    $parties = $parties->where('candidates.polling_station_id',$user->polling_station_id);            }
             if($electionStartupDetail->election_type_id == 2){
-                $parties = $parties->where('candidates.constituency_id',Auth::user()->constituency_id);
+                $parties = $parties->where('candidates.constituency_id',$user->constituency_id);
             }
         }
         if($electionStartupDetail->election_type_id == 1){
@@ -602,6 +619,7 @@ class PollingAgentController extends Controller
         //->where('candidates.polling_station_id',Auth::user()->polling_station_id)
         ->where('candidates.election_id',$electionStartupDetail->election_type_id)
         ->where('election_result.user_id',$user_id)
+        ->where('election_result.constituency_id',Auth::user()->constituency_id)
         ->where('election_result.election_start_up_id',$election_start_up)
         ->orderBy('candidates.ordering_position','ASC');
 
@@ -626,7 +644,11 @@ class PollingAgentController extends Controller
             "PollingStation.name as PollingStation_name",
             "ElectoralArea.name as ElectoralArea_name",
             "PollingStation.polling_station_id as PollingStation_Id",
-            "users.country_id"
+            "users.country_id",
+            "users.region_id",
+            "users.constituency_id",
+            "users.electoralarea_id",
+            "users.polling_station_id"
         )
         ->where('users.id', $user_id)
         ->join('user_type','user_type.id','=','users.user_type_id')
@@ -634,6 +656,9 @@ class PollingAgentController extends Controller
         ->join('constituency','constituency.id','=','users.constituency_id')
         ->join('ElectoralArea','ElectoralArea.id','=','users.electoralarea_id')
         ->join('PollingStation','PollingStation.id','=','users.polling_station_id')->first();
+        if(!$user || (int) $user->constituency_id !== (int) Auth::user()->constituency_id){
+            abort(403);
+        }
 
         $electionStartupDetail = ElectionStartupDetail::select(
                 'election_type.name',
@@ -643,38 +668,56 @@ class PollingAgentController extends Controller
         ->where("election_startup_detail.id",$election_start_up)
 
         ->where("status",1)->first();
+        if(!$electionStartupDetail){
+            $request->session()->flash('error', 'Something went wrong!');
+            return redirect()->back();
+        }
         $posted_Data = $request->all();
+        if(!isset($posted_Data['party']) || !is_array($posted_Data['party'])){
+            $request->session()->flash('error', 'No party vote data was submitted.');
+            return redirect()->back();
+        }
+        $totalRejectedBallot = (int) $request->input('total_rejected_ballot', 0);
+        if($totalRejectedBallot < 0){
+            $request->session()->flash('error', 'Rejected ballot count must be zero or greater.');
+            return redirect()->back();
+        }
 
 
         $e_r = ElectionResult::where('election_result.user_id',$user_id)
          ->where('election_result.election_start_up_id',$election_start_up)
+         ->where('election_result.constituency_id', Auth::user()->constituency_id)
+         ->where('election_result.polling_station_id', $user->polling_station_id)
          //->where('election_result.election_type_id',$electionStartupDetail->election_type_id)
             ->first();
 
         if($e_r){
+            if((int) $e_r->verify_by_constituency === 1){
+                $request->session()->flash('error', 'Result is already confirmed.');
+                return redirect()->back();
+            }
             $e_r->total_ballot =0;
-            $e_r->total_rejected_ballot = $request->input('total_rejected_ballot');
+            $e_r->total_rejected_ballot = $totalRejectedBallot;
             $e_r->save();
 
             foreach ($posted_Data['party'] as $key => $value) {
-                $party_id = key($value);
-                $partyElectionResult = PartyElectionResult::where('user_id',$user_id)
-                    ->where('election_result_id',$e_r->id)
-                    ->where('polling_station_id',$e_r->polling_station_id)
-                    ->where('party_id',$party_id);
-
-
-                    foreach($value as $key => $_value){
-                        $candidate_id = key($_value);
-                        $partyElectionResult = $partyElectionResult->where('candidate_id', key($_value))->first();
-                        foreach($_value as $key => $__value){
-                            $obtained_vote =  $__value;
-                            $partyElectionResult->obtained_vote = $__value;
-                            $partyElectionResult->save();
-                        }
-
+                foreach($value as $_value){
+                    $candidateId = (int) key($_value);
+                    $obtainedVote = (int) current($_value);
+                    if($candidateId <= 0 || $obtainedVote < 0){
+                        continue;
                     }
-                $partyElectionResult->save();
+                    $partyElectionResult = PartyElectionResult::where('user_id',$user_id)
+                        ->where('election_result_id',$e_r->id)
+                        ->where('polling_station_id',$e_r->polling_station_id)
+                        ->where('candidate_id', $candidateId)
+                        ->first();
+                    if(!$partyElectionResult){
+                        continue;
+                    }
+                    $partyElectionResult->obtained_vote = $obtainedVote;
+                    $partyElectionResult->save();
+                }
             }
             $e_r->obtained_votes = PartyElectionResult::where('election_result_id',$e_r->id)
                 ->where('user_id', $user_id)
@@ -688,13 +731,13 @@ class PollingAgentController extends Controller
         }else{
 
             $electionResult = new ElectionResult;
-            $electionResult->polling_station_id =  Auth::user()->polling_station_id;
+            $electionResult->polling_station_id =  $user->polling_station_id;
             $electionResult->user_id = $user_id;
-            $electionResult->user_type_id = Auth::user()->user_type_id;
-            $electionResult->country_id = Auth::user()->country_id;
-            $electionResult->region_id = Auth::user()->region_id;
-            $electionResult->constituency_id = Auth::user()->constituency_id;
-            $electionResult->electoral_area_id	 = Auth::user()->electoralarea_id;
+            $electionResult->user_type_id = $user->user_type_id;
+            $electionResult->country_id = $user->country_id;
+            $electionResult->region_id = $user->region_id;
+            $electionResult->constituency_id = $user->constituency_id;
+            $electionResult->electoral_area_id	 = $user->electoralarea_id;
 
 
             $electionResult->election_type_id = $electionStartupDetail->election_type_id;
@@ -702,32 +745,29 @@ class PollingAgentController extends Controller
             $electionResult->obtained_votes = 0;
 
             $electionResult->total_ballot = 0;
-            $electionResult->total_rejected_ballot =$request->input('total_rejected_ballot');
+            $electionResult->total_rejected_ballot = $totalRejectedBallot;
             $electionResult->save();
         foreach ($posted_Data['party'] as $key => $value) {
-                $partyElectionResult = new PartyElectionResult;
-                $partyElectionResult->user_id = $user_id;
-                $partyElectionResult->election_result_id = $electionResult->id;
-                $partyElectionResult->polling_station_id = $electionResult->polling_station_id;
-
-                $partyElectionResult->country_id = $electionResult->country_id;
-                $partyElectionResult->region_id = $electionResult->region_id;
-                $partyElectionResult->constituency_id = $electionResult->constituency_id;
-                $partyElectionResult->electoral_area_id	 = $electionResult->electoralarea_id;
-
-                $party_id = key($value);
-                $partyElectionResult->party_id = key($value);
-                foreach($value as $key => $_value){
-                    $candidate_id = key($_value);
-                    $partyElectionResult->candidate_id = key($_value);
-                    foreach($_value as $key => $__value){
-                       $obtained_vote =  $__value;
-                       $partyElectionResult->obtained_vote = $__value;
-                       $partyElectionResult->save();
+                $partyId = (int) key($value);
+                foreach($value as $_value){
+                    $candidateId = (int) key($_value);
+                    $obtainedVote = (int) current($_value);
+                    if($partyId <= 0 || $candidateId <= 0 || $obtainedVote < 0){
+                        continue;
                     }
-
+                    $partyElectionResult = new PartyElectionResult;
+                    $partyElectionResult->user_id = $user_id;
+                    $partyElectionResult->election_result_id = $electionResult->id;
+                    $partyElectionResult->polling_station_id = $electionResult->polling_station_id;
+                    $partyElectionResult->country_id = $electionResult->country_id;
+                    $partyElectionResult->region_id = $electionResult->region_id;
+                    $partyElectionResult->constituency_id = $electionResult->constituency_id;
+                    $partyElectionResult->electoral_area_id	 = $electionResult->electoral_area_id;
+                    $partyElectionResult->party_id = $partyId;
+                    $partyElectionResult->candidate_id = $candidateId;
+                    $partyElectionResult->obtained_vote = $obtainedVote;
+                    $partyElectionResult->save();
                 }
-            $partyElectionResult->save();
             }
             $electionResult->obtained_votes = PartyElectionResult::where('election_result_id',$electionResult->id)
                 ->where('user_id', $user_id)
@@ -743,7 +783,6 @@ class PollingAgentController extends Controller
     public function resultsXlx($election_start_up, Request $request, $election_result_id=false){
         $user = User::select(
             'users.username',
-            'users.secret',
             'users.created_at',
             'users.name as user_name',
             'users.id as user_id',

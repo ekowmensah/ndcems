@@ -170,7 +170,20 @@ class AgentController extends Controller
         ->where("election_startup_detail.id",$election_start_up)
 
         ->where("status",1)->first();
+        if(!$electionStartupDetail){
+            $request->session()->flash('error', 'Something went wrong!');
+            return redirect(route("Agent.election"));
+        }
         $posted_Data = $request->all();
+        if(!isset($posted_Data['party']) || !is_array($posted_Data['party'])){
+            $request->session()->flash('error', 'No party vote data was submitted.');
+            return redirect()->back();
+        }
+        $totalRejectedBallot = (int) $request->input('total_rejected_ballot', 0);
+        if($totalRejectedBallot < 0){
+            $request->session()->flash('error', 'Rejected ballot count must be zero or greater.');
+            return redirect()->back();
+        }
 
         // Block saving if results have been confirmed by director
         $confirmedResult = ElectionResult::where('polling_station_id', Auth::user()->polling_station_id)
@@ -182,10 +195,10 @@ class AgentController extends Controller
             return redirect(route("Agent.results"));
         }
 
-        $e_r = ElectionResult:://where('election_result.user_id',Auth::user()->id)
-            where('id',$request->input('election_result_id'))
-        ->where('election_result.election_start_up_id',$election_start_up)
-         //->where('election_result.election_type_id',$electionStartupDetail->election_type_id)
+        $e_r = ElectionResult::where('id',$request->input('election_result_id'))
+            ->where('election_result.election_start_up_id',$election_start_up)
+            ->where('election_result.polling_station_id', Auth::user()->polling_station_id)
+            ->where('election_result.user_id', Auth::user()->id)
             ->first();
        //dd( $e_r->toArray());
         if($e_r){
@@ -195,32 +208,31 @@ class AgentController extends Controller
                 return redirect(route("Agent.results"));
             }
             $e_r->total_ballot =0;
-            $e_r->total_rejected_ballot = $request->input('total_rejected_ballot');
+            $e_r->total_rejected_ballot = $totalRejectedBallot;
             $e_r->save();
 
             foreach ($posted_Data['party'] as $key => $value) {
-                $party_id = key($value);
-                $partyElectionResult = PartyElectionResult:://where('user_id',Auth::user()->id)
-                    where('election_result_id',$e_r->id);
-                    //->where('polling_station_id',$e_r->polling_station_id)
-                    //->where('party_id',$party_id);
-
-                    foreach($value as $key => $_value){
-                        $candidate_id = key($_value);
-                        $partyElectionResult = $partyElectionResult->where('candidate_id', key($_value))->first();
-                        //dd($partyElectionResult->toArray());
-
-                        foreach($_value as $key => $__value){
-                            $obtained_vote =  $__value;
-                            $partyElectionResult->obtained_vote = $__value;
-                            $partyElectionResult->save();
-                        }
-
+                foreach($value as $_value){
+                    $candidateId = (int) key($_value);
+                    $obtainedVote = (int) current($_value);
+                    if($candidateId <= 0 || $obtainedVote < 0){
+                        continue;
                     }
-                $partyElectionResult->save();
+
+                    $partyElectionResult = PartyElectionResult::where('election_result_id',$e_r->id)
+                        ->where('candidate_id', $candidateId)
+                        ->where('polling_station_id', $e_r->polling_station_id)
+                        ->where('user_id', Auth::user()->id)
+                        ->first();
+                    if(!$partyElectionResult){
+                        continue;
+                    }
+                    $partyElectionResult->obtained_vote = $obtainedVote;
+                    $partyElectionResult->save();
+                }
             }
             $e_r->obtained_votes = PartyElectionResult::where('election_result_id',$e_r->id)
-                //->where('user_id', Auth::user()->id)
+                ->where('user_id', Auth::user()->id)
                 ->where('polling_station_id', $e_r->polling_station_id)->sum('obtained_vote');
             $e_r->save();
             $e_r->total_ballot = $e_r->obtained_votes +   $e_r->total_rejected_ballot;
@@ -245,32 +257,30 @@ class AgentController extends Controller
             $electionResult->obtained_votes = 0;
 
             $electionResult->total_ballot = 0;
-            $electionResult->total_rejected_ballot =$request->input('total_rejected_ballot');
+            $electionResult->total_rejected_ballot = $totalRejectedBallot;
             $electionResult->save();
         foreach ($posted_Data['party'] as $key => $value) {
-                $partyElectionResult = new PartyElectionResult;
-                $partyElectionResult->user_id = Auth::user()->id;
-                $partyElectionResult->election_result_id = $electionResult->id;
-                $partyElectionResult->polling_station_id = $electionResult->polling_station_id;
-
-                $partyElectionResult->country_id = $electionResult->country_id;
-                $partyElectionResult->region_id = $electionResult->region_id;
-                $partyElectionResult->constituency_id = $electionResult->constituency_id;
-                $partyElectionResult->electoral_area_id	 = $electionResult->electoralarea_id;
-
-                $party_id = key($value);
-                $partyElectionResult->party_id = key($value);
-                foreach($value as $key => $_value){
-                    $candidate_id = key($_value);
-                    $partyElectionResult->candidate_id = key($_value);
-                    foreach($_value as $key => $__value){
-                       $obtained_vote =  $__value;
-                       $partyElectionResult->obtained_vote = $__value;
-                       $partyElectionResult->save();
+                $partyId = (int) key($value);
+                foreach($value as $_value){
+                    $candidateId = (int) key($_value);
+                    $obtainedVote = (int) current($_value);
+                    if($partyId <= 0 || $candidateId <= 0 || $obtainedVote < 0){
+                        continue;
                     }
 
+                    $partyElectionResult = new PartyElectionResult;
+                    $partyElectionResult->user_id = Auth::user()->id;
+                    $partyElectionResult->election_result_id = $electionResult->id;
+                    $partyElectionResult->polling_station_id = $electionResult->polling_station_id;
+                    $partyElectionResult->country_id = $electionResult->country_id;
+                    $partyElectionResult->region_id = $electionResult->region_id;
+                    $partyElectionResult->constituency_id = $electionResult->constituency_id;
+                    $partyElectionResult->electoral_area_id	 = $electionResult->electoral_area_id;
+                    $partyElectionResult->party_id = $partyId;
+                    $partyElectionResult->candidate_id = $candidateId;
+                    $partyElectionResult->obtained_vote = $obtainedVote;
+                    $partyElectionResult->save();
                 }
-            $partyElectionResult->save();
             }
             $electionResult->obtained_votes = PartyElectionResult::where('election_result_id',$electionResult->id)
                 ->where('user_id', Auth::user()->id)
