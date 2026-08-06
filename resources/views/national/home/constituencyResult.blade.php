@@ -1,4 +1,5 @@
 @extends('layouts.app_national_director')
+@section('page_title', 'Constituency Results')
 @section('content')
                 <div class="container-fluid">
                         <br>
@@ -17,7 +18,7 @@
                                             <th>Party</th>
                                             <th>Constituency Name</th>
                                             <th>Total Ballot</th>
-                                            <th>total rejected Ballot</th>
+                                            <th>Rejected Ballot</th>
                                             <th>Obtained Vote</th>
                                             <th></th>
                                           </tr>
@@ -79,10 +80,10 @@
            mData:null,
            name:"id",
              "mRender": function (data) {
-               var url = "{{ route('Region.constituencyView',':number') }}";
-                   url = url.replace(':number', data.id);
+               var url = "{{ route('National.constituencyView',':number') }}";
+                   url = url.replace(':number', data.constituency_id);
                return `
-                      <a style="color:white" class="btn btn-primary btn-xs" >View</a>
+                      <a style="color:white" class="btn btn-primary btn-xs" href=${url}>View</a>
                   `;
               }
            }

@@ -1,67 +1,29 @@
 @extends('layouts.app_national_director')
+@section('page_title', 'Profile')
 @section('content')
-
-
-
-            <div >
-                <div class="container-fluid">
-                    <br>
-
-                    <div class="row">
-
-                        <div class="col-md-12">
-                            <div class="panel" style="background-color: aliceblue;">
-                                <div class="panel-heading">
-                                    <h1 class="panel-title"><strong>My Constituency Detail</strong></h1>
-                                </div>
-                                <div class="panel-body">
-
-                                        <div class="col-md-4">
-                                        </div>
-                                        <div class="col-md-12">
-                                            <br>
-                                        </div>
-
-                                        <div class="col-md-4">
-                                                <strong> Loged In as : </strong> {{$user->user_type_name}}
-                                        </div>
-                                        <div class="col-md-4">
-
-                                        </div>
-                                        <div class="col-md-4">
-
-                                        </div>
-                                        <div class="col-md-12">
-                                            <br>
-                                        </div>
-                                        <div class="col-md-4">
-                                                <strong> Region : </strong> {{$user->region_name}}
-                                        </div>
-                                        <div class="col-md-4">
-                                                <strong>Constituency : </strong>{{$user->constituency_name}}
-                                        </div>
-                                        <div class="col-md-4">
-
-                                        </div>
-                                </div>
-                            </div>
-                        </div>
-
-
-                    </div>
-                    <!-- end new -->
-                    <!-- new 1 -->
-
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card card-outline card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">National User Profile</h3>
                 </div>
-                <!-- end new 1 -->
-                <!-- new 1 -->
-
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Name:</strong> {{ $user->user_name }}</p>
+                            <p><strong>Username:</strong> {{ $user->username }}</p>
+                            <p><strong>Role:</strong> {{ $user->user_type_name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Region:</strong> {{ $user->region_name ?? 'Not assigned' }}</p>
+                            <p><strong>Constituency:</strong> {{ $user->constituency_name ?? 'Not assigned' }}</p>
+                            <p><strong>Joined:</strong> {{ \Carbon\Carbon::parse($user->created_at)->format('M d, Y') }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-
-
-
-
+        </div>
+    </div>
 @endsection
 @section('script')
 @endsection

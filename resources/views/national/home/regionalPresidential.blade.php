@@ -1,4 +1,5 @@
 @extends('layouts.app_national_director')
+@section('page_title', 'Presidential Results')
 @section('content')
                 <div class="container-fluid">
                         <br>
@@ -17,7 +18,7 @@
                                             <th>Party</th>
                                             <th>Region Name</th>
                                             <th>Total Ballot</th>
-                                            <th>total rejected Ballot</th>
+                                            <th>Rejected Ballot</th>
                                             <th>Obtained Vote</th>
                                             <th></th>
                                           </tr>
@@ -79,10 +80,11 @@
            mData:null,
            name:"id",
              "mRender": function (data) {
-               var url = "{{ route('Region.constituencyView',':number') }}";
+               var url = "{{ route('National.regionalResultView',[':number',':number1']) }}";
                    url = url.replace(':number', data.id);
+                   url = url.replace(':number1', data.region_id);
                return `
-                      <a style="color:white" class="btn btn-primary btn-xs" >View</a>
+                      <a style="color:white" class="btn btn-primary btn-xs" href=${url}>View</a>
                   `;
               }
            }

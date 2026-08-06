@@ -7,6 +7,7 @@ use App\Model\SiteSetting;
 use Illuminate\Support\Facades\Schema;
 use App\Model\UserType;
 use App\Model\ElectionType;
+use App\Services\National\NationalLayoutStatsService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -75,6 +76,10 @@ class AppServiceProvider extends ServiceProvider
 
         view()->composer('*', function ($view) use($__electionTypes) {
             $view->with('__electionTypes', $__electionTypes);
+        });
+
+        view()->composer('layouts.app_national_director', function ($view) {
+            $view->with('nationalLayoutStats', app(NationalLayoutStatsService::class)->getStats());
         });
     }
 

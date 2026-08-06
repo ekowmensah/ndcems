@@ -325,13 +325,16 @@ Route::group(['prefix' =>"region",'namespace'=>'Region','as' => 'Region.'], func
 Route::group(['prefix' =>"national",'namespace'=>'National','as' => 'National.'], function () {
     Route::group(['middleware' => ['auth','national']], function () {
         Route::get('/dashboard',  'ContentController@dashboard')->name("dashboard");
+        Route::get('/dashboard/chart-data',  'ContentController@presidentialResultAjax')->name("dashboardChart");
         Route::get('/profile',  'ContentController@profile')->name("profile");
 
         Route::get('/presidential-result',  'ContentController@PresidentialResult')->name("Presidential");
         Route::get('presidential-ajax/','ContentController@PresidentialAajax')->name('PresidentialAajax');
+        Route::get('/regional/result/{id}/{regional_id}',  'ContentController@regionalResultView')->name('regionalResultView');
 
         Route::get('/constituency-result',  'ContentController@ConstituencyResult')->name("ConstituencyResult");
         Route::get('constituency-result-ajax/','ContentController@ConstituencyResultAajax')->name('ConstituencyResultAajax');
+        Route::get('/constituency/result/{id}','ContentController@constituencyView')->name('constituencyView');
 
         Route::get('/polling-agent/','ContentController@pollingAgent')->name('pollingAgent');
         Route::get('/polling-agent-ajax/','ContentController@pollingAgentAjax')->name('pollingAgentAjax');
@@ -349,7 +352,6 @@ Route::group(['prefix' =>"national",'namespace'=>'National','as' => 'National.']
         Route::get('/new-manager/{type_id}','UserController@newUser')->name('New.User');
         Route::post('/new-manager','UserController@newUserPost')->name('New.UserPost');
 
-        ////new rotues need to fix
         Route::get('/electoral-area/','ContentController@ElectoralArea')->name('ElectoralArea');
         Route::get('/electoral-area-ajax/','ContentController@electralAajax')->name('electralAajax');
 

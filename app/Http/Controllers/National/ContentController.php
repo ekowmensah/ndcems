@@ -22,6 +22,7 @@ use App\Model\ElectionType;
 use App\Model\Candidate;
 use App\Model\ElectionStartupDetail;
 use App\Model\PoliticalParty;
+use App\Services\National\NationalDashboardService;
 
 
 class ContentController extends Controller
@@ -37,98 +38,10 @@ class ContentController extends Controller
     }
 
     public function  dashboard(){
-
-        $electionTypes = ElectionType::all();
-
-        $NewElectionTypes = [];
-        foreach ($electionTypes->toArray() as $i => $value) {
-            $data = [
-                    "index"=>$i
-            ];
-            $NewElectionTypes[] = array_merge($value,array_merge($value,$data));
-        }
-        $electionResult = ElectionResult::select(
-            "party_election_result.obtained_vote as party_election_result_obtained_vote",
-            "election_result.id",
-            "political_party.party_initial",
-            "political_party.id as political_party_id",
-            "candidates.first_name",
-            "candidates.last_name",
-            "election_result.total_ballot",
-            "election_result.total_rejected_ballot",
-            "election_result.election_start_up_id",
-            "election_result.obtained_votes as obtained_votes",
-            DB::raw("(select sum(party_election_result.obtained_vote) from party_election_result where party_election_result.candidate_id = candidates.id) as election_result")
-
-        )
-        ->join('party_election_result','party_election_result.election_result_id','=','election_result.id')
-        ->join('political_party','political_party.id','=','party_election_result.party_id')
-        ->join('candidates','candidates.id','=','party_election_result.candidate_id')
-        ->where('election_result.election_type_id',$NewElectionTypes[0]['id'])
-        ->orderBy('candidates.ordering_position','ASC');
-        $electionResults =$electionResult->get();
-        $total = array_sum(array_column($electionResults->toArray(), 'party_election_result_obtained_vote'));
-
-       $dataPoints = [];
-        foreach($electionResults as $electionResult){
-              $dataPoints[] =   array("label"=> $electionResult->party_initial."  -  ".$electionResult->election_result  , "y"=> (($electionResult->election_result*100)/$total));
-        }
-        $dataPoints = array_unique($dataPoints,SORT_REGULAR);
-       $dataPoints1 = [];
-        foreach($dataPoints as $dataPoint ){
-            $dataPoint1[]=$dataPoint ;
-        }
-        if(!isset($dataPoint1) || count($dataPoint1)<=0){
-            $dataPoint1 = array(
-                array("label"=> "No Results", "y"=> 00.00)
-            );
-        }
-        $dataPoints = $dataPoint1;
-
-        return view('national.home.index',compact('dataPoints'));
+        return view('national.home.index', app(NationalDashboardService::class)->getDashboardData());
     }
     public function presidentialResultAjax(){
-        $electionTypes = ElectionType::all();
-
-        $NewElectionTypes = [];
-        foreach ($electionTypes->toArray() as $i => $value) {
-            $data = [
-                    "index"=>$i
-            ];
-            $NewElectionTypes[] = array_merge($value,array_merge($value,$data));
-        }
-        $electionResult = ElectionResult::select(
-            "party_election_result.obtained_vote as party_election_result_obtained_vote",
-            "election_result.id",
-            "political_party.party_initial",
-            "political_party.id as political_party_id",
-            "candidates.first_name",
-            "candidates.last_name",
-            "election_result.total_ballot",
-            "election_result.total_rejected_ballot",
-            "election_result.election_start_up_id",
-            "election_result.obtained_votes as obtained_votes",
-            DB::raw("(select sum(party_election_result.obtained_vote) from party_election_result where party_election_result.candidate_id = candidates.id) as election_result")
-
-        )
-        ->join('party_election_result','party_election_result.election_result_id','=','election_result.id')
-        ->join('political_party','political_party.id','=','party_election_result.party_id')
-        ->join('candidates','candidates.id','=','party_election_result.candidate_id')
-        ->where('election_result.election_type_id',$NewElectionTypes[0]['id']);
-        $electionResults =$electionResult->get();
-        $total = array_sum(array_column($electionResults->toArray(), 'party_election_result_obtained_vote'));
-
-       $dataPoints = [];
-        foreach($electionResults as $electionResult){
-              $dataPoints[] =   array("label"=> $electionResult->party_initial."  -  ".$electionResult->election_result  , "y"=> (($electionResult->election_result*100)/$total));
-        }
-        $dataPoints = array_unique($dataPoints,SORT_REGULAR);
-       $dataPoints1 = [];
-        foreach($dataPoints as $dataPoint ){
-            $dataPoint1[]=$dataPoint ;
-        }
-        $dataPoints = $dataPoint1;
-        return $dataPoints;
+        return app(NationalDashboardService::class)->getPresidentialChartData();
     }
     public function Presidential(){
         return view('region.home.presidential');
@@ -164,71 +77,57 @@ class ContentController extends Controller
     }
     public function constituencyView($id)
     {
-        $constituency_detail = Constituency::find($id);
-        $electionTypes = ElectionType::all();
+        $constituency_detail = Constituency::findOrFail($id);
+        $electionTypeId = app(NationalDashboardService::class)->getConstituencyElectionTypeId();
 
-        $NewElectionTypes = [];
-        foreach ($electionTypes->toArray() as $i => $value) {
-            $data = [
-                    "index"=>$i
-            ];
-            $NewElectionTypes[] = array_merge($value,array_merge($value,$data));
-        }
-
-        $electionResult = ElectionResult::select(
-            "party_election_result.obtained_vote as party_election_result_obtained_vote",
-            "election_result.id",
-            "political_party.party_initial",
-            "political_party.id as political_party_id",
-            "candidates.first_name",
-            "candidates.last_name",
-            "election_result.total_ballot",
-            "election_result.total_rejected_ballot",
-            "election_result.election_start_up_id",
-            "election_result.obtained_votes as obtained_votes",
-            DB::raw("(select sum(party_election_result.obtained_vote) from party_election_result where party_election_result.candidate_id = candidates.id) as election_result")
-
+        $electionResults = ElectionResult::select(
+            'political_party.party_initial',
+            DB::raw('SUM(party_election_result.obtained_vote) as election_result')
         )
-        ->join('party_election_result','party_election_result.election_result_id','=','election_result.id')
-        ->join('political_party','political_party.id','=','party_election_result.party_id')
-        ->join('candidates','candidates.id','=','party_election_result.candidate_id')
-        ->where('election_result.election_type_id',$NewElectionTypes[1]['id'])
-        ->where('election_result.constituency_id',$id);
-        $electionResults =$electionResult->get();
-        $total = array_sum(array_column($electionResults->toArray(), 'party_election_result_obtained_vote'));
+            ->join('party_election_result', 'party_election_result.election_result_id', '=', 'election_result.id')
+            ->join('political_party', 'political_party.id', '=', 'party_election_result.party_id')
+            ->when($electionTypeId, function ($query, $resolvedElectionTypeId) {
+                return $query->where('election_result.election_type_id', $resolvedElectionTypeId);
+            })
+            ->where('election_result.constituency_id', $id)
+            ->groupBy('political_party.id', 'political_party.party_initial')
+            ->orderByDesc('election_result')
+            ->get();
 
-       $dataPoints = [];
-        foreach($electionResults as $electionResult){
-              $dataPoints[] =   array("label"=> $electionResult->party_initial."  -  ".$electionResult->election_result  , "y"=> (($electionResult->election_result*100)/$total));
-        }
-        $dataPoints = array_unique($dataPoints,SORT_REGULAR);
+        $dataPoints = $this->formatChartPoints($electionResults, 'election_result');
 
-        $dataPoint1 = [];
-        foreach($dataPoints as $dataPoint ){
-            $dataPoint1[]=$dataPoint ;
-        }
+        return view('national.home.constituencyResultView', compact('constituency_detail', 'dataPoints'));
+    }
 
-        if(count($dataPoint1)<=0){
-            $dataPoints1 = array(
-                array("label"=> "No Results", "y"=> 00.00)
-            );
-        }
-        $dataPoints = $dataPoint1;
-        return view("region.home.presidentialResultView",compact('constituency_detail','dataPoints'));
+    public function regionalResultView($id, $regional_id)
+    {
+        $regionalDetail = Region::findOrFail($regional_id);
+        $electionTypeId = app(NationalDashboardService::class)->getPresidentialElectionTypeId();
+
+        $electionResults = ElectionResult::select(
+            'political_party.party_initial',
+            DB::raw('SUM(party_election_result.obtained_vote) as election_result')
+        )
+            ->join('party_election_result', 'party_election_result.election_result_id', '=', 'election_result.id')
+            ->join('political_party', 'political_party.id', '=', 'party_election_result.party_id')
+            ->when($electionTypeId, function ($query, $resolvedElectionTypeId) {
+                return $query->where('election_result.election_type_id', $resolvedElectionTypeId);
+            })
+            ->where('election_result.id', $id)
+            ->where('election_result.region_id', $regional_id)
+            ->groupBy('political_party.id', 'political_party.party_initial')
+            ->orderByDesc('election_result')
+            ->get();
+
+        $dataPoints = $this->formatChartPoints($electionResults, 'election_result');
+
+        return view('national.home.regionalResultView', compact('regionalDetail', 'dataPoints'));
     }
     public function PresidentialResult(){
         return view("national.home.regionalPresidential");
     }
     public function PresidentialAajax(){
-            $electionTypes = ElectionType::all();
-
-            $NewElectionTypes = [];
-            foreach ($electionTypes->toArray() as $i => $value) {
-                $data = [
-                        "index"=>$i
-                ];
-                $NewElectionTypes[] = array_merge($value,array_merge($value,$data));
-            }
+            $electionTypeId = app(NationalDashboardService::class)->getPresidentialElectionTypeId();
             $electionResult = ElectionResult::select(
                 "election_result.id",
                 "election_result.region_id",
@@ -249,7 +148,9 @@ class ContentController extends Controller
             ->join('political_party','political_party.id','=','party_election_result.party_id')
             ->join('candidates','candidates.id','=','party_election_result.candidate_id')
             ->join('region','region.id','=','election_result.region_id')
-            ->where('election_result.election_type_id',$NewElectionTypes[0]['id']);
+            ->when($electionTypeId, function ($query, $resolvedElectionTypeId) {
+                return $query->where('election_result.election_type_id', $resolvedElectionTypeId);
+            });
             //->where('election_result.region_id',Auth::user()->region_id);
 
         return DataTables::of($electionResult)->make(true);
@@ -258,18 +159,10 @@ class ContentController extends Controller
         return view("national.home.constituencyResult");
     }
     public function ConstituencyResultAajax(){
-        $electionTypes = ElectionType::all();
-
-            $NewElectionTypes = [];
-            foreach ($electionTypes->toArray() as $i => $value) {
-                $data = [
-                        "index"=>$i
-                ];
-                $NewElectionTypes[] = array_merge($value,array_merge($value,$data));
-            }
+            $electionTypeId = app(NationalDashboardService::class)->getConstituencyElectionTypeId();
             $electionResult = ElectionResult::select(
                 "election_result.id",
-                "election_result.region_id",
+                "election_result.constituency_id",
                 "constituency.name as constituency_name",
                 "party_election_result.obtained_vote as party_election_result_obtained_vote",
                 "political_party.party_initial",
@@ -286,8 +179,10 @@ class ContentController extends Controller
             ->join('party_election_result','party_election_result.election_result_id','=','election_result.id')
             ->join('political_party','political_party.id','=','party_election_result.party_id')
             ->join('candidates','candidates.id','=','party_election_result.candidate_id')
-            ->join('constituency','constituency.id','=','election_result.region_id')
-            ->where('election_result.election_type_id',$NewElectionTypes[0]['id']);
+            ->join('constituency','constituency.id','=','election_result.constituency_id')
+            ->when($electionTypeId, function ($query, $resolvedElectionTypeId) {
+                return $query->where('election_result.election_type_id', $resolvedElectionTypeId);
+            });
             //->where('election_result.region_id',Auth::user()->region_id);
 
         return DataTables::of($electionResult)->make(true);
@@ -399,7 +294,7 @@ class ContentController extends Controller
         if($request->input('election_type_id') != "all")
             $candidate = $candidate->where('election_type.id',$request->input('election_type_id'));
         if($request->input('electoralarea_id') != "all")
-            $candidate = $candidate->where('election_type.id',$request->input('electoralarea_id'));
+            $candidate = $candidate->where('candidates.electoral_area_id',$request->input('electoralarea_id'));
         if($request->input('constituency_id') != "all")
             $candidate = $candidate->where('constituency.id',$request->input('constituency_id'));
         if($request->input('region_id') != "all")
@@ -494,22 +389,17 @@ class ContentController extends Controller
             'users.name as user_name',
             'users.id as user_id',
             'user_type.id as user_type_id',
-            'user_type.name as user_type_name'
-            //'region.name as region_name',
-            //"constituency.name as constituency_name"
-            //"pollingstation.name as PollingStation_name",
-            //"electoralarea.name as ElectoralArea_name"
-            //"pollingstation.polling_station_id as PollingStation_Id"
+            'user_type.name as user_type_name',
+            'region.name as region_name',
+            'constituency.name as constituency_name'
         )
         ->where('users.id', Auth::user()->id)
         ->join('user_type','user_type.id','=','users.user_type_id')
-        //->join('region','region.id','=','users.region_id')
-        //->join('constituency','constituency.id','=','users.constituency_id')
-        //->join('electoralarea','electoralarea.id','=','users.electoralarea_id')
-        //->join('pollingstation','pollingstation.id','=','users.polling_station_id')
+        ->leftJoin('region','region.id','=','users.region_id')
+        ->leftJoin('constituency','constituency.id','=','users.constituency_id')
         ->first();
         //dd($user->toArray());
-        return view('director.candidate.profile',compact('user'));
+        return view('national.home.profile',compact('user'));
     }
 
     public function result($id){
@@ -733,6 +623,26 @@ class ContentController extends Controller
             $PoliticalParties = $PoliticalParties->get();
 
         return $PoliticalParties;
+    }
+
+    protected function formatChartPoints($electionResults, string $valueKey): array
+    {
+        $totalVotes = collect($electionResults)->sum($valueKey);
+
+        if ($totalVotes <= 0) {
+            return [
+                ['label' => 'No Results', 'y' => 0.0],
+            ];
+        }
+
+        return collect($electionResults)->map(function ($electionResult) use ($totalVotes, $valueKey) {
+            $votes = (int) $electionResult->{$valueKey};
+
+            return [
+                'label' => $electionResult->party_initial.' - '.number_format($votes),
+                'y' => round(($votes / $totalVotes) * 100, 2),
+            ];
+        })->values()->all();
     }
 }
 
