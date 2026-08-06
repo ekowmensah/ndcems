@@ -1,5 +1,6 @@
 @extends('layouts.app_national_director')
 @section('page_title', 'Constituency Results')
+@section('page_description', 'Review constituency-level result submissions, compare ballot totals, and drill into party performance by constituency.')
 @section('content')
                 <div class="container-fluid">
                         <br>

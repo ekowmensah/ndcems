@@ -1,6 +1,10 @@
 @extends('layouts.app_national_director')
 
 @section('page_title', 'National Dashboard')
+@section('page_description', 'A live command center for national reporting coverage, party share, regional performance, and election operating context.')
+@section('page_badges')
+    <span class="national-badge"><i class="fas fa-sync-alt"></i> Auto refresh every 15s</span>
+@endsection
 
 @section('content')
     <div class="row">

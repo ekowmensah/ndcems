@@ -1,21 +1,22 @@
 @extends('layouts.app_national_director')
+@section('page_title', 'Candidates')
+@section('page_description', 'Review candidate rosters across elections, drill by geography, and keep registrations aligned with operational readiness.')
+@section('page_actions')
+    @if($type)
+        <a href="{{route('National.candidateRegister',$type->id)}}" class="btn btn-success">Add {{$type->name}} Candidate</a>
+    @else
+        @foreach ($_electionTypes as $electionType)
+            <a href="{{route('National.candidateRegister',$electionType->id)}}" class="btn btn-success">Add {{$electionType->name}} Candidate</a>
+        @endforeach
+    @endif
+@endsection
 @section('content')
                 <div class="container-fluid">
 
                         <div class="col-md-12">
                             <div class="panel" >
                                 <div class="panel-heading">
-                                        <br>
                                         <div class="row">
-                                                @if($type)
-                                                <a href="{{route('National.candidateRegister',$type->id)}}"  style=" float:  right;" class="btn btn-success">Add {{$type->name}} Candidate</a>
-
-                                        @else
-                                            @foreach ($_electionTypes as $electionType)
-                                                <a href="{{route('National.candidateRegister',$electionType->id)}}"  style=" float:  right;" class="btn btn-success">Add {{$electionType->name}} Candidate</a>
-                                            @endforeach
-                                        @endif
-                                        <br><br>
                                         <select style="width:25vh; float:right" class="form-control filter" name="electoralarea_id" id="electoralarea_id"  required>
 
 
@@ -145,10 +146,10 @@
            name:"trans_id",
              "mRender": function (data) {
 
-                var del = "{{ route('SuperAdmin.candidateDelete',':number') }}"
+            var del = "{{ route('National.candidateDelete',':number') }}"
                    del = del.replace(':number', data.id);
 
-               var url = "{{ route('SuperAdmin.candidateEdit',':number') }}";
+               var url = "{{ route('National.candidateEdit',':number') }}";
                    url = url.replace(':number', data.id);
                return `
                       <a style="color:white" class="btn btn-primary btn-xs" href=${url}>Edit</a>

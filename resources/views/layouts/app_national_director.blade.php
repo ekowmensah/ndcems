@@ -16,8 +16,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('page_title', 'National Dashboard') : {{ $config['name'] }}</title>
 
-    <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="{{ asset('AdminLTE/plugins/fontawesome-free/css/all.min.css') }}">
     <!-- DataTables -->
@@ -32,12 +33,375 @@
     <!-- AdminLTE -->
     <link rel="stylesheet" href="{{ asset('AdminLTE/dist/css/adminlte.min.css') }}">
     <style>
+        :root {
+            --national-bg: #eef3f8;
+            --national-surface: rgba(255, 255, 255, 0.92);
+            --national-surface-strong: #ffffff;
+            --national-ink: #10233d;
+            --national-muted: #61758d;
+            --national-border: rgba(16, 35, 61, 0.08);
+            --national-shadow: 0 22px 60px rgba(15, 23, 42, 0.09);
+            --national-accent: #0f6d5f;
+            --national-accent-2: #d98c2f;
+            --national-danger: #c85a54;
+        }
+
+        body,
+        .content-wrapper,
+        .content-header,
+        .content {
+            font-family: "Manrope", sans-serif;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(15, 109, 95, 0.14), transparent 30%),
+                radial-gradient(circle at top right, rgba(217, 140, 47, 0.1), transparent 26%),
+                linear-gradient(180deg, #f6f9fc 0%, var(--national-bg) 100%);
+            color: var(--national-ink);
+        }
+
+        .content-wrapper {
+            background: transparent;
+        }
+
+        .main-header.navbar {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(16, 35, 61, 0.06);
+        }
+
+        .brand-link {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-family: "Space Grotesk", sans-serif;
+            font-weight: 700;
+            letter-spacing: -.02em;
+        }
+
+        .main-sidebar {
+            background:
+                radial-gradient(circle at top, rgba(15, 109, 95, 0.18), transparent 28%),
+                linear-gradient(180deg, #10233d 0%, #0d1728 100%);
+        }
+
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active,
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link:hover,
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-treeview > .nav-item > .nav-link:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+        }
+
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link,
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-treeview > .nav-item > .nav-link {
+            margin: 0 .75rem .35rem;
+            border-radius: 14px;
+        }
+
+        .nav-sidebar .nav-treeview {
+            padding-top: .35rem;
+        }
+
+        .content-header {
+            padding-top: 1.5rem;
+        }
+
+        .national-hero {
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.82)),
+                linear-gradient(135deg, rgba(15, 109, 95, 0.09), rgba(217, 140, 47, 0.06));
+            border: 1px solid rgba(255, 255, 255, 0.68);
+            border-radius: 28px;
+            box-shadow: var(--national-shadow);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding: 1.5rem 1.6rem;
+        }
+
+        .national-hero-copy {
+            flex: 1 1 420px;
+            min-width: 280px;
+        }
+
+        .national-kicker {
+            color: var(--national-accent);
+            font-size: .75rem;
+            font-weight: 800;
+            letter-spacing: .16em;
+            margin-bottom: .55rem;
+            text-transform: uppercase;
+        }
+
+        .national-page-title {
+            color: var(--national-ink);
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(1.8rem, 2vw, 2.4rem);
+            font-weight: 700;
+            letter-spacing: -.03em;
+            margin: 0;
+        }
+
+        .national-page-description {
+            color: var(--national-muted);
+            font-size: .98rem;
+            margin: .55rem 0 0;
+            max-width: 760px;
+        }
+
+        .national-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .55rem;
+            margin-top: 1rem;
+        }
+
+        .national-badge {
+            align-items: center;
+            background: rgba(16, 35, 61, 0.05);
+            border: 1px solid rgba(16, 35, 61, 0.08);
+            border-radius: 999px;
+            color: var(--national-ink);
+            display: inline-flex;
+            font-size: .78rem;
+            font-weight: 700;
+            gap: .4rem;
+            padding: .55rem .9rem;
+        }
+
+        .national-badge.is-accent {
+            background: rgba(15, 109, 95, 0.12);
+            color: #0a5b50;
+        }
+
+        .national-hero-actions {
+            align-items: flex-start;
+            display: flex;
+            flex: 0 1 auto;
+            flex-wrap: wrap;
+            gap: .75rem;
+            justify-content: flex-end;
+            min-width: 220px;
+        }
+
+        .national-hero-actions .btn {
+            margin: 0;
+        }
+
+        .national-summary-card .info-box-number {
+            font-size: 1.1rem;
+        }
+
         .national-summary-card .info-box-number {
             font-size: 1.1rem;
         }
 
         .national-summary-card .info-box-text {
             white-space: normal;
+        }
+
+        .info-box,
+        .small-box,
+        .card,
+        .panel,
+        .x_panel {
+            background: var(--national-surface);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.65);
+            border-radius: 24px;
+            box-shadow: var(--national-shadow);
+            overflow: hidden;
+        }
+
+        .card-header,
+        .panel-heading,
+        .x_title {
+            align-items: center;
+            background: transparent;
+            border-bottom: 1px solid var(--national-border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: .8rem;
+            justify-content: space-between;
+            margin: 0;
+            padding: 1.2rem 1.35rem;
+        }
+
+        .panel-heading .btn,
+        .x_title .btn,
+        .card-header .btn,
+        .panel-heading .form-control,
+        .x_title .form-control,
+        .card-header .form-control,
+        .panel-heading select,
+        .x_title select,
+        .card-header select {
+            float: none !important;
+            margin: 0 !important;
+        }
+
+        .panel-body,
+        .x_content,
+        .card-body {
+            padding: 1.35rem;
+        }
+
+        .panel-body > .col-md-12,
+        .panel-body > .col-lg-12,
+        .panel-body > .col-sm-12,
+        .x_content > .col-md-12,
+        .x_content > .col-lg-12,
+        .x_content > .col-sm-12 {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .x_title h2,
+        .card-title,
+        .panel-title {
+            color: var(--national-ink);
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.08rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .panel,
+        .x_panel {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.15rem;
+        }
+
+        .control-label,
+        .form-group label {
+            color: var(--national-ink);
+            font-size: .82rem;
+            font-weight: 800;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+        }
+
+        .form-control,
+        .custom-select,
+        textarea.form-control {
+            background: rgba(248, 250, 252, 0.95);
+            border: 1px solid rgba(16, 35, 61, 0.1);
+            border-radius: 16px;
+            box-shadow: none;
+            color: var(--national-ink);
+            min-height: 3rem;
+            padding: .8rem 1rem;
+        }
+
+        .form-control:focus,
+        .custom-select:focus,
+        textarea.form-control:focus {
+            background: #fff;
+            border-color: rgba(15, 109, 95, 0.42);
+            box-shadow: 0 0 0 .18rem rgba(15, 109, 95, 0.12);
+        }
+
+        select.form-control.filter,
+        .panel-heading > select.form-control,
+        .card-header > select.form-control {
+            flex: 1 0 180px;
+            max-width: 240px;
+            min-width: 180px;
+        }
+
+        .btn {
+            border-radius: 999px;
+            font-size: .9rem;
+            font-weight: 700;
+            letter-spacing: .01em;
+            padding: .7rem 1.15rem;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #0f6d5f, #149f88);
+            border-color: transparent;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10233d, #20456f);
+            border-color: transparent;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #b14945, #d86e68);
+            border-color: transparent;
+        }
+
+        .btn-secondary,
+        .btn-default,
+        .btn-light {
+            background: #edf2f7;
+            border-color: transparent;
+            color: var(--national-ink);
+        }
+
+        .table {
+            color: var(--national-ink);
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: #f3f6fa;
+            border-bottom: 0;
+            border-top: 0;
+            color: var(--national-muted);
+            font-size: .73rem;
+            font-weight: 800;
+            letter-spacing: .08em;
+            padding: .95rem 1rem;
+            text-transform: uppercase;
+        }
+
+        .table td {
+            border-top: 1px solid rgba(16, 35, 61, 0.06);
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(15, 109, 95, 0.04);
+        }
+
+        div.dataTables_wrapper div.dataTables_length select,
+        div.dataTables_wrapper div.dataTables_filter input {
+            background: rgba(248, 250, 252, 0.95);
+            border: 1px solid rgba(16, 35, 61, 0.1);
+            border-radius: 12px;
+            min-height: 2.7rem;
+            padding: .5rem .85rem;
+        }
+
+        div.dataTables_wrapper div.dataTables_filter label,
+        div.dataTables_wrapper div.dataTables_length label {
+            color: var(--national-muted);
+            font-size: .84rem;
+            font-weight: 700;
+        }
+
+        .pagination .page-link {
+            border: 0;
+            border-radius: 12px !important;
+            color: var(--national-ink);
+            margin: 0 .2rem;
+        }
+
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, #10233d, #20456f);
+        }
+
+        .alert {
+            border: 0;
+            border-radius: 18px;
+            box-shadow: var(--national-shadow);
         }
 
         .national-section-label {
@@ -48,6 +412,29 @@
             margin: 1rem 0 .4rem;
             padding: 0 1rem;
             text-transform: uppercase;
+        }
+
+        @media (max-width: 991.98px) {
+            .national-hero {
+                border-radius: 22px;
+                padding: 1.25rem;
+            }
+
+            .national-hero-actions {
+                justify-content: flex-start;
+            }
+
+            .panel-heading,
+            .x_title,
+            .card-header {
+                padding: 1rem 1rem .9rem;
+            }
+
+            .panel-body,
+            .x_content,
+            .card-body {
+                padding: 1rem;
+            }
         }
     </style>
     @yield("css")
@@ -184,9 +571,21 @@
         <div class="content-header">
             <div class="container-fluid">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-                    <div>
-                        <h1 class="m-0 text-dark">@yield('page_title', 'National Dashboard')</h1>
-                        <small class="text-muted">National coordination and results reporting overview</small>
+                    <div class="national-hero w-100">
+                        <div class="national-hero-copy">
+                            <div class="national-kicker">Enterprise Workspace</div>
+                            <h1 class="national-page-title">@yield('page_title', 'National Dashboard')</h1>
+                            <p class="national-page-description">@yield('page_description', 'National coordination, governance, and live election reporting from one secure workspace.')</p>
+                            <div class="national-badges">
+                                <span class="national-badge is-accent"><i class="fas fa-shield-alt"></i> Secure access</span>
+                                <span class="national-badge"><i class="fas fa-satellite-dish"></i> Live reporting</span>
+                                <span class="national-badge"><i class="fas fa-clock"></i> {{ \Illuminate\Support\Carbon::now('UTC')->format('M d, Y H:i') }} UTC</span>
+                                @yield('page_badges')
+                            </div>
+                        </div>
+                        <div class="national-hero-actions">
+                            @yield('page_actions')
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -287,6 +686,21 @@
 @yield("script")
 <script>
     $.fn.dataTable.ext.errMode = 'throw';
+    $(function () {
+        if ($.fn.dataTable) {
+            $.extend(true, $.fn.dataTable.defaults, {
+                responsive: true,
+                autoWidth: false,
+                language: {
+                    search: "Quick search",
+                    searchPlaceholder: "Search this table"
+                }
+            });
+        }
+
+        $('table.table').addClass('table-hover align-middle');
+        $('.x_panel, .panel').addClass('enterprise-surface');
+    });
 </script>
 </body>
 </html>

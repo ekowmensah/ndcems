@@ -1,4 +1,9 @@
 @extends('layouts.app_national_director')
+@section('page_title', 'Result Explorer')
+@section('page_description', 'Slice national result data from election startup down to polling station level and watch the visual breakdown update instantly.')
+@section('page_badges')
+    <span class="national-badge"><i class="fas fa-filter"></i> Filter-driven analytics</span>
+@endsection
 @section('content')
 
 

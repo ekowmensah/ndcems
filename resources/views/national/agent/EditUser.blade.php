@@ -1,23 +1,15 @@
-@extends('admin.layouts.app')
+@extends('layouts.app_national_director')
+@section('page_title', 'Edit Manager')
+@section('page_description', 'Update manager identity, assignment scope, and credentials with the same polished national workspace form.')
 
 @section('content')
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-6" style=" float:  left;">
-            <h3>Create New Manager</h3>
-        </div>
-
-    </div>
-
-
-</div>
 <div class="clearfix"></div>
 <div class="row">
-    <div class="col-md-8 col-sm-8 col-xs-8 col-md-offset-2">
+    <div class="col-xl-8 col-lg-10 col-md-11 mx-auto">
         <div class="x_panel">
           <div class="x_title">
-            <h2>Managers  </h2>
+            <h2>Manager Profile</h2>
             <div class="clearfix"></div>
           </div>
           <div class="x_content ">
@@ -32,7 +24,7 @@
                     </div>
                 @endif
 
-                <form enctype="multipart/form-data" id="demo-form2" method="POST" action="{{route('SuperAdmin.EditUserPost')}}" data-parsley-validate="" class="form-horizontal form-label-left" >
+                <form enctype="multipart/form-data" id="demo-form2" method="POST" action="{{route('National.EditUserPost')}}" data-parsley-validate="" class="form-horizontal form-label-left" >
                         @csrf
                         <input type="hidden" value="{{$User->id}}"  name="id">
                         <div class="form-group">
@@ -252,7 +244,7 @@
                 $("#username_panel").append(`<span class="fa fa-spinner"><span>` )
                 $.ajax({
                         type: "POST",
-                        url: '{{route("SuperAdmin.VerifyUsername")}}',
+                        url: '{{route("National.VerifyUsername")}}',
                         data: {username:value,_token:_token},
                         //dataType: "JSON",
                         success: function (result) {
@@ -292,7 +284,7 @@
                     var _token = $('input[name="_token"]').val();
                 $.ajax({
                         type: "POST",
-                        url: '{{route("SuperAdmin.getConstituency")}}',
+                        url: '{{route("National.getConstituency")}}',
                         data: {region_id:region_id,_token:_token},
                         //dataType: "JSON",
                         success: function (result) {
@@ -326,7 +318,7 @@
                             var _token = $('input[name="_token"]').val();
                         $.ajax({
                                 type: "POST",
-                                url: '{{route("SuperAdmin.getRegion")}}',
+                                url: '{{route("National.getRegion")}}',
                                 data: {country_id:country_id,_token:_token},
                                 //dataType: "JSON",
                                 success: function (result) {
@@ -356,7 +348,7 @@
                             var _token = $('input[name="_token"]').val();
                         $.ajax({
                                 type: "POST",
-                                url: '{{route("SuperAdmin.getElectral")}}',
+                                url: '{{route("National.getElectral")}}',
                                 data: {constituency_id:constituency_id,_token:_token},
                                 //dataType: "JSON",
                                 success: function (result) {
@@ -386,7 +378,7 @@
                             var _token = $('input[name="_token"]').val();
                         $.ajax({
                                 type: "POST",
-                                url: '{{route("SuperAdmin.getPollingStation")}}',
+                                url: '{{route("National.getPollingStation")}}',
                                 data: {electoralarea_id:electoralarea_id,_token:_token},
                                 //dataType: "JSON",
                                 success: function (result) {

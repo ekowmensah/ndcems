@@ -1,6 +1,10 @@
 @extends('layouts.app_national_director')
 
 @section('page_title', $regionalDetail->name.' Result')
+@section('page_description', 'Detailed regional result breakdown for national performance review and escalation analysis.')
+@section('page_actions')
+    <a href="{{ route('National.Presidential') }}" class="btn btn-light">Back to Presidential Results</a>
+@endsection
 
 @section('content')
     <div class="row">

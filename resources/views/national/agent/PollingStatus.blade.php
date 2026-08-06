@@ -1,18 +1,8 @@
 @extends('layouts.app_national_director')
+@section('page_title', 'Polling Status')
+@section('page_description', 'Track polling station status, operational geography, and readiness signals from a national command view.')
 
 @section('content')
-
-<div class="container">
-    <div class="row">
-        <div class="col-md-6" style=" float:  left;">
-            <h3>Manage Polling Station <small></small></h3>
-        </div>
-        <div class="col-md-6">
-            <br>
-                <a href="{{route('Director.New.PollingStation')}}"  style=" float:  right;" class="btn btn-success">Add New Polling Station</a>
-            </div>
-    </div>
-
 
 <div class="clearfix"></div>
 <div class="row">
@@ -43,8 +33,7 @@
                   <th>Region Name</th>
                   <th>Country Name</th>
                   <th>Total Voter</th>
-                  <th></th>
-                  {{-- <th></th> --}}
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -58,10 +47,7 @@
                             <td>{{$country->region_name}}</td>
                             <td>{{$country->country_name}}</td>
                             <td>{{$country->total_voters}}</td>
-                            <td>
-                                <a href="{{route('SuperAdmin.constituencyEdit',$country->id)}}"   class="btn btn-success btn-xs">Edit</a>
-                                <a href="{{route('SuperAdmin.ElectoralAreaDelete',$country->id)}}"  class="btn btn-danger btn-xs">Delete</a>
-                            </td>
+                            <td>Operational</td>
                         </tr>
                   @endforeach --}}
 
@@ -97,7 +83,7 @@
                     var _token = $('input[name="_token"]').val();
                 $.ajax({
                         type: "POST",
-                        url: '{{route("Director.getConstituency")}}',
+                        url: '{{route("National.getConstituency")}}',
                         data: {region_id:region_id,_token:_token},
                         //dataType: "JSON",
                         success: function (result) {
@@ -129,7 +115,7 @@
                             var _token = $('input[name="_token"]').val();
                         $.ajax({
                                 type: "POST",
-                                url: '{{route("Director.getElectral")}}',
+                                url: '{{route("National.getElectral")}}',
                                 data: {constituency_id:constituency_id,_token:_token},
                                 //dataType: "JSON",
                                 success: function (result) {
@@ -161,7 +147,7 @@
        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
       stateSave: true,
        "order": [[ 1, "asc" ]],
-       ajax: {url:'{!! route("Director.pollingStationAajax") !!}',
+       ajax: {url:'{!! route("National.pollingStationAajax") !!}',
               data: function (d) {
               d.status = $('#filter-status').val();
               d.terminal = $('#filter-terminal').val();
@@ -202,19 +188,10 @@
 
 
           {
-           mData:null,
-           name:"id",
-             "mRender": function (data) {
-
-   var del = "{{ route('Director.PollingStationDelete',':number') }}"
-                   del = del.replace(':number', data.id);
-
-               var url = "{{ route('Director.PollingStationEdit',':number') }}";
-                   url = url.replace(':number', data.id);
-               return `
-                    <a style="color:white" class="btn btn-primary btn-xs" href=${url}>Edit</a>
-                      <a style="color:white" onclick="return confirm('Delete entry?')" class="btn btn-danger btn-xs" href=${del}>Delete</a>
-                  `;
+           data:null,
+           name:"status",
+             "mRender": function () {
+               return `<span class="badge badge-light">Read only</span>`;
               }
            }
            ]

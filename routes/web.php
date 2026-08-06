@@ -351,6 +351,9 @@ Route::group(['prefix' =>"national",'namespace'=>'National','as' => 'National.']
         Route::get('/management-user-ajax/','UserController@managementAgentAjax')->name('managementAgentAjax');
         Route::get('/new-manager/{type_id}','UserController@newUser')->name('New.User');
         Route::post('/new-manager','UserController@newUserPost')->name('New.UserPost');
+        Route::get('/managers-edit/{id}','UserController@UsersEdit')->name('UsersEdit');
+        Route::get('/managers-delete/{id}','UserController@UsersDelete')->name('UsersDelete');
+        Route::post('/managers-edit/','UserController@EditUserPost')->name('EditUserPost');
 
         Route::get('/electoral-area/','ContentController@ElectoralArea')->name('ElectoralArea');
         Route::get('/electoral-area-ajax/','ContentController@electralAajax')->name('electralAajax');
@@ -380,6 +383,9 @@ Route::group(['prefix' =>"national",'namespace'=>'National','as' => 'National.']
 
         Route::get('/candidate/register/{id}','CandidateController@candidateRegister')->name('candidateRegister');
         Route::post('/candidate/register/candidate','CandidateController@candidateRegisterPost')->name('candidateRegisterPost');
+        Route::get('/candidate/edit/{id?}','CandidateController@candidateEdit')->name('candidateEdit');
+        Route::post('/candidate/edit/{id?}/post','CandidateController@candidateEditPost')->name('candidateEditPost');
+        Route::get('/candidate/delete/{id?}','CandidateController@candidateDelete')->name('candidateDelete');
         Route::post('/get-political-party-by-election','ContentController@getPoliticalPartyByElectionType')->name('getPoliticalPartyByElectionType');
         Route::post('/get-political-party','ContentController@getPoliticalParty')->name('getPoliticalParty');
 

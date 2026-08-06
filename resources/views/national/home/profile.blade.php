@@ -1,5 +1,6 @@
 @extends('layouts.app_national_director')
 @section('page_title', 'Profile')
+@section('page_description', 'Your national workspace identity, geographic assignment, and operating role at a glance.')
 @section('content')
     <div class="row">
         <div class="col-lg-8">

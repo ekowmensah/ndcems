@@ -1,4 +1,11 @@
 @extends('layouts.app_national_director')
+@section('page_title', 'Management Users')
+@section('page_description', 'Oversee national management accounts, review geographical assignments, and control operational access across the reporting structure.')
+@section('page_actions')
+    @foreach ($UserTypes as $UserType)
+        <a href="{{route('National.New.User',$UserType->id)}}" class="btn btn-success">Add {{$UserType->name}}</a>
+    @endforeach
+@endsection
 @section('content')
                 <div class="container-fluid">
                         <br>
@@ -8,10 +15,6 @@
                         <div class="col-md-12">
                              <div class="panel" >
                                 <div class="panel-heading">
-                                        @foreach ($UserTypes as $UserType)
-                                            <a href="{{route('National.New.User',$UserType->id)}}"  style=" float:  right;" class="btn btn-success">Add {{$UserType->name}} </a>
-                                        @endforeach
-                                        <br><br>
                                         <select style="width:25vh; float:right" class="form-control filter" name="polling_station_id" id="polling_station_id"  required>
 
 
@@ -138,11 +141,11 @@
            name:"user_id",
              "mRender": function (data) {
 
-            var del = "{{ route('SuperAdmin.UsersDelete',':number') }}"
+            var del = "{{ route('National.UsersDelete',':number') }}"
                    del = del.replace(':number', data.user_id);
 
 
-                var url = "{{ route('SuperAdmin.UsersEdit',':number') }}";
+                var url = "{{ route('National.UsersEdit',':number') }}";
                     url = url.replace(':number', data.user_id);
                return `
                       <a style="color:white" class="btn btn-primary btn-xs" href=${url}>Edit</a>

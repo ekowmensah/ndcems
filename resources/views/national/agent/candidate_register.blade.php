@@ -1,20 +1,12 @@
 @extends('layouts.app_national_director')
+@section('page_title', 'Register Candidate')
+@section('page_description', 'Create a clean, election-ready candidate record with assignment, party, and reporting context in one controlled workflow.')
 
 @section('content')
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-6" style=" float:  left;">
-            <h3>Register New Candidate </h3>
-        </div>
-
-    </div>
-
-
-</div>
 <div class="clearfix"></div>
 <div class="row">
-    <div class="col-md-8 col-sm-8 col-xs-8 col-md-offset-2">
+    <div class="col-xl-8 col-lg-10 col-md-11 mx-auto">
         <div class="x_panel">
           <div class="x_title">
             <div class="clearfix"></div>

@@ -1,6 +1,10 @@
 @extends('layouts.app_national_director')
 
 @section('page_title', $constituency_detail->name.' Result')
+@section('page_description', 'Detailed constituency-level party share view for national oversight and decision support.')
+@section('page_actions')
+    <a href="{{ route('National.ConstituencyResult') }}" class="btn btn-light">Back to Constituency Results</a>
+@endsection
 
 @section('content')
     <div class="row">

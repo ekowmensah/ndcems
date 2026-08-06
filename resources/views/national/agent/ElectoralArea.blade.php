@@ -1,4 +1,6 @@
 @extends('layouts.app_national_director')
+@section('page_title', 'Electoral Areas')
+@section('page_description', 'Browse electoral areas with geographic filters, voter totals, and station density to support national planning and oversight.')
 @section('content')
                 <div class="container-fluid">
                         <br>
@@ -141,23 +143,6 @@
                           { data: 'total_polling', name: 'total_polling' },
                           { data: 'total_voters', name: 'total_voters' }
 
-                          /* {
-                           mData:null,
-                           name:"id",
-                             "mRender": function (data) {
-
-                             var del = "{{ route('SuperAdmin.ElectoralAreaDelete',':number') }}"
-                                   del = del.replace(':number', data.id);
-
-                               var url = "{{ route('SuperAdmin.ElectoralAreaEdit',':number') }}";
-                                   url = url.replace(':number', data.id);
-
-                               return `
-                               <a style="color:white" class="btn btn-primary btn-xs" href=${url}>Edit</a>
-                                      <a onclick="return confirm('Delete entry?')" style="color:white" class="btn btn-danger btn-xs" href=${del}>Delete</a>
-                                  `;
-                              }
-                           } */
                            ]
                        });
 

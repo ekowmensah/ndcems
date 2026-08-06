@@ -1,4 +1,6 @@
 @extends('layouts.app_national_director')
+@section('page_title', 'Polling Stations')
+@section('page_description', 'Audit polling station distribution, assignment depth, and operational readiness across regions and electoral areas.')
 @section('content')
                 <div class="container-fluid">
                         <br>
@@ -52,10 +54,6 @@
                                                               <td>{{$country->region_name}}</td>
                                                               <td>{{$country->country_name}}</td>
                                                               <td>{{$country->total_voters}}</td>
-                                                              <td>
-                                                                  <a href="{{route('SuperAdmin.constituencyEdit',$country->id)}}"   class="btn btn-success btn-xs">Edit</a>
-                                                                  <a href="{{route('SuperAdmin.ElectoralAreaDelete',$country->id)}}"  class="btn btn-danger btn-xs">Delete</a>
-                                                              </td>
                                                           </tr>
                                                     @endforeach --}}
 
@@ -198,22 +196,6 @@
             { data: 'total_voters', name: 'pollingstation.total_voters' }
 
 
-          /* {
-           mData:null,
-           name:"id",
-             "mRender": function (data) {
-
-                var del = "{{ route('Director.PollingStationDelete',':number') }}"
-                   del = del.replace(':number', data.id);
-
-               var url = "{{ route('Director.PollingStationEdit',':number') }}";
-                   url = url.replace(':number', data.id);
-               return `
-                    <a style="color:white" class="btn btn-primary btn-xs" href=${url}>Edit</a>
-                      <a style="color:white" onclick="return confirm('Delete entry?')" class="btn btn-danger btn-xs" href=${del}>Delete</a>
-                  `;
-              }
-           } */
            ]
        });
 

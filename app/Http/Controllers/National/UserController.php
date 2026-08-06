@@ -210,7 +210,7 @@ class UserController extends Controller
         $electoralarea = ElectoralArea::where('constituency_id',$User->constituency_id)->get();
         $pollingstation = PollingStation::where('electoralarea_id',$User->electoralarea_id)->get();
 
-        return view('admin.user.EditUser',compact('pollingstation','electoralarea','constituency','regions','countries','UserTypes','Type','belongTo','User','NewUserTypes'));
+        return view('national.agent.EditUser',compact('pollingstation','electoralarea','constituency','regions','countries','UserTypes','Type','belongTo','User','NewUserTypes'));
     }
 
     public function EditUserPost(Request $request){

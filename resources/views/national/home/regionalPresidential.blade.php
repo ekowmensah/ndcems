@@ -1,5 +1,6 @@
 @extends('layouts.app_national_director')
 @section('page_title', 'Presidential Results')
+@section('page_description', 'Monitor regional presidential submissions, compare turnout quality, and open detailed regional breakdowns from one national table.')
 @section('content')
                 <div class="container-fluid">
                         <br>

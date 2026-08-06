@@ -1,23 +1,15 @@
 @extends('layouts.app_national_director')
+@section('page_title', 'Create User')
+@section('page_description', 'Provision new national reporting users with the right hierarchy, geography, and security details from a single onboarding form.')
 
 @section('content')
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-6" style=" float:  left;">
-            <h3>Create User</h3>
-        </div>
-
-    </div>
-
-
-</div>
 <div class="clearfix"></div>
 <div class="row">
-    <div class="col-md-8 col-sm-8 col-xs-8 col-md-offset-2">
+    <div class="col-xl-8 col-lg-10 col-md-11 mx-auto">
         <div class="x_panel">
           <div class="x_title">
-            <h2>User Profile  </h2>
+            <h2>User Profile</h2>
             <div class="clearfix"></div>
           </div>
           <div class="x_content ">
