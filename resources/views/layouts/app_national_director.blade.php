@@ -52,7 +52,7 @@ $user = App\User::select(
                 <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
-                <a href="{{ route('National.home') }}" class="nav-link">Home</a>
+                <a href="{{ route('National.dashboard') }}" class="nav-link">Home</a>
             </li>
         </ul>
 
@@ -81,7 +81,7 @@ $user = App\User::select(
 
     <!-- Main Sidebar -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
-        <a href="{{ route('National.home') }}" class="brand-link">
+        <a href="{{ route('National.dashboard') }}" class="brand-link">
             <img src="{{ asset($config['logo']) }}" alt="{{ $config['name'] }}" class="brand-image img-circle elevation-3" style="opacity: .8; max-height:33px;">
             <span class="brand-text font-weight-light">{{ $config['name'] }}</span>
         </a>
