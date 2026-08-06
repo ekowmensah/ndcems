@@ -1,7 +1,7 @@
 @extends('layouts.app_national_director')
 
 @section('page_title', 'National Parliamentary Results')
-@section('page_description', 'Verified parliamentary performance by constituency, designed for national decision-making with stronger context and clean drilldowns.')
+@section('page_description', 'Verified parliamentary performance by constituency, presented in a way that matches how parliamentary contests are actually decided.')
 @section('page_badges')
     <span class="national-badge is-accent"><i class="fas fa-landmark"></i> {{ $selectedStartupName }}</span>
     <span class="national-badge"><i class="fas fa-check-circle"></i> Verified constituency-confirmed totals</span>
@@ -16,7 +16,7 @@
     @include('national.home.partials.result-analytics-styles')
     @php
         $topConstituencies = collect($constituencyRows)->sortByDesc('total_valid_votes')->take(6)->values();
-        $leader = collect($partyBreakdown)->first();
+        $leader = collect($leadershipBreakdown)->first();
     @endphp
 
     <div class="result-shell">
@@ -26,7 +26,7 @@
                 <select class="form-control" name="startup_id" id="startup_id">
                     @foreach ($startupOptions as $startup)
                         <option value="{{ $startup->id }}" {{ (int) $selectedStartupId === (int) $startup->id ? 'selected' : '' }}>
-                            {{ $startup->election_name }}{{ (int) $startup->status === 1 ? ' • Active' : '' }}
+                            {{ $startup->election_name }}{{ (int) $startup->status === 1 ? ' | Active' : '' }}
                         </option>
                     @endforeach
                 </select>
@@ -38,7 +38,7 @@
             </div>
             <div class="result-chip">
                 <i class="fas fa-map"></i>
-                {{ number_format($summary['reporting_constituencies']) }} constituencies currently reporting
+                {{ number_format($summary['reporting_constituencies']) }} of {{ number_format($summary['total_constituencies']) }} constituencies reporting
             </div>
             <div class="result-chip">
                 <i class="fas fa-clock"></i>
@@ -49,30 +49,30 @@
         <div class="row">
             <div class="col-lg-3 col-sm-6 mb-3">
                 <div class="result-kpi">
-                    <span class="result-kpi__label"><i class="fas fa-broadcast-tower"></i> Reporting Coverage</span>
-                    <div class="result-kpi__value">{{ $summary['coverage_percentage'] }}%</div>
-                    <div class="result-kpi__sub">{{ number_format($summary['reporting_stations']) }} of {{ number_format($summary['total_polling_stations']) }} polling stations verified</div>
+                    <span class="result-kpi__label"><i class="fas fa-map-marked-alt"></i> Constituency Coverage</span>
+                    <div class="result-kpi__value">{{ $summary['constituency_coverage_percentage'] }}%</div>
+                    <div class="result-kpi__sub">{{ number_format($summary['reporting_constituencies']) }} of {{ number_format($summary['total_constituencies']) }} constituencies have verified parliamentary results</div>
                 </div>
             </div>
             <div class="col-lg-3 col-sm-6 mb-3">
                 <div class="result-kpi">
-                    <span class="result-kpi__label"><i class="fas fa-check-double"></i> Valid Votes</span>
+                    <span class="result-kpi__label"><i class="fas fa-landmark"></i> Decided Constituencies</span>
+                    <div class="result-kpi__value">{{ number_format($summary['decided_constituencies']) }}</div>
+                    <div class="result-kpi__sub">{{ number_format($summary['tied_constituencies']) }} tied and {{ number_format($summary['remaining_constituencies']) }} still unreported</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6 mb-3">
+                <div class="result-kpi">
+                    <span class="result-kpi__label"><i class="fas fa-check-double"></i> Reported Valid Votes</span>
                     <div class="result-kpi__value">{{ number_format($summary['total_valid_votes']) }}</div>
-                    <div class="result-kpi__sub">{{ number_format($summary['submissions']) }} parliamentary submissions aggregated nationally</div>
+                    <div class="result-kpi__sub">{{ number_format($summary['submissions']) }} verified submissions across reported constituencies</div>
                 </div>
             </div>
             <div class="col-lg-3 col-sm-6 mb-3">
                 <div class="result-kpi">
-                    <span class="result-kpi__label"><i class="fas fa-exclamation-circle"></i> Rejected Rate</span>
-                    <div class="result-kpi__value">{{ $summary['rejected_rate'] }}%</div>
-                    <div class="result-kpi__sub">{{ number_format($summary['total_rejected_ballots']) }} rejected from {{ number_format($summary['total_ballots']) }} total ballots</div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-sm-6 mb-3">
-                <div class="result-kpi">
-                    <span class="result-kpi__label"><i class="fas fa-trophy"></i> Leading Party</span>
+                    <span class="result-kpi__label"><i class="fas fa-trophy"></i> Control Signal</span>
                     <div class="result-kpi__value">{{ $summary['leading_party'] }}</div>
-                    <div class="result-kpi__sub">{{ $summary['leading_party_name'] }} with {{ number_format($summary['leading_party_votes']) }} votes</div>
+                    <div class="result-kpi__sub">{{ $summary['leading_party_name'] }}{{ $summary['leading_party_votes'] ? ' with '.number_format($summary['leading_party_votes']).' decided constituencies' : '' }}</div>
                 </div>
             </div>
         </div>
@@ -82,10 +82,10 @@
                 <div class="result-panel">
                     <div class="result-panel__header">
                         <div>
-                            <h3 class="result-panel__title">National Parliamentary Share</h3>
-                            <div class="result-panel__sub">Party share across all verified parliamentary results in the selected startup.</div>
+                            <h3 class="result-panel__title">Reported Constituency Control</h3>
+                            <div class="result-panel__sub">Parliamentary national position is shown by constituency leaders, which is more meaningful than raw partial vote totals.</div>
                         </div>
-                        <span class="result-chip"><i class="fas fa-chart-bar"></i> National party weight</span>
+                        <span class="result-chip"><i class="fas fa-chart-bar"></i> Constituency lead map</span>
                     </div>
                     <div class="result-panel__body">
                         <div style="height: 360px;">
@@ -108,7 +108,7 @@
                                 <div class="insight-row">
                                     <div class="metric-stack">
                                         <strong>{{ $row['constituency_name'] }}</strong>
-                                        <span>{{ $row['leading_party'] }} leading • {{ number_format($row['leading_votes']) }} votes</span>
+                                        <span>{{ $row['leading_party'] }} leading | {{ number_format($row['leading_votes']) }} top-party votes</span>
                                     </div>
                                     <div class="text-right" style="min-width:120px;">
                                         <strong>{{ number_format($row['total_valid_votes']) }}</strong>
@@ -122,9 +122,21 @@
 
                         <div class="mt-4">
                             <div class="detail-stat">
-                                <div class="detail-stat__label">National Front Runner</div>
+                                <div class="detail-stat__label">Control Snapshot</div>
                                 <div class="detail-stat__value">{{ $leader['party_initial'] ?? 'N/A' }}</div>
-                                <div class="result-panel__sub">{{ isset($leader['votes']) ? number_format($leader['votes']) : '0' }} verified votes currently place this party ahead nationally.</div>
+                                <div class="result-panel__sub">
+                                    @if (($leader['is_tie'] ?? false) === true)
+                                        {{ number_format($leader['count'] ?? 0) }} reported constituencies are currently tied at the top.
+                                    @elseif (isset($leader['count']))
+                                        {{ number_format($leader['count']) }} reported constituencies currently lead for this party.
+                                    @else
+                                        No clear parliamentary control signal yet.
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="detail-stat mt-3">
+                                <div class="detail-stat__label">Interpretation</div>
+                                <div class="result-panel__sub">Raw reported votes still appear in the table for context, but the main parliamentary chart now tracks constituency control because parliamentary outcomes are constituency-based.</div>
                             </div>
                         </div>
                     </div>
@@ -165,7 +177,7 @@
 @section('script')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
-        const partyBreakdown = @json($partyBreakdown);
+        const leadershipBreakdown = @json($leadershipBreakdown);
         const constituencyRows = @json($constituencyRows->values());
         const selectedStartupId = @json($selectedStartupId);
         const constituencyDetailUrlTemplate = @json(route('National.constituencyView', '__id__'));
@@ -197,10 +209,10 @@
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: partyBreakdown.map(item => item.party_initial),
+                    labels: leadershipBreakdown.map(item => item.party_initial),
                     datasets: [{
-                        label: 'Votes',
-                        data: partyBreakdown.map(item => Number(item.votes || 0)),
+                        label: 'Constituencies Leading',
+                        data: leadershipBreakdown.map(item => Number(item.count || 0)),
                         backgroundColor: ['#0f6d5f', '#d97706', '#1d4ed8', '#be123c', '#334155', '#16a34a', '#7c3aed'],
                         borderRadius: 12,
                         borderSkipped: false
@@ -215,6 +227,7 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
+                                precision: 0,
                                 callback: function (value) {
                                     return Number(value).toLocaleString();
                                 }

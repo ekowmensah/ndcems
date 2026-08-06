@@ -37,7 +37,7 @@ class NationalResultAnalyticsService
     {
         $electionTypeId = $this->dashboardService->getConstituencyElectionTypeId();
         $startupContext = $this->getStartupContext($electionTypeId, $startupId);
-        $summary = $this->buildNationalSummary($electionTypeId, $startupContext['selected_id']);
+        $summary = $this->buildParliamentarySummary($electionTypeId, $startupContext['selected_id']);
 
         return [
             'startupOptions' => $startupContext['options'],
@@ -45,6 +45,7 @@ class NationalResultAnalyticsService
             'selectedStartupName' => $startupContext['selected_name'],
             'summary' => $summary,
             'partyBreakdown' => $this->buildPartyBreakdown($electionTypeId, $startupContext['selected_id']),
+            'leadershipBreakdown' => $this->buildLeadershipBreakdown('constituency_id', $electionTypeId, $startupContext['selected_id']),
             'constituencyRows' => $this->getConstituencyRows($electionTypeId, $startupContext['selected_id']),
         ];
     }
@@ -336,6 +337,37 @@ class NationalResultAnalyticsService
         ];
     }
 
+    protected function buildParliamentarySummary(?int $electionTypeId, ?int $startupId): array
+    {
+        $summary = $this->buildNationalSummary($electionTypeId, $startupId);
+        $totalConstituencies = (int) Constituency::count();
+        $leadershipBreakdown = collect($this->buildLeadershipBreakdown('constituency_id', $electionTypeId, $startupId));
+        $decidedRows = $leadershipBreakdown->reject(function ($row) {
+            return ($row['is_tie'] ?? false) === true;
+        });
+        $leadingParty = $decidedRows->sortByDesc('count')->first();
+        $tiedCount = (int) $leadershipBreakdown
+            ->filter(function ($row) {
+                return ($row['is_tie'] ?? false) === true;
+            })
+            ->sum('count');
+
+        $reportedConstituencies = (int) ($summary['reporting_constituencies'] ?? 0);
+
+        return array_merge($summary, [
+            'total_constituencies' => $totalConstituencies,
+            'remaining_constituencies' => max($totalConstituencies - $reportedConstituencies, 0),
+            'constituency_coverage_percentage' => $totalConstituencies > 0
+                ? round(($reportedConstituencies / $totalConstituencies) * 100, 2)
+                : 0,
+            'decided_constituencies' => (int) $decidedRows->sum('count'),
+            'tied_constituencies' => $tiedCount,
+            'leading_party' => $leadingParty['party_initial'] ?? ($tiedCount > 0 ? 'TIE' : 'N/A'),
+            'leading_party_name' => $leadingParty['party_name'] ?? ($tiedCount > 0 ? 'No clear parliamentary leader yet' : 'No verified results'),
+            'leading_party_votes' => (int) ($leadingParty['count'] ?? 0),
+        ]);
+    }
+
     protected function buildPartyBreakdown(?int $electionTypeId, ?int $startupId, array $filters = []): array
     {
         $query = DB::table('party_election_result')
@@ -394,6 +426,47 @@ class NationalResultAnalyticsService
                 'y' => $percentage,
             ];
         })->values()->all();
+    }
+
+    protected function buildLeadershipBreakdown(string $groupField, ?int $electionTypeId, ?int $startupId): array
+    {
+        $leaders = $this->buildLeadingPartyMap($groupField, $electionTypeId, $startupId);
+
+        if ($leaders->isEmpty()) {
+            return [
+                [
+                    'party_initial' => 'N/A',
+                    'party_name' => 'No verified results',
+                    'count' => 0,
+                    'percentage' => 0,
+                    'label' => 'No Results',
+                    'is_tie' => false,
+                ],
+            ];
+        }
+
+        $totalGroups = (int) $leaders->count();
+
+        return $leaders
+            ->groupBy(function ($row) {
+                return $row['party_initial'].'|'.$row['party_name'].'|'.(($row['is_tie'] ?? false) ? '1' : '0');
+            })
+            ->map(function ($group) use ($totalGroups) {
+                $sample = $group->first();
+                $count = $group->count();
+
+                return [
+                    'party_initial' => $sample['party_initial'],
+                    'party_name' => $sample['party_name'],
+                    'count' => $count,
+                    'percentage' => $totalGroups > 0 ? round(($count / $totalGroups) * 100, 2) : 0,
+                    'label' => $sample['party_initial'].' - '.number_format($count),
+                    'is_tie' => (bool) ($sample['is_tie'] ?? false),
+                ];
+            })
+            ->sortByDesc('count')
+            ->values()
+            ->all();
     }
 
     protected function getRegionConstituencyBreakdown(int $regionId, ?int $electionTypeId, ?int $startupId): Collection
@@ -503,12 +576,16 @@ class NationalResultAnalyticsService
         return $rows
             ->groupBy('group_id')
             ->map(function ($group) {
-                $leader = $group->sortByDesc('votes')->first();
+                $sorted = $group->sortByDesc('votes')->values();
+                $leader = $sorted->first();
+                $runnerUp = $sorted->get(1);
+                $isTie = $leader && $runnerUp && (int) $leader->votes === (int) $runnerUp->votes;
 
                 return [
-                    'party_initial' => $leader->party_initial,
-                    'party_name' => $leader->party_name,
-                    'votes' => (int) $leader->votes,
+                    'party_initial' => $isTie ? 'TIE' : $leader->party_initial,
+                    'party_name' => $isTie ? 'Tie between top parties' : $leader->party_name,
+                    'votes' => $isTie ? (int) $leader->votes : (int) $leader->votes,
+                    'is_tie' => $isTie,
                 ];
             });
     }
