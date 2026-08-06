@@ -1,68 +1,38 @@
 @extends('layouts.app_national')
+
 @section('content')
+    @include('national.home.partials.result-analytics-styles')
 
-
-
-            <div >
-                <div class="container-fluid">
-                    <br>
-
-                    <div class="row">
-
-                        <div class="col-md-12">
-                            <div class="panel" style="background-color: aliceblue;">
-                                <div class="panel-heading">
-                                    <h1 class="panel-title"><strong>My Regional Area Detail</strong></h1>
-                                </div>
-                                <div class="panel-body">
-
-                                        <div class="col-md-4">
-                                        </div>
-                                        <div class="col-md-12">
-                                            <br>
-                                        </div>
-
-                                        <div class="col-md-4">
-                                                <strong> Loged In as : </strong> {{$user->user_type_name}}
-                                        </div>
-                                        <div class="col-md-4">
-
-                                        </div>
-                                        <div class="col-md-4">
-
-                                        </div>
-                                        <div class="col-md-12">
-                                            <br>
-                                        </div>
-                                        <div class="col-md-4">
-                                                <strong> Region : </strong> {{$user->region_name}}
-                                        </div>
-                                        <div class="col-md-4">
-
-                                        </div>
-                                        <div class="col-md-4">
-
-                                        </div>
-                                </div>
-                            </div>
-                        </div>
-
-
-                    </div>
-                    <!-- end new -->
-                    <!-- new 1 -->
-
+    <div class="result-shell">
+        <div class="result-panel">
+            <div class="result-panel__header">
+                <div>
+                    <h3 class="result-panel__title">Regional Director Profile</h3>
+                    <div class="result-panel__sub">Identity and assignment details for the current regional command account.</div>
                 </div>
-                <!-- end new 1 -->
-                <!-- new 1 -->
-
             </div>
-
-
-
-
-
+            <div class="result-panel__body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="detail-stat">
+                            <div class="detail-stat__label">Logged In As</div>
+                            <div class="detail-stat__value">{{ $user->user_type_name }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="detail-stat">
+                            <div class="detail-stat__label">Name</div>
+                            <div class="detail-stat__value">{{ $user->user_name }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="detail-stat">
+                            <div class="detail-stat__label">Region</div>
+                            <div class="detail-stat__value">{{ $user->region_name }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
-@section('script')
-@endsection
-

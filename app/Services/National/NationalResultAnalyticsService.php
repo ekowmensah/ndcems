@@ -30,6 +30,11 @@ class NationalResultAnalyticsService
             'summary' => $summary,
             'partyBreakdown' => $this->buildPartyBreakdown($electionTypeId, $startupContext['selected_id']),
             'regionalRows' => $this->getRegionalRows($electionTypeId, $startupContext['selected_id']),
+            'lowCoverageWarning' => $this->buildCoverageWarning(
+                $summary['reporting_regions'],
+                (int) Region::count(),
+                'presidential'
+            ),
         ];
     }
 
@@ -47,6 +52,11 @@ class NationalResultAnalyticsService
             'partyBreakdown' => $this->buildPartyBreakdown($electionTypeId, $startupContext['selected_id']),
             'leadershipBreakdown' => $this->buildLeadershipBreakdown('constituency_id', $electionTypeId, $startupContext['selected_id']),
             'constituencyRows' => $this->getConstituencyRows($electionTypeId, $startupContext['selected_id']),
+            'lowCoverageWarning' => $this->buildCoverageWarning(
+                $summary['reporting_constituencies'],
+                $summary['total_constituencies'],
+                'parliamentary'
+            ),
         ];
     }
 
@@ -632,5 +642,24 @@ class NationalResultAnalyticsService
         }
 
         return Carbon::parse($dateTime)->format('M d, Y g:i A');
+    }
+
+    protected function buildCoverageWarning(int $reported, int $total, string $context): ?string
+    {
+        if ($total <= 0) {
+            return null;
+        }
+
+        $percentage = round(($reported / $total) * 100, 2);
+
+        if ($reported === 0) {
+            return 'No verified '.$context.' results have been reported yet, so this page is only showing placeholders.';
+        }
+
+        if ($percentage < 25) {
+            return 'Only '.number_format($reported).' of '.number_format($total).' reporting units are reflected in this '.$context.' view so far. Treat the charts as an early partial picture, not a final national trend.';
+        }
+
+        return null;
     }
 }

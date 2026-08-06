@@ -20,6 +20,12 @@
     @endphp
 
     <div class="result-shell">
+        @if ($lowCoverageWarning)
+            <div class="alert alert-warning mb-0">
+                <strong>Partial reporting:</strong> {{ $lowCoverageWarning }}
+            </div>
+        @endif
+
         <form method="GET" class="result-toolbar" id="startupFilterForm">
             <div class="form-group">
                 <label for="startup_id">Election Startup</label>
