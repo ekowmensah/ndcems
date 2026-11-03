@@ -10,6 +10,7 @@ use App\Model\ElectionStartupDetail;
 use App\Model\PoliticalParty;
 use App\Model\ElectionResult;
 use App\Model\PartyElectionResult;
+use App\Services\Results\ConstituencyResultApprovalService;
 use App\Model\ElectionType;
 use App\Model\PollingStation;
 
@@ -226,6 +227,10 @@ class AgentController extends Controller
                 $request->session()->flash('error', 'Result is already confirmed.');
                 return redirect()->back();
             }
+            $e_r->approval_status = ConstituencyResultApprovalService::STATUS_PENDING;
+            $e_r->rejected_by = null;
+            $e_r->rejected_at = null;
+            $e_r->rejection_reason = null;
             $e_r->total_ballot =0;
             $e_r->total_rejected_ballot = $totalRejectedBallot;
             $e_r->save();
@@ -273,7 +278,9 @@ class AgentController extends Controller
             $electionResult->election_start_up_id = $electionStartupDetail->id;
             $electionResult->obtained_votes = @$request->input('total1111');
 
-            $electionResult->verify_by_constituency = 1;
+            $electionResult->verify_by_constituency = 0;
+            $electionResult->approval_status = ConstituencyResultApprovalService::STATUS_PENDING;
+            $electionResult->result_by_constituency = null;
             $electionResult->total_ballot = 0;
             $electionResult->total_rejected_ballot = $totalRejectedBallot;
             $electionResult->save();

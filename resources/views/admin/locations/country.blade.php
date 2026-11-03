@@ -51,7 +51,7 @@
                             <td>{{$country->total_voters}}</td>
                             <td>
                                 <a href="{{route('SuperAdmin.countryEdit',$country->id)}}"   class="btn btn-success btn-xs">Edit</a>
-                                <a onclick="return confirm('Delete entry?')" href="{{route('SuperAdmin.countryDelete',$country->id)}}"  class="btn btn-danger btn-xs">Delete</a>
+                                <button type="button" onclick="submitAdminAction('{{ route('SuperAdmin.countryDelete',$country->id) }}','DELETE','Delete this country?')" class="btn btn-danger btn-xs">Delete</button>
                             </td>
                         </tr>
                   @endforeach

@@ -58,7 +58,7 @@
                             <td>{{$country->region_name}}</td>
                             <td>{{$country->country_name}}</td>
                             <td>
-                                 <a href="{{route('SuperAdmin.constituencyEdit',$country->id)}}"   class="btn btn-success btn-xs">Edit</a>
+                                 <a href="{{route('SuperAdmin.ElectoralAreaEdit',$country->id)}}"   class="btn btn-success btn-xs">Edit</a>
                                 <a href="{{route('SuperAdmin.ElectoralAreaDelete',$country->id)}}"  class="btn btn-danger btn-xs">Delete</a>
                             </td>
                         </tr>
@@ -178,7 +178,7 @@ $("#region_id").on('change', '', function (e) {
 
                        return `
                        <a style="color:white" class="btn btn-primary btn-xs" href=${url}>Edit</a>
-                              <a onclick="return confirm('Delete entry?')" style="color:white" class="btn btn-danger btn-xs" href=${del}>Delete</a>
+                              <a style="color:white" class="btn btn-danger btn-xs" href="#" onclick="return submitAdminAction('${del}','DELETE','Delete this electoral area?')">Delete</a>
                           `;
                       }
                    }

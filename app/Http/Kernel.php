@@ -68,6 +68,9 @@ class Kernel extends HttpKernel
         'director' => \App\Http\Middleware\Director::class,
         'region' => \App\Http\Middleware\Region::class,
         'national' => \App\Http\Middleware\National::class,
+        'user.type' => \App\Http\Middleware\RequireUserType::class,
+        'governance.audit' => \App\Http\Middleware\RecordGovernanceAudit::class,
+        'admin.reauth' => \App\Http\Middleware\RequireRecentAdminAuthentication::class,
     ];
 
     /**

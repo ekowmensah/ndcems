@@ -258,12 +258,16 @@ class CandidateController extends Controller
         return redirect()->back();
     }
     public function candidateDelete($id,Request $request){
-        $PoliticalParty = Candidate::find($id);
-        if(file_exists(public_path('/candidate_logo').$PoliticalParty->photo))
-            unlink(public_path('/candidate_logo').$PoliticalParty->photo);
-            $PoliticalParty ->delete();
-            $request->session()->flash('message', 'Candidate deleted!');
-            return redirect()->back();
+        $candidate = Candidate::where('id', $id)
+            ->where('constituency_id', Auth::user()->constituency_id)
+            ->firstOrFail();
+        $photoPath = public_path('candidate_logo/'.$candidate->photo);
+        if ($candidate->photo && is_file($photoPath)) {
+            unlink($photoPath);
+        }
+        $candidate->delete();
+        $request->session()->flash('message', 'Candidate deleted!');
+        return redirect()->back();
     }
     public function profile(){
 

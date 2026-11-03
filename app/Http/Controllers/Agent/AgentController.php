@@ -10,6 +10,7 @@ use App\Model\ElectionStartupDetail;
 use App\Model\PoliticalParty;
 use App\Model\ElectionResult;
 use App\Model\PartyElectionResult;
+use App\Services\Results\ConstituencyResultApprovalService;
 use App\Model\ElectionType;
 use Illuminate\Support\Facades\DB;
 
@@ -254,6 +255,10 @@ class AgentController extends Controller
                 $request->session()->flash('error', 'Sorry! Results have been confirmed by the Constituency Director. You cannot edit at this time.');
                 return redirect(route("Agent.results"));
             }
+            $e_r->approval_status = ConstituencyResultApprovalService::STATUS_PENDING;
+            $e_r->rejected_by = null;
+            $e_r->rejected_at = null;
+            $e_r->rejection_reason = null;
             $e_r->total_ballot =0;
             $e_r->total_rejected_ballot = $totalRejectedBallot;
             $e_r->save();
@@ -475,6 +480,12 @@ class AgentController extends Controller
 
         $previousPinkSheet = $electionResult->pink_sheet_path;
         $electionResult->pink_sheet_path = $filename;
+        if($electionResult->approval_status === ConstituencyResultApprovalService::STATUS_REJECTED){
+            $electionResult->approval_status = ConstituencyResultApprovalService::STATUS_PENDING;
+            $electionResult->rejected_by = null;
+            $electionResult->rejected_at = null;
+            $electionResult->rejection_reason = null;
+        }
         $electionResult->save();
 
         if($previousPinkSheet){

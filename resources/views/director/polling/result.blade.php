@@ -73,6 +73,23 @@
         background: #fff;
         padding: 3px;
     }
+    .review-reason {
+        margin-top: 14px;
+        padding: 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        background: #fff8e7;
+    }
+    .result-status-pill { display:inline-flex; padding:5px 9px; border-radius:999px; font-size:10px; font-weight:800; text-transform:uppercase; }
+    .result-status-pill.is-approved { background:#e8f7f1; color:#087152; }
+    .result-status-pill.is-pending { background:#fff4d8; color:#8b620d; }
+    .result-status-pill.is-rejected { background:#fff0f0; color:#a12d2d; }
+    .approval-history { margin:0; padding:0; list-style:none; }
+    .approval-history li { display:flex; gap:10px; padding:10px 12px; border-bottom:1px solid #eef2f6; }
+    .approval-history li:last-child { border-bottom:0; }
+    .approval-history i { margin-top:3px; color:#087f5b; }
+    .approval-history strong,.approval-history small { display:block; }
+    .approval-history small { margin-top:3px; color:#6b7280; }
     @media (max-width: 767px) {
         .confirm-kpi-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -130,6 +147,12 @@
                 </a>
             </div>
 
+            <div class="review-reason">
+                <label for="decisionReason"><strong>Reason for rejection</strong> <span class="text-muted">(required only when rejecting)</span></label>
+                <textarea id="decisionReason" class="form-control" rows="3" maxlength="1000" placeholder="Explain what must be corrected before this result can be approved."></textarea>
+                <small class="text-muted">The polling result will remain excluded from regional and national totals until approved.</small>
+            </div>
+
             <div class="row mt-2">
                 <div class="col-md-7 mb-2 mb-md-0">
                     <div class="confirm-detail-card">
@@ -169,12 +192,35 @@
                     </div>
                 </div>
             </div>
+            <div class="confirm-detail-card">
+                <div class="detail-title">Approval history</div>
+                <ul class="approval-history" id="confirmApprovalHistory"><li><span class="text-muted">No approval decisions recorded yet.</span></li></ul>
+            </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <a href="" class="btn btn-success" id="confirmBtn" >Confirm Result</a>
+          <form id="resultDecisionForm" method="POST" style="display:inline-flex;gap:8px;">
+              @csrf
+              <input type="hidden" name="action" id="decisionAction" value="approve">
+              <input type="hidden" name="reason" id="decisionReasonValue" value="">
+              <button type="button" class="btn btn-danger" id="rejectResultBtn"><i class="fa fa-times-circle"></i> Reject for correction</button>
+              <button type="submit" class="btn btn-success" id="confirmBtn"><i class="fa fa-check-circle"></i> Approve result</button>
+          </form>
         </div>
       </div>
+    </div>
+</div>
+<div class="modal fade" id="reopenResultModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="reopenResultForm" method="POST">
+                @csrf
+                <input type="hidden" name="action" value="reopen">
+                <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">Reopen approved result</h4></div>
+                <div class="modal-body"><div class="alert alert-warning">Reopening removes this result from regional and national totals until it is approved again. This action is permanently audited.</div><label for="reopenReason">Reason for reopening</label><textarea id="reopenReason" name="reason" class="form-control" rows="4" minlength="10" maxlength="1000" required></textarea></div>
+                <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button><button type="submit" class="btn btn-warning">Reopen for correction</button></div>
+            </form>
+        </div>
     </div>
 </div>
 <div class="modal fade" id="pinkSheetUploadModal" role="dialog">
@@ -385,6 +431,7 @@
                     <th>Rejected Ballot</th>
                     <th>Pink Sheet</th>
                     <th>OverVoting</th>
+                    <th>Status</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -452,7 +499,7 @@
           type: 'doughnut',
           data: {
               labels: statusPie.labels || [],
-              datasets: [{ data: statusPie.values || [], backgroundColor: ['#16a34a', '#f59e0b'], borderWidth: 0 }]
+              datasets: [{ data: statusPie.values || [], backgroundColor: ['#16a34a', '#f59e0b', '#dc2626'], borderWidth: 0 }]
           },
           options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '63%' }
       });
@@ -564,7 +611,8 @@
                { searchable: false, targets: 6 },
                { searchable: false, targets: 7 },
                { searchable: false, targets: 8 },
-               { searchable: false, targets: 9 }
+               { searchable: false, targets: 9 },
+               { searchable: false, targets: 10 }
            ],
            columns: [
                {
@@ -615,6 +663,15 @@
                    }
                },
                {
+                   data: 'approval_status',
+                   name: 'election_result.approval_status',
+                   mRender: function (status, type, data) {
+                       status = status || (data.verify_by_constituency == 1 ? 'approved' : 'pending');
+                       var detail = status === 'rejected' && data.rejection_reason ? ` title="${$('<div>').text(data.rejection_reason).html()}"` : '';
+                       return `<span class="result-status-pill is-${status}"${detail}>${status}</span>`;
+                   }
+               },
+               {
                    mData: null,
                    name: "election_result_id",
                    mRender: function (data) {
@@ -628,7 +685,8 @@
                        if (data.election_result_user_id) {
                            edit = edit + "/" + data.election_result_user_id;
                        }
-                       if (data.verify_by_constituency == 0) {
+                       var approvalStatus = data.approval_status || (data.verify_by_constituency == 1 ? 'approved' : 'pending');
+                       if (approvalStatus !== 'approved') {
                            return `
                                <a style="color:white"
                                   href="javascript:void(0)"
@@ -646,13 +704,12 @@
                                ><span class="fa fa-spinner fa-pulse" title="Confirm Results" style="color:red;font-size:16px"></span></a>
                                <a style="color:white" href="${url}"><span class="fa fa-eye" title="View Results" style="color:#0000CD;font-size:16px"></span></a>
                                <a style="color:white" href="${edit}"><span class="fa fa-edit" title="Edit/Update Results" style="color:#FF4500;font-size:16px"></span></a>
-                               <a style="color:white" onclick="return confirm('Are you sure?')" href="${del}"><span class="fa fa-trash-o" title="Delete Results" style="color:#FF0000;font-size:16px"></span></a>
+                               <a style="color:white" href="#" onclick="return submitProtectedAction('${del}','DELETE','Delete this unapproved result?')"><span class="fa fa-trash-o" title="Delete Results" style="color:#FF0000;font-size:16px"></span></a>
                            `;
                        }
                        return `
-                           <a style="color:white" onclick="return confirm('Are you sure?')" href="${confirm}"><span class="fa fa-check-circle" title="Unconfirm Result" style="color:#006400;font-size:18px"></span></a>
+                           <a href="javascript:void(0)" class="js-reopen-result" data-decision-url="${confirm}"><span class="fa fa-unlock" title="Reopen approved result" style="color:#b7791f;font-size:18px"></span></a>
                            <a style="color:white" href="${url}"><span class="fa fa-eye" title="View Results" style="color:#0000CD;font-size:18px"></span></a>
-                           <a style="color:white" onclick="return confirm('Are you sure?')" href="${del}"><span class="fa fa-trash-o" title="Delete Results" style="color:#FF0000;font-size:16px"></span></a>
                            <a style="color:white" href="${xlx}"><span class="fa fa-file-excel-o" title="Export Results" style="color:green;font-size:18px"></span></a>
                        `;
                    }
@@ -687,13 +744,16 @@
        $('#confirmValidVotes').text(validVotes.toLocaleString());
        $('#confirmRejected').text(rejectedVotes.toLocaleString());
        $('#confirmOverVoting').text(overVoting);
-       $('#confirmBtn').attr('href', payload.confirmUrl || '#');
+       $('#resultDecisionForm').attr('action', payload.confirmUrl || '#');
+       $('#decisionAction').val('approve');
+       $('#decisionReason,#decisionReasonValue').val('');
        $('#confirmViewLink').attr('href', payload.viewUrl || '#');
 
        $('#confirmCandidateTbody').html('<tr><td colspan="4" class="text-muted text-center">Loading...</td></tr>');
        $('#confirmPinkSheetImage').hide().attr('src', '');
        $('#confirmPinkSheetMissing').text('No pink sheet available.').show();
        $('#confirmPinkSheetLinks').hide();
+       $('#confirmApprovalHistory').html('<li><span class="text-muted">Loading approval history...</span></li>');
 
        if(payload.resultId){
             const detailUrl = resultDetailUrlTemplate.replace(':id', payload.resultId);
@@ -723,6 +783,21 @@
                         $('#confirmPinkSheetDownloadLink').attr('href', res.pink_sheet_download_url || '#');
                         $('#confirmPinkSheetLinks').show();
                     }
+                    if(Array.isArray(res.approval_history) && res.approval_history.length){
+                        let history = '';
+                        res.approval_history.forEach(function(item){
+                            const actor = $('<div>').text(item.actor_name || 'Constituency Director').html();
+                            const action = $('<div>').text((item.action || 'reviewed').toUpperCase()).html();
+                            const fromStatus = $('<div>').text(item.from_status || 'pending').html();
+                            const toStatus = $('<div>').text(item.to_status || '-').html();
+                            const decidedAt = $('<div>').text(item.created_at || '').html();
+                            const reason = item.reason ? '<br>'+ $('<div>').text(item.reason).html() : '';
+                            history += `<li><i class="fa fa-history"></i><span><strong>${actor}: ${action}</strong><small>${fromStatus} to ${toStatus} &middot; ${decidedAt}${reason}</small></span></li>`;
+                        });
+                        $('#confirmApprovalHistory').html(history);
+                    } else {
+                        $('#confirmApprovalHistory').html('<li><span class="text-muted">No approval decisions recorded yet.</span></li>');
+                    }
                 },
                 error: function(){
                     $('#confirmCandidateTbody').html('<tr><td colspan="4" class="text-danger text-center">Failed to load details.</td></tr>');
@@ -732,6 +807,28 @@
 
        $('#myModal').modal('show');
    }
+
+   $('#rejectResultBtn').on('click', function(){
+       var reason = $.trim($('#decisionReason').val());
+       if(reason.length < 10){
+           window.alert('Please provide a clear rejection reason of at least 10 characters.');
+           $('#decisionReason').focus();
+           return;
+       }
+       $('#decisionAction').val('reject');
+       $('#decisionReasonValue').val(reason);
+       $('#resultDecisionForm').submit();
+   });
+
+   $('#resultDecisionForm').on('submit', function(){
+       if($('#decisionAction').val() === 'approve') $('#decisionReasonValue').val('');
+   });
+
+   $(document).on('click', '.js-reopen-result', function(){
+       $('#reopenResultForm').attr('action', $(this).data('decision-url'));
+       $('#reopenReason').val('');
+       $('#reopenResultModal').modal('show');
+   });
 
    function openDirectorPinkSheetModal(electionResultId){
         var uploadUrl = "{{ route('Director.UploadPinkSheet', ':number') }}";

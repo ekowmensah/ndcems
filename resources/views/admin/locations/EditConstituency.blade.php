@@ -20,7 +20,7 @@
             <div class="clearfix"></div>
           </div>
           <div class="x_content ">
-                <form id="demo-form2" method="POST" action="{{route('SuperAdmin.New.constituency')}}" data-parsley-validate="" class="form-horizontal form-label-left" >
+                <form id="demo-form2" method="POST" action="{{route('SuperAdmin.constituencyEdit',$regions->id)}}" data-parsley-validate="" class="form-horizontal form-label-left" >
                         @csrf
                         <div class="form-group">
                           <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Constituency Name <span class="required">*</span>

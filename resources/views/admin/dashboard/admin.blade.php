@@ -44,7 +44,7 @@
                             <td>{{$country->created_at}}</td>
                             <td>
                                 <a href="{{route('SuperAdmin.edit.Admin',$country->id)}}"   class="btn btn-success btn-xs">Edit</a>
-                                <a href="{{route('SuperAdmin.delete.Admin',$country->id)}}" onclick="return confirm('Delete entry?')" class="btn btn-danger btn-xs">Delete</a>
+                                <button type="button" onclick="submitAdminAction('{{ route('SuperAdmin.delete.Admin',$country->id) }}','DELETE','Remove this administrator?')" class="btn btn-danger btn-xs">Delete</button>
                             </td>
                         </tr>
                   @endforeach

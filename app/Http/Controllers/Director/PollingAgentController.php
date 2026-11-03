@@ -10,6 +10,7 @@ use App\Model\ElectionStartupDetail;
 use App\Model\PoliticalParty;
 use App\Model\ElectionResult;
 use App\Model\PartyElectionResult;
+use App\Model\ResultApprovalAudit;
 use App\Model\ElectionType;
 use App\Model\UserType;
 use DataTables;
@@ -25,6 +26,7 @@ use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use App\Services\Results\ConstituencyResultApprovalService;
 
 
 class PollingAgentController extends Controller
@@ -199,9 +201,12 @@ class PollingAgentController extends Controller
         return $countries;
     }
     public function UsersDelete($id,Request $request){
-        $user = User::find($id);
+        $user = User::where('id', $id)
+            ->where('user_type_id', User::TYPE_POLLING_AGENT)
+            ->where('constituency_id', Auth::user()->constituency_id)
+            ->firstOrFail();
         $user->delete();
-        $request->session()->flash('message', ' Agent Deleted Successfully!');
+        $request->session()->flash('message', 'Polling agent archived successfully.');
         return redirect()->back();
     }
     public function newUser($type_id){
@@ -294,8 +299,9 @@ class PollingAgentController extends Controller
 
         $summary = (clone $baseQuery)->selectRaw('
             COUNT(*) as submitted,
-            SUM(CASE WHEN verify_by_constituency = 1 THEN 1 ELSE 0 END) as confirmed,
-            SUM(CASE WHEN verify_by_constituency = 0 THEN 1 ELSE 0 END) as pending,
+            SUM(CASE WHEN approval_status = "approved" THEN 1 ELSE 0 END) as confirmed,
+            SUM(CASE WHEN approval_status = "pending" THEN 1 ELSE 0 END) as pending,
+            SUM(CASE WHEN approval_status = "rejected" THEN 1 ELSE 0 END) as rejected,
             SUM(CASE WHEN pink_sheet_path IS NOT NULL AND pink_sheet_path != "" THEN 1 ELSE 0 END) as pink_sheets,
             SUM(obtained_votes) as total_valid_votes,
             SUM(total_rejected_ballot) as total_rejected_votes
@@ -305,17 +311,19 @@ class PollingAgentController extends Controller
         $submitted = (int) ($summary->submitted ?? 0);
         $confirmed = (int) ($summary->confirmed ?? 0);
         $pending = (int) ($summary->pending ?? 0);
+        $rejected = (int) ($summary->rejected ?? 0);
         $pinkSheets = (int) ($summary->pink_sheets ?? 0);
 
         $overVoting = (clone $baseQuery)
             ->join('pollingstation', 'pollingstation.id', '=', 'election_result.polling_station_id')
-            ->whereRaw('election_result.total_ballot > pollingstation.total_voters')
+            ->whereRaw('CAST(election_result.total_ballot AS UNSIGNED) > CAST(pollingstation.total_voters AS UNSIGNED)')
             ->count();
 
         $resultSummary = [
             'submitted' => $submitted,
             'confirmed' => $confirmed,
             'pending' => $pending,
+            'rejected' => $rejected,
             'pink_sheets' => $pinkSheets,
             'missing_pink_sheets' => max($submitted - $pinkSheets, 0),
             'total_polling_stations' => $totalPollingStations,
@@ -328,8 +336,8 @@ class PollingAgentController extends Controller
         ];
 
         $statusPie = [
-            'labels' => ['Confirmed', 'Pending'],
-            'values' => [$confirmed, $pending],
+            'labels' => ['Approved', 'Pending', 'Rejected'],
+            'values' => [$confirmed, $pending, $rejected],
         ];
 
         $pinkSheetPie = [
@@ -340,7 +348,7 @@ class PollingAgentController extends Controller
         $electionTypeRows = ElectionResult::select(
                 'election_type.name as election_type_name',
                 DB::raw('COUNT(election_result.id) as submissions'),
-                DB::raw('SUM(CASE WHEN election_result.verify_by_constituency = 1 THEN 1 ELSE 0 END) as confirmations')
+                DB::raw('SUM(CASE WHEN election_result.approval_status = "approved" THEN 1 ELSE 0 END) as confirmations')
             )
             ->join('election_type', 'election_type.id', '=', 'election_result.election_type_id')
             ->where('election_result.constituency_id', $constituencyId)
@@ -427,6 +435,9 @@ class PollingAgentController extends Controller
             'election_result.id as election_result_id',
             'election_result.election_start_up_id',
             "election_result.verify_by_constituency",
+            "election_result.approval_status",
+            "election_result.approved_at",
+            "election_result.rejection_reason",
             "election_result.verify_by_regional",
             "election_result.result_by_constituency",
             'election_startup_detail.election_name',
@@ -663,6 +674,9 @@ class PollingAgentController extends Controller
                 'election_result.obtained_votes',
                 'election_result.pink_sheet_path',
                 'election_result.verify_by_constituency',
+                'election_result.approval_status',
+                'election_result.approved_at',
+                'election_result.rejection_reason',
                 'election_startup_detail.election_name',
                 'election_type.name as election_type_name',
                 'pollingstation.name as polling_station_name',
@@ -700,6 +714,23 @@ class PollingAgentController extends Controller
             })
             ->values();
 
+        $approvalHistory = ResultApprovalAudit::query()
+            ->select('result_approval_audits.*', 'users.name as actor_name')
+            ->leftJoin('users', 'users.id', '=', 'result_approval_audits.actor_id')
+            ->where('result_approval_audits.election_result_id', $resultMeta->id)
+            ->orderByDesc('result_approval_audits.id')
+            ->get()
+            ->map(function ($audit) {
+                return [
+                    'action' => $audit->action,
+                    'from_status' => $audit->from_status,
+                    'to_status' => $audit->to_status,
+                    'reason' => $audit->reason,
+                    'actor_name' => $audit->actor_name ?: 'Constituency Director',
+                    'created_at' => optional($audit->created_at)->format('M d, Y g:i A'),
+                ];
+            })->values();
+
         return response()->json([
             'id' => (int) $resultMeta->id,
             'election_name' => $resultMeta->election_name,
@@ -711,10 +742,14 @@ class PollingAgentController extends Controller
             'total_rejected_ballot' => (int) $resultMeta->total_rejected_ballot,
             'total_ballot' => (int) $resultMeta->total_ballot,
             'verify_by_constituency' => (int) $resultMeta->verify_by_constituency,
+            'approval_status' => $resultMeta->approval_status ?: ((int) $resultMeta->verify_by_constituency === 1 ? 'approved' : 'pending'),
+            'approved_at' => $resultMeta->approved_at,
+            'rejection_reason' => $resultMeta->rejection_reason,
             'has_pink_sheet' => !empty($resultMeta->pink_sheet_path),
             'pink_sheet_view_url' => !empty($resultMeta->pink_sheet_path) ? route('Director.ViewPinkSheet', $resultMeta->id) : null,
             'pink_sheet_download_url' => !empty($resultMeta->pink_sheet_path) ? route('Director.DownloadPinkSheet', $resultMeta->id) : null,
             'candidates' => $candidates,
+            'approval_history' => $approvalHistory,
         ]);
     }
     public function downloadPinkSheet($election_result_id){
@@ -759,7 +794,7 @@ class PollingAgentController extends Controller
             abort(403);
         }
         if((int) $electionResult->verify_by_constituency === 1){
-            $request->session()->flash('error', 'Confirmed results are locked. Unconfirm first to upload pink sheet.');
+            $request->session()->flash('error', 'Approved results are locked. Reopen the result before replacing its pink sheet.');
             return redirect()->back();
         }
 
@@ -774,6 +809,12 @@ class PollingAgentController extends Controller
 
         $previousPinkSheet = $electionResult->pink_sheet_path;
         $electionResult->pink_sheet_path = $filename;
+        if($electionResult->approval_status === ConstituencyResultApprovalService::STATUS_REJECTED){
+            $electionResult->approval_status = ConstituencyResultApprovalService::STATUS_PENDING;
+            $electionResult->rejected_by = null;
+            $electionResult->rejected_at = null;
+            $electionResult->rejection_reason = null;
+        }
         $electionResult->save();
 
         if($previousPinkSheet){
@@ -810,19 +851,28 @@ class PollingAgentController extends Controller
         $value = trim($value, '_');
         return $value !== '' ? $value : 'unknown';
     }
-    public function confirmResults($id){
-        $confirmResults = ElectionResult::where('id', $id)
-            ->where('constituency_id', Auth::user()->constituency_id)
-            ->first();
-        if(!$confirmResults){
-            abort(403);
-        }
-        if($confirmResults->verify_by_constituency == 0){
-             $confirmResults->verify_by_constituency = 1;
-        }else if($confirmResults->verify_by_constituency == 1){
-            $confirmResults->verify_by_constituency = 0;
-        }
-        $confirmResults->save();
+    public function decideResult($id, Request $request, ConstituencyResultApprovalService $approvalService){
+        $validated = $request->validate([
+            'action' => ['required', 'in:approve,reject,reopen'],
+            'reason' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $result = $approvalService->decide(
+            (int) $id,
+            Auth::user(),
+            $validated['action'],
+            $validated['reason'] ?? null,
+            $request->ip(),
+            $request->userAgent()
+        );
+
+        $message = [
+            'approve' => 'Result approved and locked for national reporting.',
+            'reject' => 'Result rejected and returned for correction.',
+            'reopen' => 'Result reopened for correction. The action has been audited.',
+        ][$validated['action']];
+        $request->session()->flash('message', $message);
+
         return redirect()->back();
     }
     public function deleteResults($id,Request $request){
@@ -831,6 +881,10 @@ class PollingAgentController extends Controller
             ->first();
         if(!$confirmResults){
             abort(403);
+        }
+        if((int) $confirmResults->verify_by_constituency === 1 || $confirmResults->approval_status === ConstituencyResultApprovalService::STATUS_APPROVED){
+            $request->session()->flash('error', 'Approved results cannot be deleted. Reopen the result and record a reason first.');
+            return redirect()->back();
         }
         $delete = PartyElectionResult::where('election_result_id',$confirmResults->id)->delete();
         if($delete){
@@ -1066,6 +1120,10 @@ class PollingAgentController extends Controller
                 $request->session()->flash('error', 'Result is already confirmed.');
                 return redirect()->back();
             }
+            $e_r->approval_status = ConstituencyResultApprovalService::STATUS_PENDING;
+            $e_r->rejected_by = null;
+            $e_r->rejected_at = null;
+            $e_r->rejection_reason = null;
             $e_r->total_ballot =0;
             $e_r->total_rejected_ballot = $totalRejectedBallot;
             $e_r->save();

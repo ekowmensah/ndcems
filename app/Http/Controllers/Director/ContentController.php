@@ -358,6 +358,9 @@ class ContentController extends Controller
     }
 
     public function  ElectoralAreaDelete($id,Request $request){
+        $electoralArea = ElectoralArea::where('id', $id)
+            ->where('constituency_id', Auth::user()->constituency_id)
+            ->firstOrFail();
         $found = Candidate::where('electoral_area_id',$id)->first();
         if($found){
             $request->session()->flash('error', ' Candidate belong to this ElectoralArea'.$found->name);
@@ -379,8 +382,7 @@ class ContentController extends Controller
             return redirect()->back();
         }
 
-        $countries  = ElectoralArea::where('id',$id)->first();
-        $countries ->delete();
+        $electoralArea->delete();
         $request->session()->flash('message', ' ElectoralArea Deleted successfully!');
         return redirect()->back();
     }
@@ -467,7 +469,9 @@ class ContentController extends Controller
         return view('director.locations.NewPollingStation',compact('countries'));
     }
     public function PollingStationDelete($id,Request $request){
-        $PollingStation =  PollingStation::find($id);
+        $PollingStation = PollingStation::where('id', $id)
+            ->where('constituency_id', Auth::user()->constituency_id)
+            ->firstOrFail();
         $PollingStation->delete();
         $request->session()->flash('message', '  Polling Station deleted successfully!');
         return redirect()->back();

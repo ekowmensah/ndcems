@@ -213,7 +213,7 @@
                    url = url.replace(':number', data.id);
                return `
                     <a style="color:white" class="btn btn-primary btn-xs" href=${url}>Edit</a>
-                      <a style="color:white" onclick="return confirm('Delete entry?')" class="btn btn-danger btn-xs" href=${del}>Delete</a>
+                      <a style="color:white" class="btn btn-danger btn-xs" href="#" onclick="return submitProtectedAction('${del}','DELETE','Delete this polling station?')">Delete</a>
                   `;
               }
            }

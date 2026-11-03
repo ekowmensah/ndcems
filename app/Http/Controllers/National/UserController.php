@@ -313,9 +313,15 @@ class UserController extends Controller
         return DataTables::of($Users)->make(true);
     }
     public function UsersDelete($id,Request $request){
-        $user = User::find($id);
+        $user = User::where('id', $id)
+            ->whereIn('user_type_id', [
+                User::TYPE_REGIONAL_DIRECTOR,
+                User::TYPE_CONSTITUENCY_DIRECTOR,
+                User::TYPE_POLLING_AGENT,
+            ])
+            ->firstOrFail();
         $user->delete();
-        $request->session()->flash('message', ' Agent Deleted Successfully!');
+        $request->session()->flash('message', 'Account archived successfully.');
         return redirect()->back();
     }
 

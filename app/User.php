@@ -5,10 +5,16 @@ namespace App;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use Notifiable, SoftDeletes;
+
+    public const TYPE_NATIONAL_DIRECTOR = 1;
+    public const TYPE_REGIONAL_DIRECTOR = 2;
+    public const TYPE_CONSTITUENCY_DIRECTOR = 3;
+    public const TYPE_POLLING_AGENT = 5;
 
     /**
      * The attributes that are mass assignable.
@@ -30,4 +36,24 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token'
     ];
+
+    public function canCaptureResults(): bool
+    {
+        return in_array((int) $this->user_type_id, [self::TYPE_CONSTITUENCY_DIRECTOR, self::TYPE_POLLING_AGENT], true);
+    }
+
+    public function canApproveResults(): bool
+    {
+        return (int) $this->user_type_id === self::TYPE_CONSTITUENCY_DIRECTOR;
+    }
+
+    public function canReviewRegionalResults(): bool
+    {
+        return (int) $this->user_type_id === self::TYPE_REGIONAL_DIRECTOR;
+    }
+
+    public function canReviewNationalResults(): bool
+    {
+        return (int) $this->user_type_id === self::TYPE_NATIONAL_DIRECTOR;
+    }
 }

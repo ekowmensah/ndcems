@@ -126,6 +126,28 @@ $user = App\User::select(
                             </li>
                         </ul>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('Region.resultReview') }}" class="nav-link {{ Request::routeIs('Region.resultReview*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-clipboard-check"></i>
+                            <p>Result Oversight</p>
+                        </a>
+                    </li>
+                    <li class="nav-header">OPERATIONS</li>
+                    <li class="nav-item">
+                        <a href="{{ route('Operations.incidents') }}" class="nav-link {{ Request::routeIs('Operations.incidents*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-exclamation-triangle"></i><p>Incident Command</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('Operations.notifications') }}" class="nav-link {{ Request::routeIs('Operations.notifications*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-bell"></i><p>Operations Inbox</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('Operations.reports') }}" class="nav-link {{ Request::routeIs('Operations.reports*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-file-alt"></i><p>Situation Reports</p>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </div>

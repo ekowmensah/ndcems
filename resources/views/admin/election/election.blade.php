@@ -58,9 +58,9 @@
                             </td>
                             <td>
                                     @if($UserType->status === 0 && $UserType->status !== null)
-                                        <a href="{{route('SuperAdmin.electionDetailTougle',[$UserType->election_startup_detail_id,1])}}"   class="btn btn-info btn-xs"> Start</a>
+                                        <button type="button" onclick="submitAdminAction('{{ route('SuperAdmin.electionDetailTougle',[$UserType->election_startup_detail_id,1]) }}','PATCH','Start this election?')" class="btn btn-info btn-xs">Start</button>
                                     @elseif($UserType->status ==1 )
-                                        <a href="{{route('SuperAdmin.electionDetailTougle',[$UserType->election_startup_detail_id,0])}}"   class="btn btn-danger btn-xs"> Stop</a>
+                                        <button type="button" onclick="submitAdminAction('{{ route('SuperAdmin.electionDetailTougle',[$UserType->election_startup_detail_id,0]) }}','PATCH','Stop this election?')" class="btn btn-danger btn-xs">Stop</button>
                                     @elseif($UserType->status == null )
                                         <a href="{{route('SuperAdmin.electionDetail',$UserType->election_startup_detail_id)}}"   class="btn btn-info btn-xs"> Start</a>
                                     @endif

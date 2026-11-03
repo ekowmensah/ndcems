@@ -28,7 +28,7 @@ class UserController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware('auth:superAdmin');
     }
 
     /**
@@ -353,9 +353,9 @@ class UserController extends Controller
         return DataTables::of($Users)->make(true);
     }
     public function UsersDelete($id,Request $request){
-        $user = User::find($id);
+        $user = User::findOrFail($id);
         $user->delete();
-        $request->session()->flash('message', ' Agent Deleted Successfully!');
+        $request->session()->flash('message', 'Account archived successfully.');
         return redirect()->back();
     }
 

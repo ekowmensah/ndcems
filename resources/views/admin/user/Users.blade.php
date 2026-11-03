@@ -178,7 +178,7 @@
                     url = url.replace(':number', data.user_id);
                return `
                       <a style="color:blue" class="fa fa-edit" href=${url}></a>
-                      <a style="color:red" class="fa fa-trash-o" onclick="return confirm('Delete entry?')" href=${del}></a>
+                      <a style="color:red" class="fa fa-trash-o" href="#" onclick="return submitAdminAction('${del}','DELETE','Delete this manager?')"></a>
                   `;
               }
            }

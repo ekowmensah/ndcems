@@ -27,6 +27,17 @@ class ElectionResult extends Model
         "election_start_up_id",
         "verify_by_regional",
         "verify_by_constituency",
-        "result_by_constituency"
+        "result_by_constituency",
+        "approval_status",
+        "approved_by",
+        "approved_at",
+        "rejected_by",
+        "rejected_at",
+        "rejection_reason"
+    ];
+
+    protected $casts = [
+        'approved_at' => 'datetime',
+        'rejected_at' => 'datetime',
     ];
 }

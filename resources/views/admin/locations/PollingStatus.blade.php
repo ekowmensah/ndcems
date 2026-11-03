@@ -66,8 +66,8 @@
                             <td>{{$country->country_name}}</td>
                             <td>{{$country->total_voters}}</td>
                             <td>
-                                <a href="{{route('SuperAdmin.constituencyEdit',$country->id)}}"   >Edit</a>
-                                <a href="{{route('SuperAdmin.ElectoralAreaDelete',$country->id)}}" >Delete</a>
+                                <a href="{{route('SuperAdmin.PollingStationEdit',$country->id)}}"   >Edit</a>
+                                <a href="{{route('SuperAdmin.PollingStationDelete',$country->id)}}" >Delete</a>
                             </td>
                         </tr>
                   @endforeach --}}
@@ -219,7 +219,7 @@
                    url = url.replace(':number', data.id);
                return `
                     <a style="color:blue" class="fa fa-edit" style="font-size:16px" href=${url} title="Edit Polling Station"> </a>
-                    <a style="color:red" onclick="return confirm('Delete entry?')" class="fa fa-trash-o" style="font-size:16px" href=${del} title="Delete Polling Station"> </a>
+                    <a style="color:red;font-size:16px" class="fa fa-trash-o" href="#" onclick="return submitAdminAction('${del}','DELETE','Delete this polling station?')" title="Delete Polling Station"> </a>
                   `;
               }
            }

@@ -1,0 +1,10 @@
+@extends('admin.layouts.app')
+@section('content')
+<div class="admin-page-head"><div><span class="admin-eyebrow">Controlled data intake</span><h1>Bulk imports</h1><p>Stage and validate polling-station records before they enter election operations.</p></div></div>
+@if(session('message'))<div class="alert alert-success">{{ session('message') }}</div>@endif
+@if(isset($errors) && $errors->any())<div class="alert alert-danger">{{ $errors->first() }}</div>@endif
+<div class="row">
+    <div class="col-lg-5"><div class="admin-card"><h3>Upload polling stations</h3><p class="text-muted">Use a UTF-8 CSV with the exact columns shown below. Location fields are derived from the electoral area.</p><code>polling_station_id,name,total_voters,electoral_area_id</code><form method="POST" action="{{ route('SuperAdmin.imports.preview') }}" enctype="multipart/form-data" class="mt-4">@csrf<input type="file" name="file" class="form-control" accept=".csv,text/csv" required><button class="btn btn-primary mt-3"><i class="fa fa-search"></i> Validate and preview</button></form></div></div>
+    <div class="col-lg-7"><div class="admin-card"><h3>Import history</h3><div class="table-responsive"><table class="table"><thead><tr><th>Batch</th><th>File</th><th>Rows</th><th>Status</th><th></th></tr></thead><tbody>@forelse($batches as $batch)<tr><td>#{{ $batch->id }}</td><td>{{ $batch->original_filename }}<br><small>{{ $batch->created_at->format('M d, Y H:i') }}</small></td><td>{{ $batch->valid_rows }} valid / {{ $batch->invalid_rows }} invalid</td><td><span class="badge badge-{{ $batch->status === 'committed' ? 'success' : ($batch->status === 'preview' ? 'warning' : 'secondary') }}">{{ str_replace('_',' ',$batch->status) }}</span></td><td><a class="btn btn-sm btn-outline-primary" href="{{ route('SuperAdmin.imports.show',$batch) }}">Open</a></td></tr>@empty<tr><td colspan="5" class="text-center text-muted">No import batches yet.</td></tr>@endforelse</tbody></table></div>{{ $batches->links() }}</div></div>
+</div>
+@endsection

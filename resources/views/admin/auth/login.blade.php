@@ -2,271 +2,72 @@
 <html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $config['name'] }} - Login</title>
-
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <title>Administrator Sign In | {{ $config['name'] }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('AdminLTE/plugins/fontawesome-free/css/all.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('AdminLTE/dist/css/adminlte.min.css') }}">
-
     <style>
-        :root {
-            --ndc-green: #006B3F;
-            --ndc-green-dark: #004D2E;
-            --ndc-red: #CE1126;
-            --ndc-black: #1a1a1a;
-            --ndc-white: #ffffff;
-            --ndc-gold: #FCD116;
-        }
-
-        body {
-            background: linear-gradient(135deg, var(--ndc-green-dark) 0%, var(--ndc-black) 50%, var(--ndc-red) 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .login-box {
-            width: 420px;
-        }
-
-        .login-logo img {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            border: 3px solid var(--ndc-gold);
-            object-fit: cover;
-            margin-bottom: 12px;
-        }
-
-        .login-logo a {
-            color: var(--ndc-white);
-            font-weight: 700;
-            font-size: 1.4rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .login-logo .subtitle {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 300;
-            color: rgba(255,255,255,0.8);
-            margin-top: 4px;
-        }
-
-        .card {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4), 0 5px 15px rgba(0,0,0,0.2);
-            overflow: hidden;
-        }
-
-        .card-header-custom {
-            background: linear-gradient(135deg, var(--ndc-green) 0%, var(--ndc-green-dark) 100%);
-            padding: 20px 30px;
-            text-align: center;
-        }
-
-        .card-header-custom h4 {
-            margin: 0;
-            color: var(--ndc-white);
-            font-weight: 600;
-            font-size: 1.2rem;
-            letter-spacing: 0.5px;
-        }
-
-        .card-header-custom .header-accent {
-            width: 50px;
-            height: 3px;
-            background: var(--ndc-gold);
-            margin: 10px auto 0;
-            border-radius: 2px;
-        }
-
-        .card-body {
-            padding: 30px;
-        }
-
-        .form-group label {
-            font-weight: 600;
-            color: var(--ndc-black);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-        }
-
-        .form-control {
-            border-radius: 8px;
-            border: 2px solid #e0e0e0;
-            padding: 10px 15px;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-            border-color: var(--ndc-green);
-            box-shadow: 0 0 0 0.2rem rgba(0, 107, 63, 0.15);
-        }
-
-        .input-group-text {
-            border-radius: 8px 0 0 8px;
-            border: 2px solid #e0e0e0;
-            border-right: none;
-            background: #f8f9fa;
-            color: var(--ndc-green);
-        }
-
-        .input-group .form-control {
-            border-radius: 0 8px 8px 0;
-        }
-
-        .input-group:focus-within .input-group-text {
-            border-color: var(--ndc-green);
-            color: var(--ndc-green-dark);
-        }
-
-        .btn-ndc {
-            background: linear-gradient(135deg, var(--ndc-green) 0%, var(--ndc-green-dark) 100%);
-            border: none;
-            color: var(--ndc-white);
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 1rem;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
-
-        .btn-ndc:hover {
-            background: linear-gradient(135deg, var(--ndc-green-dark) 0%, var(--ndc-black) 100%);
-            color: var(--ndc-white);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 107, 63, 0.4);
-        }
-
-        .custom-checkbox .custom-control-label::before {
-            border-radius: 4px;
-        }
-
-        .custom-control-input:checked ~ .custom-control-label::before {
-            background-color: var(--ndc-green);
-            border-color: var(--ndc-green);
-        }
-
-        .ndc-stripe {
-            height: 4px;
-            background: linear-gradient(90deg,
-                var(--ndc-red) 0%, var(--ndc-red) 25%,
-                var(--ndc-black) 25%, var(--ndc-black) 50%,
-                var(--ndc-green) 50%, var(--ndc-green) 75%,
-                var(--ndc-gold) 75%, var(--ndc-gold) 100%
-            );
-        }
-
-        .footer-text {
-            text-align: center;
-            color: rgba(255,255,255,0.6);
-            font-size: 0.8rem;
-            margin-top: 20px;
-        }
-
-        .alert {
-            border-radius: 8px;
-            border: none;
-            font-size: 0.9rem;
-        }
+        :root { --ink:#10243f; --navy:#0b1f36; --green:#087f5b; --green-dark:#056246; --muted:#66768a; --line:#dce5ed; --gold:#d99a19; }
+        * { box-sizing:border-box; }
+        body { min-height:100vh; margin:0; background:#edf3f4; color:var(--ink); font-family:'Manrope',sans-serif; }
+        .login-shell { display:grid; min-height:100vh; grid-template-columns:minmax(420px,1.12fr) minmax(420px,.88fr); }
+        .login-brand { position:relative; display:flex; min-height:100vh; flex-direction:column; justify-content:space-between; padding:52px clamp(38px,7vw,104px); overflow:hidden; background:radial-gradient(circle at 78% 18%,rgba(30,181,134,.28),transparent 25rem),linear-gradient(145deg,#112f4b 0%,var(--navy) 63%,#071725 100%); color:#fff; }
+        .login-brand:before,.login-brand:after { position:absolute; border:1px solid rgba(255,255,255,.1); border-radius:50%; content:''; }
+        .login-brand:before { right:-140px; bottom:-180px; width:480px; height:480px; }
+        .login-brand:after { right:-50px; bottom:-90px; width:300px; height:300px; }
+        .brand-lockup { position:relative; z-index:1; display:flex; align-items:center; gap:14px; }
+        .brand-lockup img { width:58px; height:58px; padding:4px; border-radius:17px; background:#fff; object-fit:contain; }
+        .brand-lockup strong { display:block; font-family:'Space Grotesk',sans-serif; font-size:19px; }
+        .brand-lockup span { display:block; margin-top:5px; color:#8fa8bf; font-size:10px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+        .brand-message { position:relative; z-index:1; max-width:660px; margin:80px 0; }
+        .brand-message__eyebrow { display:inline-flex; align-items:center; gap:8px; margin-bottom:20px; color:#76e1bc; font-size:10px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; }
+        .brand-message__eyebrow:before { width:28px; height:2px; background:#76e1bc; content:''; }
+        .brand-message h1 { margin:0; color:#fff; font-family:'Space Grotesk',sans-serif; font-size:clamp(38px,5vw,68px); line-height:1.02; letter-spacing:-.045em; }
+        .brand-message p { max-width:570px; margin:24px 0 0; color:#b9ccda; font-size:15px; line-height:1.8; }
+        .trust-row { position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:22px; color:#8fa8bf; font-size:11px; font-weight:700; }
+        .trust-row span { display:flex; align-items:center; gap:8px; }.trust-row i{color:#38c894}
+        .login-panel { display:flex; min-height:100vh; align-items:center; justify-content:center; padding:44px; background:radial-gradient(circle at 90% 10%,rgba(8,127,91,.1),transparent 22rem),#f7f9fa; }
+        .login-card { width:100%; max-width:450px; }
+        .mobile-brand { display:none; align-items:center; gap:11px; margin-bottom:30px; }.mobile-brand img{width:46px;height:46px;padding:3px;border-radius:13px;background:#fff;object-fit:contain}.mobile-brand strong{font-family:'Space Grotesk',sans-serif}
+        .login-card__eyebrow { color:var(--green); font-size:10px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+        .login-card h2 { margin:10px 0 8px; font-family:'Space Grotesk',sans-serif; font-size:34px; letter-spacing:-.025em; }
+        .login-card__intro { margin:0 0 32px; color:var(--muted); font-size:13px; line-height:1.7; }
+        .alert { position:relative; margin-bottom:16px; padding:13px 40px 13px 14px; border-radius:12px; background:#fff0f0; color:#9d2929; font-size:12px; }.alert button{position:absolute;right:12px;top:9px;border:0;background:none;font-size:18px;color:inherit}
+        .field { margin-bottom:19px; }.field label{display:flex;justify-content:space-between;margin-bottom:8px;color:#405168;font-size:11px;font-weight:800}.field label span{color:var(--muted);font-weight:600}
+        .input-wrap { position:relative; }.input-wrap i{position:absolute;left:15px;top:50%;color:#8795a6;transform:translateY(-50%)}
+        .input-wrap input { width:100%; height:50px; padding:11px 14px 11px 43px; border:1px solid var(--line); border-radius:13px; outline:0; background:#fff; color:var(--ink); font:500 13px 'Manrope',sans-serif; transition:border-color .18s,box-shadow .18s; }.input-wrap input:focus{border-color:var(--green);box-shadow:0 0 0 4px rgba(8,127,91,.1)}
+        .login-options { display:flex; align-items:center; justify-content:space-between; margin:3px 0 24px; color:var(--muted); font-size:11px; }.login-options label{display:flex;align-items:center;gap:8px;cursor:pointer}.login-options input{accent-color:var(--green)}
+        .submit-button { display:flex; width:100%; height:50px; align-items:center; justify-content:center; gap:9px; border:0; border-radius:13px; background:linear-gradient(135deg,var(--green),var(--green-dark)); color:#fff; cursor:pointer; font:800 12px 'Manrope',sans-serif; box-shadow:0 14px 28px rgba(8,127,91,.22); transition:transform .18s,box-shadow .18s; }.submit-button:hover{transform:translateY(-1px);box-shadow:0 18px 34px rgba(8,127,91,.27)}
+        .security-note { display:flex; gap:10px; margin-top:24px; padding:15px; border:1px solid var(--line); border-radius:13px; background:#fff; color:var(--muted); font-size:10px; line-height:1.6; }.security-note i{margin-top:2px;color:var(--green)}
+        .login-footer { margin-top:28px; color:#8b98a7; font-size:10px; text-align:center; }
+        @media(max-width:900px){.login-shell{display:block}.login-brand{display:none}.login-panel{min-height:100vh;padding:30px 22px}.mobile-brand{display:flex}.login-card h2{font-size:29px}}
     </style>
 </head>
 <body>
-
-<div class="login-box">
-    <!-- Logo -->
-    <div class="login-logo">
-        <div>
-            <img src="{{ asset($config['logo']) }}" alt="{{ $config['name'] }}">
-        </div>
-        <a href="{{ url('/') }}">
-            {{ $config['name'] }}
-            <span class="subtitle">Election Collation &amp; Monitoring System</span>
-        </a>
-    </div>
-
-    <!-- Login Card -->
-    <div class="card">
-        <div class="ndc-stripe"></div>
-        <div class="card-header-custom">
-            <h4><i class="fas fa-shield-alt mr-2"></i>Administrator Login</h4>
-            <div class="header-accent"></div>
-        </div>
-
-        <div class="card-body">
-            @if ($errors->has('email'))
-                <div class="alert alert-danger alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                    <i class="fas fa-exclamation-triangle mr-1"></i> {{ $errors->first('email') }}
-                </div>
-            @endif
-            @if ($errors->has('password'))
-                <div class="alert alert-danger alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                    <i class="fas fa-exclamation-triangle mr-1"></i> {{ $errors->first('password') }}
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('SuperAdmin.login') }}">
-                @csrf
-
-                <div class="form-group">
-                    <label for="email"><i class="fas fa-envelope mr-1"></i> Email Address</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-user"></i></span>
-                        </div>
-                        <input id="email" type="email" class="form-control {{ $errors->has('email') ? 'is-invalid' : '' }}"
-                               name="email" value="{{ old('email') }}" required autofocus placeholder="Enter your email">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="password"><i class="fas fa-lock mr-1"></i> Password</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-key"></i></span>
-                        </div>
-                        <input id="password" type="password" class="form-control {{ $errors->has('password') ? 'is-invalid' : '' }}"
-                               name="password" required placeholder="Enter your password">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="custom-control custom-checkbox">
-                        <input class="custom-control-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-                        <label class="custom-control-label" for="remember" style="font-weight:400; text-transform:none; font-size:0.9rem;">
-                            Remember Me
-                        </label>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-ndc">
-                    <i class="fas fa-sign-in-alt mr-2"></i> Sign In
-                </button>
+<main class="login-shell">
+    <section class="login-brand">
+        <a class="brand-lockup" href="{{ url('/') }}" style="color:#fff;text-decoration:none;"><img src="{{ asset($config['logo']) }}" alt="{{ $config['name'] }}"><span><strong>{{ $config['name'] }}</strong><span>Election command platform</span></span></a>
+        <div class="brand-message"><span class="brand-message__eyebrow">Secure operations workspace</span><h1>One source of truth for election readiness.</h1><p>Coordinate structures, field teams, election startups, and verified national reporting through a single operational command center.</p></div>
+        <div class="trust-row"><span><i class="fas fa-check-circle"></i> Verified reporting</span><span><i class="fas fa-shield-alt"></i> Restricted access</span><span><i class="fas fa-chart-line"></i> Operational intelligence</span></div>
+    </section>
+    <section class="login-panel">
+        <div class="login-card">
+            <div class="mobile-brand"><img src="{{ asset($config['logo']) }}" alt=""><strong>{{ $config['name'] }}</strong></div>
+            <span class="login-card__eyebrow">Administration</span><h2>Welcome back</h2><p class="login-card__intro">Sign in with your administrator account to continue to the election operations workspace.</p>
+            @foreach(['email','password'] as $field)@if($errors->has($field))<div class="alert"><button type="button" onclick="this.parentElement.remove()" aria-label="Dismiss">&times;</button><i class="fas fa-exclamation-circle"></i> {{ $errors->first($field) }}</div>@endif @endforeach
+            <form method="POST" action="{{ route('SuperAdmin.login') }}">@csrf
+                <div class="field"><label for="email">Email address <span>Administrator account</span></label><div class="input-wrap"><i class="fas fa-envelope"></i><input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" placeholder="name@example.com"></div></div>
+                <div class="field"><label for="password">Password <span>Case sensitive</span></label><div class="input-wrap"><i class="fas fa-lock"></i><input id="password" type="password" name="password" required autocomplete="current-password" placeholder="Enter your password"></div></div>
+                <div class="login-options"><label><input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}> Keep me signed in</label></div>
+                <button class="submit-button" type="submit">Enter command center <i class="fas fa-arrow-right"></i></button>
             </form>
+            <div class="security-note"><i class="fas fa-shield-alt"></i><span>This workspace contains sensitive election operations data. Access is logged and limited to authorized administrators.</span></div>
+            <div class="login-footer">&copy; {{ date('Y') }} {{ $config['name'] }}. Authorized use only.</div>
         </div>
-
-        <div class="ndc-stripe"></div>
-    </div>
-
-    <p class="footer-text">&copy; {{ date('Y') }} {{ $config['name'] }}. All rights reserved.</p>
-</div>
-
-<script src="{{ asset('AdminLTE/plugins/jquery/jquery.min.js') }}"></script>
-<script src="{{ asset('AdminLTE/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ asset('AdminLTE/dist/js/adminlte.min.js') }}"></script>
+    </section>
+</main>
 </body>
 </html>

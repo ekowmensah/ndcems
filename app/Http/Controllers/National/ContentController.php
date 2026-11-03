@@ -23,6 +23,7 @@ use App\Model\Candidate;
 use App\Model\PoliticalParty;
 use App\Services\National\NationalDashboardService;
 use App\Services\National\NationalResultAnalyticsService;
+use App\Services\Results\ResultOversightService;
 
 
 class ContentController extends Controller
@@ -348,6 +349,45 @@ class ContentController extends Controller
     }
     public function allResultAjax(Request $request){
         return $this->resultAnalytics()->getFilteredBreakdown($request->all());
+    }
+    public function resultReview(Request $request, ResultOversightService $oversight){
+        $filters = $request->validate([
+            'status' => ['nullable', 'in:pending,approved,rejected'],
+            'anomaly' => ['nullable', 'in:over_voting,arithmetic,party_mismatch,missing_pink_sheet,escalated,stale_pending,reopened'],
+            'election_type_id' => ['nullable', 'integer'],
+            'startup_id' => ['nullable', 'integer'],
+            'region_id' => ['nullable', 'integer'],
+        ]);
+        return view('oversight.results', $oversight->getPageData($filters) + [
+            'layout' => 'layouts.app_national_director',
+            'routePrefix' => 'National',
+            'scopeLabel' => 'National',
+            'regionScope' => false,
+        ]);
+    }
+    public function resultReviewDetail($id, ResultOversightService $oversight){
+        return view('oversight.detail', $oversight->getDetail((int) $id, Auth::user()) + [
+            'layout' => 'layouts.app_national_director',
+            'routePrefix' => 'National',
+            'scopeLabel' => 'National',
+        ]);
+    }
+    public function reviewPinkSheet($id, ResultOversightService $oversight){
+        return response()->file($oversight->pinkSheetPath((int) $id), ['Cache-Control' => 'private, no-store, max-age=0']);
+    }
+    public function storeEscalation(Request $request, $id, ResultOversightService $oversight){
+        $data = $request->validate([
+            'category' => ['required', 'in:data_quality,missing_evidence,reporting_delay,dispute,other'],
+            'severity' => ['required', 'in:low,medium,high,critical'],
+            'note' => ['required', 'string', 'min:10', 'max:2000'],
+        ]);
+        $oversight->createEscalation((int) $id, Auth::user(), $data, 'National Director');
+        return redirect()->back()->with('message', 'Escalation recorded for follow-up.');
+    }
+    public function resolveEscalation(Request $request, $id, ResultOversightService $oversight){
+        $data = $request->validate(['resolution_note' => ['required', 'string', 'min:10', 'max:2000']]);
+        $oversight->resolveEscalation((int) $id, Auth::user(), $data['resolution_note']);
+        return redirect()->back()->with('message', 'Escalation marked as resolved.');
     }
     public function  getPoliticalParty(Request $request){
         $data = $request->all();

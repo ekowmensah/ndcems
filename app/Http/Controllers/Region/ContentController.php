@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Model\Region;
 use App\User;
 use App\Services\Region\RegionResultAnalyticsService;
+use App\Services\Results\ResultOversightService;
 use DataTables;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -99,6 +100,57 @@ class ContentController extends Controller
             'region.home.RegionalResultView',
             $this->analytics()->getRegionDetail($this->regionId(), $this->requestStartupId($request))
         );
+    }
+
+    public function resultReview(Request $request, ResultOversightService $oversight)
+    {
+        $filters = $request->validate([
+            'status' => ['nullable', 'in:pending,approved,rejected'],
+            'anomaly' => ['nullable', 'in:over_voting,arithmetic,party_mismatch,missing_pink_sheet,escalated,stale_pending,reopened'],
+            'election_type_id' => ['nullable', 'integer'],
+            'startup_id' => ['nullable', 'integer'],
+        ]);
+
+        return view('oversight.results', $oversight->getPageData($filters, $this->regionId()) + [
+            'layout' => 'layouts.app_national',
+            'routePrefix' => 'Region',
+            'scopeLabel' => 'Regional',
+            'regionScope' => true,
+        ]);
+    }
+
+    public function resultReviewDetail($id, ResultOversightService $oversight)
+    {
+        return view('oversight.detail', $oversight->getDetail((int) $id, Auth::user(), $this->regionId()) + [
+            'layout' => 'layouts.app_national',
+            'routePrefix' => 'Region',
+            'scopeLabel' => 'Regional',
+        ]);
+    }
+
+    public function reviewPinkSheet($id, ResultOversightService $oversight)
+    {
+        return response()->file($oversight->pinkSheetPath((int) $id, $this->regionId()), [
+            'Cache-Control' => 'private, no-store, max-age=0',
+        ]);
+    }
+
+    public function storeEscalation(Request $request, $id, ResultOversightService $oversight)
+    {
+        $data = $request->validate([
+            'category' => ['required', 'in:data_quality,missing_evidence,reporting_delay,dispute,other'],
+            'severity' => ['required', 'in:low,medium,high,critical'],
+            'note' => ['required', 'string', 'min:10', 'max:2000'],
+        ]);
+        $oversight->createEscalation((int) $id, Auth::user(), $data, 'Regional Director', $this->regionId());
+        return redirect()->back()->with('message', 'Escalation recorded for follow-up.');
+    }
+
+    public function resolveEscalation(Request $request, $id, ResultOversightService $oversight)
+    {
+        $data = $request->validate(['resolution_note' => ['required', 'string', 'min:10', 'max:2000']]);
+        $oversight->resolveEscalation((int) $id, Auth::user(), $data['resolution_note'], $this->regionId());
+        return redirect()->back()->with('message', 'Escalation marked as resolved.');
     }
 
     protected function analytics(): RegionResultAnalyticsService

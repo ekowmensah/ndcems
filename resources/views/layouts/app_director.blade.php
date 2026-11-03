@@ -148,6 +148,22 @@ $pinkSheetCoverage = $submittedCount > 0
                             <p>Results</p>
                         </a>
                     </li>
+                    <li class="nav-header">OPERATIONS</li>
+                    <li class="nav-item">
+                        <a href="{{ route('Operations.incidents') }}" class="nav-link {{ Request::routeIs('Operations.incidents*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-exclamation-triangle"></i><p>Incident Command</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('Operations.notifications') }}" class="nav-link {{ Request::routeIs('Operations.notifications*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-bell"></i><p>Operations Inbox</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('Operations.reports') }}" class="nav-link {{ Request::routeIs('Operations.reports*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-file-alt"></i><p>Situation Reports</p>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a href="{{ route('Director.collation') }}" class="nav-link {{ Request::is('director/collation*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-layer-group"></i>
@@ -293,6 +309,20 @@ $pinkSheetCoverage = $submittedCount > 0
 @yield("script")
 <script>
     $.fn.dataTable.ext.errMode = 'throw';
+</script>
+<script>
+window.submitProtectedAction = function (url, method, message) {
+    if (message && !window.confirm(message)) return false;
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    form.style.display = 'none';
+    form.innerHTML = '<input type="hidden" name="_token" value="{{ csrf_token() }}">' +
+        '<input type="hidden" name="_method" value="' + method + '">';
+    document.body.appendChild(form);
+    form.submit();
+    return false;
+};
 </script>
 </body>
 </html>

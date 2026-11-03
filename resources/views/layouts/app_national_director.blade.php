@@ -521,7 +521,28 @@
                             <p>Constituency Results</p>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('National.resultReview') }}" class="nav-link {{ Request::routeIs('National.resultReview*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-clipboard-check"></i>
+                            <p>Result Oversight</p>
+                        </a>
+                    </li>
                     <li class="national-section-label">Operations</li>
+                    <li class="nav-item">
+                        <a href="{{ route('Operations.incidents') }}" class="nav-link {{ Request::routeIs('Operations.incidents*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-exclamation-triangle"></i><p>Incident Command</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('Operations.notifications') }}" class="nav-link {{ Request::routeIs('Operations.notifications*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-bell"></i><p>Operations Inbox</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('Operations.reports') }}" class="nav-link {{ Request::routeIs('Operations.reports*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-file-alt"></i><p>Situation Reports</p>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a href="{{ route('National.pollingAgent') }}" class="nav-link {{ Request::is('national/polling-agent*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-user-tie"></i>
@@ -701,6 +722,20 @@
         $('table.table').addClass('table-hover align-middle');
         $('.x_panel, .panel').addClass('enterprise-surface');
     });
+</script>
+<script>
+window.submitProtectedAction = function (url, method, message) {
+    if (message && !window.confirm(message)) return false;
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    form.style.display = 'none';
+    form.innerHTML = '<input type="hidden" name="_token" value="{{ csrf_token() }}">' +
+        '<input type="hidden" name="_method" value="' + method + '">';
+    document.body.appendChild(form);
+    form.submit();
+    return false;
+};
 </script>
 </body>
 </html>

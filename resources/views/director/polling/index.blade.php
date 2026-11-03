@@ -123,7 +123,7 @@
                     url = url.replace(':number', data.user_id);
                return `
                       <a style="color:white" class="btn btn-primary btn-xs" href=${url}>Edit</a>
-                      <a style="color:white" class="btn btn-danger btn-xs" onclick="return confirm('Delete entry?')" href=${del}>Delete</a>
+                      <a style="color:white" class="btn btn-danger btn-xs" href="#" onclick="return submitProtectedAction('${del}','DELETE','Archive this polling agent?')">Delete</a>
                   `;
               }
            }
