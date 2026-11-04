@@ -30,6 +30,7 @@ class NationalDashboardService
             'summary' => $summary,
             'chartDataPoints' => $this->getPresidentialChartData(),
             'regionalPerformance' => $this->getRegionalPerformance(),
+            'regionalMapData' => $this->getRegionalMapData(),
             'activeElection' => $this->getActiveElection(),
             'lastUpdatedAt' => $this->formatDateTime($summary['last_result_at']),
         ];
@@ -57,7 +58,7 @@ class NationalDashboardService
         return $this->formatChartData($partyTotals, 'party_initial');
     }
 
-    public function getRegionalPerformance(int $limit = 6): array
+    public function getRegionalPerformance(?int $limit = 6): array
     {
         $reportingQuery = DB::table('election_result')
             ->select(
@@ -76,7 +77,7 @@ class NationalDashboardService
             )
             ->groupBy('region_id');
 
-        return DB::table('region')
+        $regions = DB::table('region')
             ->leftJoinSub($reportingQuery, 'reporting', function ($join) {
                 $join->on('reporting.region_id', '=', 'region.id');
             })
@@ -112,10 +113,61 @@ class NationalDashboardService
                     'total_voters' => (int) $region->total_voters,
                 ];
             })
-            ->sortByDesc('reporting_percentage')
-            ->take($limit)
-            ->values()
-            ->all();
+            ->sortByDesc('reporting_percentage');
+
+        return ($limit ? $regions->take($limit) : $regions)->values()->all();
+    }
+
+    public function getRegionalMapData(): array
+    {
+        $approvalRows = DB::table('election_result')
+            ->join('pollingstation', 'pollingstation.id', '=', 'election_result.polling_station_id')
+            ->select('election_result.region_id')
+            ->selectRaw('COUNT(*) AS result_records')
+            ->selectRaw('SUM(CASE WHEN election_result.approval_status = "approved" THEN 1 ELSE 0 END) AS approved_count')
+            ->selectRaw('SUM(CASE WHEN election_result.approval_status = "pending" THEN 1 ELSE 0 END) AS pending_count')
+            ->selectRaw('SUM(CASE WHEN election_result.approval_status = "rejected" THEN 1 ELSE 0 END) AS rejected_count')
+            ->selectRaw('SUM(CASE WHEN CAST(election_result.total_ballot AS UNSIGNED) > CAST(COALESCE(pollingstation.total_voters, 0) AS UNSIGNED) OR CAST(election_result.total_ballot AS UNSIGNED) != (CAST(election_result.obtained_votes AS UNSIGNED) + CAST(COALESCE(election_result.total_rejected_ballot, 0) AS UNSIGNED)) THEN 1 ELSE 0 END) AS anomaly_count')
+            ->groupBy('election_result.region_id')->get()->keyBy('region_id');
+
+        $incidentRows = DB::table('result_escalations')
+            ->join('election_result', 'election_result.id', '=', 'result_escalations.election_result_id')
+            ->select('election_result.region_id')
+            ->selectRaw('SUM(CASE WHEN result_escalations.status != "resolved" THEN 1 ELSE 0 END) AS active_incidents')
+            ->selectRaw('SUM(CASE WHEN result_escalations.status != "resolved" AND result_escalations.severity IN ("critical", "high") THEN 1 ELSE 0 END) AS priority_incidents')
+            ->groupBy('election_result.region_id')->get()->keyBy('region_id');
+
+        $presidentialTypeId = $this->getPresidentialElectionTypeId();
+        $leaders = DB::table('party_election_result')
+            ->join('election_result', 'election_result.id', '=', 'party_election_result.election_result_id')
+            ->join('political_party', 'political_party.id', '=', 'party_election_result.party_id')
+            ->where('election_result.approval_status', 'approved')
+            ->when($presidentialTypeId, fn ($query, $typeId) => $query->where('election_result.election_type_id', $typeId))
+            ->select('election_result.region_id', 'political_party.party_initial')
+            ->selectRaw('SUM(CAST(party_election_result.obtained_vote AS UNSIGNED)) AS votes')
+            ->groupBy('election_result.region_id', 'political_party.id', 'political_party.party_initial')
+            ->get()->groupBy('region_id')->map(fn ($rows) => $rows->sortByDesc('votes')->first());
+
+        return collect($this->getRegionalPerformance(null))->map(function (array $region) use ($approvalRows, $incidentRows, $leaders) {
+            $approval = $approvalRows->get($region['id']);
+            $incidents = $incidentRows->get($region['id']);
+            $leader = $leaders->get($region['id']);
+            $resultRecords = (int) ($approval->result_records ?? 0);
+            $approved = (int) ($approval->approved_count ?? 0);
+
+            return $region + [
+                'result_records' => $resultRecords,
+                'approved' => $approved,
+                'pending' => (int) ($approval->pending_count ?? 0),
+                'rejected' => (int) ($approval->rejected_count ?? 0),
+                'approval_percentage' => $resultRecords > 0 ? round(($approved / $resultRecords) * 100, 1) : 0.0,
+                'anomalies' => (int) ($approval->anomaly_count ?? 0),
+                'active_incidents' => (int) ($incidents->active_incidents ?? 0),
+                'priority_incidents' => (int) ($incidents->priority_incidents ?? 0),
+                'leader' => $leader->party_initial ?? 'No approved result',
+                'leader_votes' => (int) ($leader->votes ?? 0),
+            ];
+        })->values()->all();
     }
 
     protected function getSummaryStats(): array

@@ -352,6 +352,7 @@ Route::group(['prefix' =>"national",'namespace'=>'National','as' => 'National.']
     Route::group(['middleware' => ['auth','user.type:1','can:review-national-results','governance.audit:web']], function () {
         Route::get('/dashboard',  'ContentController@dashboard')->name("dashboard");
         Route::get('/dashboard/chart-data',  'ContentController@presidentialResultAjax')->name("dashboardChart");
+        Route::get('/dashboard/map-data',  'ContentController@dashboardMap')->name("dashboardMap");
         Route::get('/profile',  'ContentController@profile')->name("profile");
 
         Route::get('/presidential-result',  'ContentController@PresidentialResult')->name("Presidential");

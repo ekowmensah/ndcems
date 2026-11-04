@@ -44,6 +44,11 @@ class ContentController extends Controller
     public function presidentialResultAjax(){
         return app(NationalDashboardService::class)->getPresidentialChartData();
     }
+
+    public function dashboardMap()
+    {
+        return app(NationalDashboardService::class)->getRegionalMapData();
+    }
     public function Presidential(){
         return view('region.home.presidential');
 
